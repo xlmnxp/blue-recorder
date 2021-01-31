@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 glib = "0.10.3"
+rust-ini = "0.16"
 
 [dependencies.gtk]
 version = "0.9.0"
