@@ -1,0 +1,147 @@
+# Blue Recorder
+# Copyright (C) 2017, FOSS Project
+# This file is distributed under the same license as the Blue Recorder package.
+# M.Hanny Sabbagh <mhsabbagh@outlook.com>, 2017
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-08-08 10:53+0300\n"
+"PO-Revision-Date: 2019-01-22 21:56-0600\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.2.1\n"
+"Last-Translator: Adolfo Jayme Barrientos <fitojb@ubuntu.com>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: ca\n"
+
+#: blue-recorder:338 blue-recorder:358
+msgid "Blue Recorder"
+msgstr "Blue Recorder"
+
+#: blue-recorder:339
+msgid "AreaChooser"
+msgstr "Selector d’àrea"
+
+#: blue-recorder:340
+msgid "Blue Recorder Preferences"
+msgstr "Preferències del Blue Recorder"
+
+#: blue-recorder:342 blue-recorder:345
+msgid "File Name (Will be overwritten).."
+msgstr "Nom de fitxer (se sobrescriurà)…"
+
+#: blue-recorder:343 blue-recorder:344
+msgid "Enter your command here.."
+msgstr "Introduïu la vostra ordre aquí…"
+
+#: blue-recorder:346
+msgid "MKV (Matroska multimedia container format)"
+msgstr "MKV (format de contenidors multimèdia Matroska)"
+
+#: blue-recorder:347
+msgid "AVI (Audio Video Interleaved)"
+msgstr "AVI (àudio i vídeo intercalats)"
+
+#: blue-recorder:348
+msgid "MP4 (MPEG-4 Part 14)"
+msgstr "MP4 (MPEG-4 part 14)"
+
+#: blue-recorder:349
+msgid "WMV (Windows Media Video)"
+msgstr "WMV (vídeo de Windows Media)"
+
+#: blue-recorder:350
+msgid "GIF (Graphics Interchange Format)"
+msgstr "GIF (format d’intercanvi de gràfics)"
+
+#: blue-recorder:351
+msgid "NUT (NUT Recording Format)"
+msgstr "NUT (format d’enregistrament NUT)"
+
+#: blue-recorder:353 blue-recorder:380
+msgid "Record Video"
+msgstr "Enregistra el vídeo"
+
+#: blue-recorder:354 blue-recorder:381
+msgid "Record Audio"
+msgstr "Enregistra l’àudio"
+
+#: blue-recorder:355
+msgid "Show Mouse"
+msgstr "Mostra el ratolí"
+
+#: blue-recorder:356 blue-recorder:383
+msgid "Follow Mouse"
+msgstr "Segueix el ratolí"
+
+#: blue-recorder:363
+msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
+msgstr "Enregistrador de pantalla senzill per al Linux. Compatible amb el Wayland i l’X.org."
+
+#: blue-recorder:369
+msgid "Select a Window"
+msgstr "Selecciona una finestra"
+
+#: blue-recorder:370
+msgid "Select an Area"
+msgstr "Selecciona una àrea"
+
+#: blue-recorder:371
+msgid "Frames:"
+msgstr "Fotogrames:"
+
+#: blue-recorder:372
+msgid "Delay:"
+msgstr "Retard:"
+
+#: blue-recorder:373
+msgid "Run Command After Recording:"
+msgstr "Executa una ordre després d’enregistrar:"
+
+#: blue-recorder:374
+msgid "Default frames:"
+msgstr "Fotogrames per defecte:"
+
+#: blue-recorder:375
+msgid "Default delay:"
+msgstr "Retard per defecte:"
+
+#: blue-recorder:376
+msgid "Default folder:"
+msgstr "Carpeta per defecte:"
+
+#: blue-recorder:377
+msgid "Default pipeline:"
+msgstr "Canonada per defecte:"
+
+#: blue-recorder:378
+msgid "Default command:"
+msgstr "Ordre per defecte:"
+
+#: blue-recorder:379
+msgid "Audio Input Source:"
+msgstr "Origen d’entrada d’àudio:"
+
+#: blue-recorder:382
+msgid "Record Mouse"
+msgstr "Enregistra el ratolí"
+
+#: blue-recorder:384
+msgid "Default filename:"
+msgstr "Nom de fitxer per defecte:"
+
+#: blue-recorder:385
+msgid "If you want, you can:"
+msgstr "Si voleu, podeu:"
+
+#: blue-recorder:415
+msgid "Default PulseAudio Input Source"
+msgstr "Origen d’entrada del PulseAudio per defecte"
+
+#: blue-recorder:472
+msgid "Area Chooser"
+msgstr "Selector d’àrea"
