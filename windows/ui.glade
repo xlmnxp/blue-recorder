@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1 -->
+<!-- Generated with glade 3.22.2 -->
 <interface>
   <requires lib="gtk+" version="3.16"/>
   <object class="GtkAboutDialog" id="aboutdialog">
@@ -7,7 +7,7 @@
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">dialog</property>
     <property name="logo_icon_name">blue-recorder</property>
-    <child>
+    <child type="titlebar">
       <placeholder/>
     </child>
     <child internal-child="vbox">
@@ -55,7 +55,7 @@
   <object class="GtkImage" id="image3">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="stock">gtk-media-play</property>
+    <property name="icon_name">media-playback-start</property>
   </object>
   <object class="GtkImage" id="image5">
     <property name="visible">True</property>
@@ -87,14 +87,42 @@
         <property name="show_close_button">True</property>
         <child>
           <object class="GtkButton" id="recordbutton">
-            <property name="label">gtk-media-record</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="relief">none</property>
-            <property name="use_stock">True</property>
+            <property name="relief">half</property>
             <property name="always_show_image">True</property>
             <signal name="clicked" handler="recordclicked" swapped="no"/>
+            <child>
+              <object class="GtkGrid">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="column_spacing">2</property>
+                <property name="row_homogeneous">True</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="icon_name">media-record</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Record</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
         <child>
@@ -102,9 +130,15 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="image">image5</property>
             <property name="relief">none</property>
             <signal name="clicked" handler="stoprecordingclicked" swapped="no"/>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="icon_name">media-playback-stop</property>
+              </object>
+            </child>
           </object>
           <packing>
             <property name="position">2</property>
@@ -504,14 +538,42 @@
         <property name="show_close_button">True</property>
         <child>
           <object class="GtkButton" id="areasettings">
-            <property name="label">gtk-apply</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="relief">none</property>
-            <property name="use_stock">True</property>
+            <property name="relief">half</property>
             <property name="always_show_image">True</property>
             <signal name="clicked" handler="areasettings" swapped="no"/>
+            <child>
+              <object class="GtkGrid">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="column_spacing">3</property>
+                <property name="row_homogeneous">True</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="icon_name">dialog-ok</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Apply</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
       </object>
