@@ -1,10 +1,10 @@
-extern crate ini;
 extern crate glib;
+extern crate ini;
 
 use glib::get_user_data_dir;
 use ini::Ini;
-use std::path::{Path, PathBuf};
 use std::ops::Add;
+use std::path::{Path, PathBuf};
 
 pub fn initialize() -> PathBuf {
     let config_path: PathBuf = Path::new(&get_user_data_dir().unwrap())
@@ -33,16 +33,17 @@ fn default() {
             .add(
                 glib::get_user_special_dir(glib::UserDirectory::Videos)
                     .expect(std::env::var("HOME").expect("/").as_str())
-                    .to_str().unwrap(),
+                    .to_str()
+                    .unwrap(),
             )
             .as_str(),
     );
     set("default", "command", "");
     set("default", "filename", "");
-    set("default", "videocheck", "true");
-    set("default", "audiocheck", "true");
-    set("default", "mousecheck", "true");
-    set("default", "followmousecheck", "false");
+    set("default", "videocheck", "1");
+    set("default", "audiocheck", "1");
+    set("default", "mousecheck", "1");
+    set("default", "followmousecheck", "0");
 }
 
 pub fn get(selection: &str, key: &str) -> String {
@@ -58,6 +59,10 @@ pub fn get(selection: &str, key: &str) -> String {
     )
 }
 
+pub fn get_bool(selection: &str, key: &str) -> bool {
+    get(&selection, &key).eq_ignore_ascii_case("1")
+}
+
 pub fn set(selection: &str, key: &str, value: &str) -> bool {
     let config_path: PathBuf = Path::new(&get_user_data_dir().unwrap())
         .join("blue-recorder")
@@ -65,4 +70,8 @@ pub fn set(selection: &str, key: &str, value: &str) -> bool {
     let mut config_init = Ini::load_from_file(&config_path).unwrap_or_default();
     config_init.with_section(Some(selection)).set(key, value);
     config_init.write_to_file(&config_path).is_ok()
+}
+
+pub fn set_bool(selection: &str, key: &str, value: bool) -> bool {
+    set(&selection, &key, if value { "1" } else { "0" })
 }
