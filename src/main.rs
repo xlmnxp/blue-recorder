@@ -2,14 +2,15 @@ extern crate gio;
 extern crate gtk;
 mod config_management;
 
-use gtk::ComboBoxText;
 use gio::prelude::*;
 use gtk::prelude::*;
+use gtk::ComboBoxText;
 use gtk::{
-    Adjustment, Builder, Button, CheckButton, ComboBox, AboutDialog, Entry, FileChooser, Label,
+    AboutDialog, Adjustment, Builder, Button, CheckButton, ComboBox, Entry, FileChooser, Label,
     MenuItem, SpinButton, Window,
 };
 use std::path::Path;
+use std::process::{Command, Stdio};
 
 fn main() {
     if gtk::init().is_err() {
@@ -26,8 +27,8 @@ fn main() {
     let folder_chooser: FileChooser = builder.get_object("filechooser").unwrap();
     let filename_entry: Entry = builder.get_object("filename").unwrap();
     let command_entry: Entry = builder.get_object("command").unwrap();
-    let format_chooser: ComboBoxText = builder.get_object("comboboxtext1").unwrap();
-    let audio_source: ComboBox = builder.get_object("audiosource").unwrap();
+    let format_chooser_combobox: ComboBoxText = builder.get_object("comboboxtext1").unwrap();
+    let audio_source_combobox: ComboBoxText = builder.get_object("audiosource").unwrap();
     let record_button: Button = builder.get_object("recordbutton").unwrap();
     let stop_button: Button = builder.get_object("stopbutton").unwrap();
     let window_grab_button: Button = builder.get_object("window_grab_button").unwrap();
@@ -50,21 +51,56 @@ fn main() {
     // --- default properties
     // Windows
     main_window.set_title("Blue Recorder");
-    
     // Entries
     filename_entry.set_placeholder_text(Some("Enter filename"));
     command_entry.set_placeholder_text(Some("Enter your command here"));
     filename_entry.set_text(&config_management::get("default", "filename"));
     command_entry.set_text(&config_management::get("default", "command"));
 
-    // format chooser
-    format_chooser.append(Some("mkv"), "MKV (Matroska multimedia container format)");
-    format_chooser.append(Some("avi"), "AVI (Audio Video Interleaved)");
-    format_chooser.append(Some("mp4"), "MP4 (MPEG-4 Part 14)");
-    format_chooser.append(Some("wmv"), "WMV (Windows Media Video)");
-    format_chooser.append(Some("gif"), "GIF (Graphics Interchange Format)");
-    format_chooser.append(Some("nut"), "NUT (NUT Recording Format)");
-    format_chooser.set_active(Some(0));
+    // CheckBox
+    format_chooser_combobox.append(Some("mkv"), "MKV (Matroska multimedia container format)");
+    format_chooser_combobox.append(Some("avi"), "AVI (Audio Video Interleaved)");
+    format_chooser_combobox.append(Some("mp4"), "MP4 (MPEG-4 Part 14)");
+    format_chooser_combobox.append(Some("wmv"), "WMV (Windows Media Video)");
+    format_chooser_combobox.append(Some("gif"), "GIF (Graphics Interchange Format)");
+    format_chooser_combobox.append(Some("nut"), "NUT (NUT Recording Format)");
+    format_chooser_combobox.set_active(Some(0));
+
+    // get audio sources
+    let sources_descriptions: Vec<String> = {
+        let sources_descriptions = String::from_utf8(
+            Command::new("grep")
+                .args(&["-e", "device.description"])
+                .stdin(
+                    Command::new("pactl")
+                        .args(&["list", "sources"])
+                        .stdout(Stdio::piped())
+                        .spawn()
+                        .unwrap()
+                        .stdout
+                        .take()
+                        .unwrap(),
+                )
+                .output()
+                .unwrap()
+                .stdout,
+        )
+        .unwrap();
+        sources_descriptions
+            .split("\n")
+            .map(|s| {
+                s.trim()
+                    .replace("device.description = ", "")
+                    .replace("\"", "")
+            })
+            .filter(|s| s != "")
+            .collect()
+    };
+
+    for (id, audio_source) in sources_descriptions.iter().enumerate() {
+        audio_source_combobox.append(Some(id.to_string().as_str()), audio_source);
+    }
+    audio_source_combobox.set_active(Some(0));
 
     // Switchs
     video_switch.set_label("Record Video");
@@ -76,7 +112,6 @@ fn main() {
     mouse_switch.set_active(config_management::get_bool("default", "mousecheck"));
     follow_mouse_switch.set_active(config_management::get_bool("default", "followmousecheck"));
 
-
     // About Dialog
     about_menu_item.set_label("about");
     about_dialog.set_transient_for(Some(&main_window));
@@ -85,12 +120,18 @@ fn main() {
     about_dialog.set_copyright(Some("© 2021 Salem Yaslem"));
     about_dialog.set_wrap_license(true);
     about_dialog.set_license(Some("Blue Recorder is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\nBlue Recorder is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\nSee the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with Blue Recorder. If not, see <http://www.gnu.org/licenses/>."));
-    about_dialog.set_comments(Some("A simple screen recorder for Linux desktop. Supports Wayland & Xorg."));
-    about_dialog.set_authors(&["Salem Yaslem <s@sy.sa>", "M.Hanny Sabbagh <mhsabbagh@outlook.com>", "Alessandro Toia <gort818@gmail.com>","Patreon Supporters: Ahmad Gharib, Medium,\nWilliam Grunow, Alex Benishek."]);
+    about_dialog.set_comments(Some(
+        "A simple screen recorder for Linux desktop. Supports Wayland & Xorg.",
+    ));
+    about_dialog.set_authors(&[
+        "Salem Yaslem <s@sy.sa>",
+        "M.Hanny Sabbagh <mhsabbagh@outlook.com>",
+        "Alessandro Toia <gort818@gmail.com>",
+        "Patreon Supporters: Ahmad Gharib, Medium,\nWilliam Grunow, Alex Benishek.",
+    ]);
     about_dialog.set_artists(&["Mustapha Assabar"]);
     about_dialog.set_website(Some("https://github.com/xlmnxp/blue-recorder/"));
     about_dialog.set_logo_icon_name(Some("blue-recorder"));
-    
     // Buttons
     window_grab_button.set_label("Select a Window");
     area_grab_button.set_label("Select an Area");
@@ -102,8 +143,18 @@ fn main() {
     audio_source_label.set_label("Audio Input Source");
 
     // Spin
-    frames_spin.set_value(config_management::get("default", "frame").to_string().parse::<f64>().unwrap());
-    delay_spin.set_value(config_management::get("default", "delay").to_string().parse::<f64>().unwrap());
+    frames_spin.set_value(
+        config_management::get("default", "frame")
+            .to_string()
+            .parse::<f64>()
+            .unwrap(),
+    );
+    delay_spin.set_value(
+        config_management::get("default", "delay")
+            .to_string()
+            .parse::<f64>()
+            .unwrap(),
+    );
 
     // Other
     folder_chooser.set_uri(&config_management::get("default", "folder"));
