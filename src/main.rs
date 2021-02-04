@@ -1,17 +1,17 @@
 extern crate gio;
 extern crate gtk;
 mod config_management;
+mod signal_handle;
 
 use gio::prelude::*;
 use gtk::prelude::*;
 use gtk::ComboBoxText;
 use gtk::{
-    AboutDialog, Adjustment, Builder, Button, CheckButton, ComboBox, Entry, FileChooser, Label,
-    MenuItem, SpinButton, Window,
+    AboutDialog, Adjustment, Builder, Button, CheckButton, Entry, FileChooser, Label, MenuItem,
+    SpinButton, Window,
 };
 use std::path::Path;
 use std::process::{Command, Stdio};
-
 fn main() {
     if gtk::init().is_err() {
         println!("Failed to initialize GTK.");
@@ -48,6 +48,7 @@ fn main() {
     let mouse_switch: CheckButton = builder.get_object("mouseswitch").unwrap();
     let follow_mouse_switch: CheckButton = builder.get_object("followmouseswitch").unwrap();
     let about_menu_item: MenuItem = builder.get_object("about_menu_item").unwrap();
+
     // --- default properties
     // Windows
     main_window.set_title("Blue Recorder");
@@ -65,7 +66,6 @@ fn main() {
     format_chooser_combobox.append(Some("gif"), "GIF (Graphics Interchange Format)");
     format_chooser_combobox.append(Some("nut"), "NUT (NUT Recording Format)");
     format_chooser_combobox.set_active(Some(0));
-
     // get audio sources
     let sources_descriptions: Vec<String> = {
         let sources_descriptions = String::from_utf8(
@@ -111,6 +111,18 @@ fn main() {
     audio_switch.set_active(config_management::get_bool("default", "audiocheck"));
     mouse_switch.set_active(config_management::get_bool("default", "mousecheck"));
     follow_mouse_switch.set_active(config_management::get_bool("default", "followmousecheck"));
+    video_switch.connect_toggled(|switch: &CheckButton| {
+        config_management::set_bool("default", "videocheck", switch.get_active());
+    });
+    audio_switch.connect_toggled(|switch: &CheckButton| {
+        config_management::set_bool("default", "audiocheck", switch.get_active());
+    });
+    mouse_switch.connect_toggled(|switch: &CheckButton| {
+        config_management::set_bool("default", "mousecheck", switch.get_active());
+    });
+    follow_mouse_switch.connect_toggled(|switch: &CheckButton| {
+        config_management::set_bool("default", "followmousecheck", switch.get_active());
+    });
 
     // About Dialog
     about_menu_item.set_label("about");
@@ -132,6 +144,7 @@ fn main() {
     about_dialog.set_artists(&["Mustapha Assabar"]);
     about_dialog.set_website(Some("https://github.com/xlmnxp/blue-recorder/"));
     about_dialog.set_logo_icon_name(Some("blue-recorder"));
+
     // Buttons
     window_grab_button.set_label("Select a Window");
     area_grab_button.set_label("Select an Area");
@@ -158,6 +171,7 @@ fn main() {
 
     // Other
     folder_chooser.set_uri(&config_management::get("default", "folder"));
+
     // --- connections
     // show dialog window when about button clicked then hide it after close
     {

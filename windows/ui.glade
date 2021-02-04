@@ -424,7 +424,7 @@
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
                     <property name="draw_indicator">True</property>
-                    <signal name="toggled" handler="followmouseswitchchanged" swapped="no"/>
+                    <signal name="toggled" handler="follow_mouse_switch_changed" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
