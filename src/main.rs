@@ -1,17 +1,19 @@
+extern crate gdk;
 extern crate gio;
 extern crate gtk;
 mod config_management;
-mod signal_handle;
 
-use gio::prelude::*;
+// use gio::prelude::*;
+use glib::signal::Inhibit;
 use gtk::prelude::*;
 use gtk::ComboBoxText;
 use gtk::{
-    AboutDialog, Adjustment, Builder, Button, CheckButton, Entry, FileChooser, Label, MenuItem,
-    SpinButton, Window,
+    AboutDialog, Adjustment, Builder, Button, CheckButton, CssProvider, Entry, FileChooser, Label,
+    MenuItem, SpinButton, Window
 };
 use std::path::Path;
 use std::process::{Command, Stdio};
+
 fn main() {
     if gtk::init().is_err() {
         println!("Failed to initialize GTK.");
@@ -20,10 +22,11 @@ fn main() {
     let builder: Builder = Builder::from_file(Path::new("windows/ui.glade"));
 
     config_management::initialize();
+
     // get Objects from UI
     let main_window: Window = builder.get_object("main_window").unwrap();
     let about_dialog: AboutDialog = builder.get_object("about_dialog").unwrap();
-    let area_chooser: Window = builder.get_object("area_chooser_window").unwrap();
+    let area_chooser_window: Window = builder.get_object("area_chooser_window").unwrap();
     let folder_chooser: FileChooser = builder.get_object("filechooser").unwrap();
     let filename_entry: Entry = builder.get_object("filename").unwrap();
     let command_entry: Entry = builder.get_object("command").unwrap();
@@ -50,8 +53,13 @@ fn main() {
     let about_menu_item: MenuItem = builder.get_object("about_menu_item").unwrap();
 
     // --- default properties
+
     // Windows
     main_window.set_title("Blue Recorder");
+    // TODO: make area chooser window transparent
+    area_chooser_window.set_title("Area Chooser");
+    area_chooser_window.set_visual(Some(&gdk::Screen::get_rgba_visual(&gdk::Screen::get_default().unwrap()).unwrap()));
+
     // Entries
     filename_entry.set_placeholder_text(Some("Enter filename"));
     command_entry.set_placeholder_text(Some("Enter your command here"));
@@ -66,6 +74,7 @@ fn main() {
     format_chooser_combobox.append(Some("gif"), "GIF (Graphics Interchange Format)");
     format_chooser_combobox.append(Some("nut"), "NUT (NUT Recording Format)");
     format_chooser_combobox.set_active(Some(0));
+
     // get audio sources
     let sources_descriptions: Vec<String> = {
         let sources_descriptions = String::from_utf8(
@@ -144,6 +153,7 @@ fn main() {
     about_dialog.set_artists(&["Mustapha Assabar"]);
     about_dialog.set_website(Some("https://github.com/xlmnxp/blue-recorder/"));
     about_dialog.set_logo_icon_name(Some("blue-recorder"));
+    about_dialog.set_transient_for(Some(&main_window));
 
     // Buttons
     window_grab_button.set_label("Select a Window");
@@ -174,6 +184,20 @@ fn main() {
 
     // --- connections
     // show dialog window when about button clicked then hide it after close
+
+        // apply css
+        {
+            let provider = CssProvider::new();
+            provider
+                .load_from_data(include_str!("styles/global.css").as_bytes())
+                .unwrap();
+            gtk::StyleContext::add_provider_for_screen(
+                &gdk::Screen::get_default().unwrap(),
+                &provider,
+                gtk::STYLE_PROVIDER_PRIORITY_USER,
+            );
+        }
+
     {
         let about_dialog: AboutDialog = about_dialog.to_owned();
         about_menu_item.connect_activate(move |_| {
@@ -182,9 +206,28 @@ fn main() {
         });
     }
 
+    // Buttons
+    {
+        let area_chooser_window = area_chooser_window.to_owned();
+        area_grab_button.connect_clicked(move |_| {
+            area_chooser_window.show();
+        });
+    }
+
+    // Windows
+    // hide area chooser after it deleted.
+    {
+        let _area_chooser_window = area_chooser_window.to_owned();
+        area_chooser_window.connect_delete_event(move |_, _event: &gdk::Event| {
+            _area_chooser_window.hide();
+            Inhibit(true)
+        });
+    }
+
     // close the application when main window destroy
     main_window.connect_destroy(|_| {
-        std::process::exit(0);
+        gtk::main_quit();
     });
+
     gtk::main();
 }
