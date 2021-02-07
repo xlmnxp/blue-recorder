@@ -9,7 +9,7 @@ use gtk::prelude::*;
 use gtk::ComboBoxText;
 use gtk::{
     AboutDialog, Adjustment, Builder, Button, CheckButton, CssProvider, Entry, FileChooser, Label,
-    MenuItem, SpinButton, Window
+    MenuItem, SpinButton, Window,
 };
 use std::path::Path;
 use std::process::{Command, Stdio};
@@ -34,6 +34,7 @@ fn main() {
     let audio_source_combobox: ComboBoxText = builder.get_object("audiosource").unwrap();
     let record_button: Button = builder.get_object("recordbutton").unwrap();
     let stop_button: Button = builder.get_object("stopbutton").unwrap();
+    let play_button: Button = builder.get_object("playbutton").unwrap();
     let window_grab_button: Button = builder.get_object("window_grab_button").unwrap();
     let area_grab_button: Button = builder.get_object("area_grab_button").unwrap();
     let frames_label: Label = builder.get_object("frames_label").unwrap();
@@ -45,7 +46,6 @@ fn main() {
     let delay_adjustment: Adjustment = builder.get_object("adjustment1").unwrap();
     let frames_adjustment: Adjustment = builder.get_object("adjustment2").unwrap();
     let delay_pref_adjustment: Adjustment = builder.get_object("adjustment3").unwrap();
-    let play_button: Button = builder.get_object("playbutton").unwrap();
     let video_switch: CheckButton = builder.get_object("videoswitch").unwrap();
     let audio_switch: CheckButton = builder.get_object("audioswitch").unwrap();
     let mouse_switch: CheckButton = builder.get_object("mouseswitch").unwrap();
@@ -53,12 +53,13 @@ fn main() {
     let about_menu_item: MenuItem = builder.get_object("about_menu_item").unwrap();
 
     // --- default properties
-
     // Windows
     main_window.set_title("Blue Recorder");
     // TODO: make area chooser window transparent
     area_chooser_window.set_title("Area Chooser");
-    area_chooser_window.set_visual(Some(&gdk::Screen::get_rgba_visual(&gdk::Screen::get_default().unwrap()).unwrap()));
+    area_chooser_window.set_visual(Some(
+        &gdk::Screen::get_rgba_visual(&gdk::Screen::get_default().unwrap()).unwrap(),
+    ));
 
     // Entries
     filename_entry.set_placeholder_text(Some("Enter filename"));
@@ -106,6 +107,7 @@ fn main() {
             .collect()
     };
 
+    audio_source_combobox.append(Some("default"), "Default PulseAudio Input Source");
     for (id, audio_source) in sources_descriptions.iter().enumerate() {
         audio_source_combobox.append(Some(id.to_string().as_str()), audio_source);
     }
@@ -178,26 +180,32 @@ fn main() {
             .parse::<f64>()
             .unwrap(),
     );
+    {
+        let _frames_spin = frames_spin.to_owned();
+        frames_spin.connect_value_changed(move |_| {
+            config_management::set(
+                "default",
+                "frame",
+                _frames_spin.get_value().to_string().as_str(),
+            );
+        });
+    }
+    {
+        let _delay_spin = delay_spin.to_owned();
+        delay_spin.connect_value_changed(move |_| {
+            config_management::set(
+                "default",
+                "delay",
+                _delay_spin.get_value().to_string().as_str(),
+            );
+        });
+    }
 
     // Other
     folder_chooser.set_uri(&config_management::get("default", "folder"));
 
     // --- connections
     // show dialog window when about button clicked then hide it after close
-
-        // apply css
-        {
-            let provider = CssProvider::new();
-            provider
-                .load_from_data(include_str!("styles/global.css").as_bytes())
-                .unwrap();
-            gtk::StyleContext::add_provider_for_screen(
-                &gdk::Screen::get_default().unwrap(),
-                &provider,
-                gtk::STYLE_PROVIDER_PRIORITY_USER,
-            );
-        }
-
     {
         let about_dialog: AboutDialog = about_dialog.to_owned();
         about_menu_item.connect_activate(move |_| {
@@ -228,6 +236,17 @@ fn main() {
     main_window.connect_destroy(|_| {
         gtk::main_quit();
     });
+
+    // apply css
+    let provider = CssProvider::new();
+    provider
+        .load_from_data(include_str!("styles/global.css").as_bytes())
+        .unwrap();
+    gtk::StyleContext::add_provider_for_screen(
+        &gdk::Screen::get_default().unwrap(),
+        &provider,
+        gtk::STYLE_PROVIDER_PRIORITY_USER,
+    );
 
     gtk::main();
 }
