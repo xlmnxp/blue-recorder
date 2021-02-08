@@ -23,6 +23,22 @@ pub fn initialize() -> PathBuf {
     config_path
 }
 
+pub fn merge_previous_version() -> Option<PathBuf> {
+    let config_path: PathBuf = Path::new(&get_user_data_dir().unwrap())
+        .join("blue-recorder")
+        .join("config.ini");
+
+    // return none if config.ini not exists
+    if !&config_path.exists() {
+        return None;
+    }
+
+    let mut config_string: String = String::from_utf8(std::fs::read(&config_path).unwrap()).unwrap();
+    config_string = config_string.replace("Options", "default").replace("True", "1").replace("False", "0");
+    std::fs::write(&config_path, config_string).unwrap();
+    Some(config_path)
+}
+
 fn default() {
     set("default", "frame", "50");
     set("default", "delay", "0");
