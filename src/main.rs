@@ -180,57 +180,47 @@ fn main() {
             .parse::<f64>()
             .unwrap(),
     );
-    {
-        let _frames_spin = frames_spin.to_owned();
-        frames_spin.connect_value_changed(move |_| {
-            config_management::set(
-                "default",
-                "frame",
-                _frames_spin.get_value().to_string().as_str(),
-            );
-        });
-    }
-    {
-        let _delay_spin = delay_spin.to_owned();
-        delay_spin.connect_value_changed(move |_| {
-            config_management::set(
-                "default",
-                "delay",
-                _delay_spin.get_value().to_string().as_str(),
-            );
-        });
-    }
+    let _frames_spin = frames_spin.to_owned();
+    frames_spin.connect_value_changed(move |_| {
+        config_management::set(
+            "default",
+            "frame",
+            _frames_spin.get_value().to_string().as_str(),
+        );
+    });
+    let _delay_spin = delay_spin.to_owned();
+    delay_spin.connect_value_changed(move |_| {
+        config_management::set(
+            "default",
+            "delay",
+            _delay_spin.get_value().to_string().as_str(),
+        );
+    });
 
     // Other
     folder_chooser.set_uri(&config_management::get("default", "folder"));
 
     // --- connections
     // show dialog window when about button clicked then hide it after close
-    {
-        let about_dialog: AboutDialog = about_dialog.to_owned();
-        about_menu_item.connect_activate(move |_| {
-            about_dialog.run();
-            about_dialog.hide();
-        });
-    }
+    let _about_dialog: AboutDialog = about_dialog.to_owned();
+    about_menu_item.connect_activate(move |_| {
+        _about_dialog.run();
+        _about_dialog.hide();
+    });
 
     // Buttons
-    {
-        let area_chooser_window = area_chooser_window.to_owned();
-        area_grab_button.connect_clicked(move |_| {
-            area_chooser_window.show();
-        });
-    }
+    let _area_chooser_window = area_chooser_window.to_owned();
+    area_grab_button.connect_clicked(move |_| {
+        _area_chooser_window.show();
+    });
 
     // Windows
     // hide area chooser after it deleted.
-    {
-        let _area_chooser_window = area_chooser_window.to_owned();
-        area_chooser_window.connect_delete_event(move |_, _event: &gdk::Event| {
-            _area_chooser_window.hide();
-            Inhibit(true)
-        });
-    }
+    let _area_chooser_window = area_chooser_window.to_owned();
+    area_chooser_window.connect_delete_event(move |_, _event: &gdk::Event| {
+        _area_chooser_window.hide();
+        Inhibit(true)
+    });
 
     // close the application when main window destroy
     main_window.connect_destroy(|_| {
@@ -245,7 +235,7 @@ fn main() {
     gtk::StyleContext::add_provider_for_screen(
         &gdk::Screen::get_default().unwrap(),
         &provider,
-        gtk::STYLE_PROVIDER_PRIORITY_USER,
+        gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
     );
 
     gtk::main();
