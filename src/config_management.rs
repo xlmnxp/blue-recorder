@@ -18,12 +18,14 @@ pub fn initialize() -> PathBuf {
         std::fs::create_dir_all(&config_directories).unwrap_or_default();
         std::fs::File::create(&config_path).unwrap();
         default();
+    } else {
+        merge_previous_version();
     }
 
     config_path
 }
 
-pub fn merge_previous_version() -> Option<PathBuf> {
+fn merge_previous_version() -> Option<PathBuf> {
     let config_path: PathBuf = Path::new(&get_user_data_dir().unwrap())
         .join("blue-recorder")
         .join("config.ini");

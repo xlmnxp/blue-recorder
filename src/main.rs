@@ -21,7 +21,6 @@ fn main() {
     }
     let builder: Builder = Builder::from_file(Path::new("windows/ui.glade"));
 
-    config_management::merge_previous_version();
     config_management::initialize();
 
     // get Objects from UI
