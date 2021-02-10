@@ -25,24 +25,8 @@ pub fn initialize() -> PathBuf {
     config_path
 }
 
-fn merge_previous_version() -> Option<PathBuf> {
-    let config_path: PathBuf = Path::new(&get_user_data_dir().unwrap())
-        .join("blue-recorder")
-        .join("config.ini");
-
-    // return none if config.ini not exists
-    if !&config_path.exists() {
-        return None;
-    }
-
-    let mut config_string: String = String::from_utf8(std::fs::read(&config_path).unwrap()).unwrap();
-    config_string = config_string.replace("Options", "default").replace("True", "1").replace("False", "0");
-    std::fs::write(&config_path, config_string).unwrap();
-    Some(config_path)
-}
-
 fn default() {
-    set("default", "frame", "50");
+    set("default", "frame", "60");
     set("default", "delay", "0");
     set(
         "default",
@@ -62,6 +46,22 @@ fn default() {
     set("default", "audiocheck", "1");
     set("default", "mousecheck", "1");
     set("default", "followmousecheck", "0");
+}
+
+fn merge_previous_version() -> Option<PathBuf> {
+    let config_path: PathBuf = Path::new(&get_user_data_dir().unwrap())
+        .join("blue-recorder")
+        .join("config.ini");
+
+    // return none if config.ini not exists
+    if !&config_path.exists() {
+        return None;
+    }
+
+    let mut config_string: String = String::from_utf8(std::fs::read(&config_path).unwrap()).unwrap();
+    config_string = config_string.replace("Options", "default").replace("True", "1").replace("False", "0");
+    std::fs::write(&config_path, config_string).unwrap();
+    Some(config_path)
 }
 
 pub fn get(selection: &str, key: &str) -> String {

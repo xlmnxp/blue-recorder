@@ -2,6 +2,7 @@ extern crate gdk;
 extern crate gio;
 extern crate gtk;
 mod config_management;
+mod ffmpeg_interface;
 
 // use gio::prelude::*;
 use glib::signal::Inhibit;
@@ -11,7 +12,7 @@ use gtk::{
     AboutDialog, Adjustment, Builder, Button, CheckButton, CssProvider, Entry, FileChooser, Label,
     MenuItem, SpinButton, Window,
 };
-use std::path::Path;
+use std::path::{Path,PathBuf};
 use std::process::{Command, Stdio};
 
 fn main() {
@@ -43,9 +44,6 @@ fn main() {
     let frames_spin: SpinButton = builder.get_object("frames").unwrap();
     let delay_spin: SpinButton = builder.get_object("delay").unwrap();
     let audio_source_label: Label = builder.get_object("audio_source_label").unwrap();
-    let delay_adjustment: Adjustment = builder.get_object("adjustment1").unwrap();
-    let frames_adjustment: Adjustment = builder.get_object("adjustment2").unwrap();
-    let delay_pref_adjustment: Adjustment = builder.get_object("adjustment3").unwrap();
     let video_switch: CheckButton = builder.get_object("videoswitch").unwrap();
     let audio_switch: CheckButton = builder.get_object("audioswitch").unwrap();
     let mouse_switch: CheckButton = builder.get_object("mouseswitch").unwrap();
@@ -72,7 +70,8 @@ fn main() {
     format_chooser_combobox.append(Some("avi"), "AVI (Audio Video Interleaved)");
     format_chooser_combobox.append(Some("mp4"), "MP4 (MPEG-4 Part 14)");
     format_chooser_combobox.append(Some("wmv"), "WMV (Windows Media Video)");
-    format_chooser_combobox.append(Some("gif"), "GIF (Graphics Interchange Format)");
+    // TODO: gif not work at this time, fix it!
+    // format_chooser_combobox.append(Some("gif"), "GIF (Graphics Interchange Format)");
     format_chooser_combobox.append(Some("nut"), "NUT (NUT Recording Format)");
     format_chooser_combobox.set_active(Some(0));
 
@@ -212,6 +211,20 @@ fn main() {
     let _area_chooser_window = area_chooser_window.to_owned();
     area_grab_button.connect_clicked(move |_| {
         _area_chooser_window.show();
+    });
+
+    record_button.connect_clicked(move |_| {
+        let record_options = ffmpeg_interface::Ffmpeg {
+            filename: folder_chooser.get_filename().unwrap().join(PathBuf::from(format!("{}.{}", if filename_entry.get_text().to_string().trim().eq("") { filename_entry.get_text().to_string() } else { filename_entry.get_text().to_string().trim().to_string() }, format_chooser_combobox.get_active_id().unwrap().to_string()))),
+            record_video: video_switch.get_active(),
+            record_audio: audio_switch.get_active(),
+            audio_id: audio_source_combobox.get_active_id().unwrap().to_string(),
+            record_mouse: mouse_switch.get_active(),
+            follow_mouse: follow_mouse_switch.get_active(),
+            record_frames: format!("{}", frames_spin.get_value()),
+            record_delay: delay_spin.get_value() as u64
+        };
+        record_options.record(0, 0, 512, 512);
     });
 
     // Windows
