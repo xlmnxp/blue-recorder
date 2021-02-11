@@ -5,14 +5,16 @@ mod config_management;
 mod ffmpeg_interface;
 
 // use gio::prelude::*;
+use std::rc::Rc;
+use std::cell::RefCell;
 use glib::signal::Inhibit;
 use gtk::prelude::*;
 use gtk::ComboBoxText;
 use gtk::{
-    AboutDialog, Adjustment, Builder, Button, CheckButton, CssProvider, Entry, FileChooser, Label,
-    MenuItem, SpinButton, Window,
+    AboutDialog, Builder, Button, CheckButton, CssProvider, Entry, FileChooser, Label, MenuItem,
+    SpinButton, Window,
 };
-use std::path::{Path,PathBuf};
+use std::path::Path;
 use std::process::{Command, Stdio};
 
 fn main() {
@@ -213,18 +215,33 @@ fn main() {
         _area_chooser_window.show();
     });
 
+    // init record struct
+    let ffmpeg_record_interface: Rc<RefCell<ffmpeg_interface::Ffmpeg>> = Rc::new(RefCell::new(ffmpeg_interface::Ffmpeg {
+        filename: (folder_chooser, filename_entry, format_chooser_combobox),
+        record_video: video_switch,
+        record_audio: audio_switch,
+        audio_id: audio_source_combobox,
+        record_mouse: mouse_switch,
+        follow_mouse: follow_mouse_switch,
+        record_frames: frames_spin,
+        record_delay: delay_spin,
+        process_id: None
+    }));
+
+    let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
+
     record_button.connect_clicked(move |_| {
-        let record_options = ffmpeg_interface::Ffmpeg {
-            filename: folder_chooser.get_filename().unwrap().join(PathBuf::from(format!("{}.{}", if filename_entry.get_text().to_string().trim().eq("") { filename_entry.get_text().to_string() } else { filename_entry.get_text().to_string().trim().to_string() }, format_chooser_combobox.get_active_id().unwrap().to_string()))),
-            record_video: video_switch.get_active(),
-            record_audio: audio_switch.get_active(),
-            audio_id: audio_source_combobox.get_active_id().unwrap().to_string(),
-            record_mouse: mouse_switch.get_active(),
-            follow_mouse: follow_mouse_switch.get_active(),
-            record_frames: format!("{}", frames_spin.get_value()),
-            record_delay: delay_spin.get_value() as u64
-        };
-        record_options.record(0, 0, 512, 512);
+        _ffmpeg_record_interface.borrow_mut().start_record(0, 0, 512, 512);
+    });
+
+    let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
+    stop_button.connect_clicked(move |_| {
+        _ffmpeg_record_interface.borrow_mut().clone().stop_record();
+    });
+
+    let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
+    play_button.connect_clicked(move |_| {
+        _ffmpeg_record_interface.borrow_mut().clone().play_record();
     });
 
     // Windows
