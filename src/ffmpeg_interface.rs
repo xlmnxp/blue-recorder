@@ -1,8 +1,12 @@
+use gtk::{
+    CheckButton, ComboBoxExt, ComboBoxText, Entry, EntryExt, FileChooser, FileChooserExt,
+    SpinButton, SpinButtonExt, ToggleButtonExt,
+};
 use std::path::PathBuf;
 use std::process::Command;
 use std::thread::sleep;
 use std::time::Duration;
-use gtk::{CheckButton, SpinButton, ComboBoxText, FileChooser, Entry, ToggleButtonExt, SpinButtonExt, ComboBoxExt, FileChooserExt, EntryExt};
+use chrono::prelude::*;
 
 #[derive(Clone)]
 pub struct Ffmpeg {
@@ -14,13 +18,17 @@ pub struct Ffmpeg {
     pub follow_mouse: CheckButton,
     pub record_frames: SpinButton,
     pub record_delay: SpinButton,
-    pub process_id: Option<u32>
+    pub process_id: Option<u32>,
+    pub saved_filename: Option<String>,
 }
 
 impl Ffmpeg {
-    pub fn start_record(&mut self, x: i16, y: i16, width: i16, height: i16) -> u32 {
+    pub fn start_record(&mut self, x: u16, y: u16, width: u16, height: u16) -> u32 {
         if self.process_id.is_some() {
-            Command::new("kill").arg(format!("{}", self.process_id.unwrap())).output().unwrap();
+            Command::new("kill")
+                .arg(format!("{}", self.process_id.unwrap()))
+                .output()
+                .unwrap();
         }
 
         let mut ffmpeg_command: Command = Command::new("ffmpeg");
@@ -32,9 +40,11 @@ impl Ffmpeg {
         }
 
         // if show mouse switch is enabled, draw the mouse to video
+        ffmpeg_command.arg("-draw_mouse");
         if self.record_mouse.get_active() {
-            ffmpeg_command.arg("-draw_mouse");
             ffmpeg_command.arg("1");
+        } else {
+            ffmpeg_command.arg("0");
         }
 
         // if follow mouse switch is enabled, follow the mouse
@@ -64,23 +74,30 @@ impl Ffmpeg {
             ffmpeg_command.arg("-strict");
             ffmpeg_command.arg("-2");
         }
+
         ffmpeg_command.arg("-q");
         ffmpeg_command.arg("1");
 
+        self.saved_filename = Some(
+            self.filename
+                .0
+                .get_filename()
+                .unwrap()
+                .join(PathBuf::from(format!(
+                    "{}.{}",
+                    if self.filename.1.get_text().to_string().trim().eq("") {
+                        Utc::now().to_string()
+                    } else {
+                        self.filename.1.get_text().to_string().trim().to_string()
+                    },
+                    self.filename.2.get_active_id().unwrap().to_string()
+                )))
+                .as_path()
+                .display()
+                .to_string(),
+        );
 
-        ffmpeg_command.arg({
-            self.filename.0.get_filename()
-            .unwrap()
-            .join(PathBuf::from(format!(
-                "{}.{}",
-                if self.filename.1.get_text().to_string().trim().eq("") {
-                    self.filename.1.get_text().to_string()
-                } else {
-                    self.filename.1.get_text().to_string().trim().to_string()
-                },
-                self.filename.2.get_active_id().unwrap().to_string()
-            )))
-        });
+        ffmpeg_command.arg(self.saved_filename.as_ref().unwrap());
         ffmpeg_command.arg("-y");
 
         // sleep for delay
@@ -88,29 +105,23 @@ impl Ffmpeg {
 
         // start recording and return the process id
         self.process_id = Some(ffmpeg_command.spawn().unwrap().id());
-        println!("{}", self.process_id.unwrap());  
+        println!("{}", self.process_id.unwrap());
         self.process_id.unwrap()
     }
 
     pub fn stop_record(self) {
         if self.process_id.is_some() {
-            Command::new("kill").arg(format!("{}", self.process_id.unwrap())).output().unwrap();
+            Command::new("kill")
+                .arg(format!("{}", self.process_id.unwrap()))
+                .output()
+                .unwrap();
         }
     }
 
     pub fn play_record(self) {
-        Command::new("xdg-open").arg({
-            self.filename.0.get_filename()
-            .unwrap()
-            .join(PathBuf::from(format!(
-                "{}.{}",
-                if self.filename.1.get_text().to_string().trim().eq("") {
-                    self.filename.1.get_text().to_string()
-                } else {
-                    self.filename.1.get_text().to_string().trim().to_string()
-                },
-                self.filename.2.get_active_id().unwrap().to_string()
-            )))
-        }).output().unwrap();
+        if self.saved_filename.is_some() {
+            Command::new("xdg-open")
+                .arg(self.saved_filename.unwrap()).spawn().unwrap();
+        }
     }
 }

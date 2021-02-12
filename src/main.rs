@@ -3,6 +3,7 @@ extern crate gio;
 extern crate gtk;
 mod config_management;
 mod ffmpeg_interface;
+mod area_capture;
 
 // use gio::prelude::*;
 use std::rc::Rc;
@@ -12,12 +13,15 @@ use gtk::prelude::*;
 use gtk::ComboBoxText;
 use gtk::{
     AboutDialog, Builder, Button, CheckButton, CssProvider, Entry, FileChooser, Label, MenuItem,
-    SpinButton, Window,
+    SpinButton, Window
 };
 use std::path::Path;
 use std::process::{Command, Stdio};
 
 fn main() {
+    // use "GDK_BACKEND=x11" to make xwininfo work in Wayland by using XWayland
+    std::env::set_var("GDK_BACKEND", "x11");
+
     if gtk::init().is_err() {
         println!("Failed to initialize GTK.");
         return;
@@ -40,6 +44,7 @@ fn main() {
     let play_button: Button = builder.get_object("playbutton").unwrap();
     let window_grab_button: Button = builder.get_object("window_grab_button").unwrap();
     let area_grab_button: Button = builder.get_object("area_grab_button").unwrap();
+    let area_set_button: Button = builder.get_object("area_set_button").unwrap();
     let frames_label: Label = builder.get_object("frames_label").unwrap();
     let delay_label: Label = builder.get_object("delay_label").unwrap();
     let command_label: Label = builder.get_object("command_label").unwrap();
@@ -210,9 +215,23 @@ fn main() {
     });
 
     // Buttons
-    let _area_chooser_window = area_chooser_window.to_owned();
+    let area_capture: Rc<RefCell<area_capture::AreaCapture>> = Rc::new(RefCell::new(area_capture::AreaCapture::new()));
+    let mut _area_capture = area_capture.clone();
+    window_grab_button.connect_clicked(move |_| {
+        _area_capture.borrow_mut().get_area();
+    });
+
+    let _area_chooser_window = area_chooser_window.clone();
+    let mut _area_capture = area_capture.clone();
     area_grab_button.connect_clicked(move |_| {
         _area_chooser_window.show();
+    });
+
+    let _area_chooser_window = area_chooser_window.clone();
+    let mut _area_capture = area_capture.clone();
+    area_set_button.connect_clicked(move |_| {
+        _area_capture.borrow_mut().get_window_by_name("Area Chooser");
+        _area_chooser_window.hide();
     });
 
     // init record struct
@@ -225,13 +244,15 @@ fn main() {
         follow_mouse: follow_mouse_switch,
         record_frames: frames_spin,
         record_delay: delay_spin,
-        process_id: None
+        process_id: None,
+        saved_filename: None
     }));
 
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
-
+    let mut _area_capture = area_capture.clone();
     record_button.connect_clicked(move |_| {
-        _ffmpeg_record_interface.borrow_mut().start_record(0, 0, 512, 512);
+        let _area_capture = _area_capture.borrow_mut().clone();
+        _ffmpeg_record_interface.borrow_mut().start_record(_area_capture.x, _area_capture.y, _area_capture.width, _area_capture.height);
     });
 
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
@@ -246,14 +267,17 @@ fn main() {
 
     // Windows
     // hide area chooser after it deleted.
-    let _area_chooser_window = area_chooser_window.to_owned();
+    let _area_chooser_window = area_chooser_window.clone();
     area_chooser_window.connect_delete_event(move |_, _event: &gdk::Event| {
         _area_chooser_window.hide();
         Inhibit(true)
     });
 
     // close the application when main window destroy
-    main_window.connect_destroy(|_| {
+    let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
+    main_window.connect_destroy(move |_| {
+        // stop recording before close the application
+        _ffmpeg_record_interface.borrow_mut().clone().stop_record();
         gtk::main_quit();
     });
 
