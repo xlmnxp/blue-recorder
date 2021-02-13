@@ -12,6 +12,7 @@ glib = "0.10.3"
 rust-ini = "0.16"
 regex = "1.4.3"
 chrono = "0.4.19"
+libappindicator = "0.5.2"
 
 [dependencies.gtk]
 version = "0.9.0"

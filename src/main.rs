@@ -1,6 +1,7 @@
 extern crate gdk;
 extern crate gio;
 extern crate gtk;
+extern crate libappindicator;
 mod config_management;
 mod ffmpeg_interface;
 mod area_capture;
@@ -17,15 +18,16 @@ use gtk::{
 };
 use std::path::Path;
 use std::process::{Command, Stdio};
+use libappindicator::{AppIndicator, AppIndicatorStatus};
 
 fn main() {
     // use "GDK_BACKEND=x11" to make xwininfo work in Wayland by using XWayland
     std::env::set_var("GDK_BACKEND", "x11");
-
     if gtk::init().is_err() {
         println!("Failed to initialize GTK.");
         return;
     }
+
     let builder: Builder = Builder::from_file(Path::new("windows/ui.glade"));
 
     config_management::initialize();
@@ -248,16 +250,37 @@ fn main() {
         saved_filename: None
     }));
 
+    // App Indicator
+    let indicator = Rc::new(RefCell::new(AppIndicator::new("Blue Recorder", std::fs::canonicalize(Path::new("data/blue-recorder.png")).unwrap().to_str().unwrap())));
+    indicator.clone().borrow_mut().set_status(AppIndicatorStatus::Passive);
+    let mut menu = gtk::Menu::new();
+    let indicator_stop_recording = gtk::MenuItem::with_label("stop recording");
+    menu.append(&indicator_stop_recording);
+    menu.show_all();
+    indicator.clone().borrow_mut().set_menu(&mut menu);
+    
+    // when indictor stop recording button clicked
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
-    let mut _area_capture = area_capture.clone();
-    record_button.connect_clicked(move |_| {
-        let _area_capture = _area_capture.borrow_mut().clone();
-        _ffmpeg_record_interface.borrow_mut().start_record(_area_capture.x, _area_capture.y, _area_capture.width, _area_capture.height);
+    let mut _indicator = indicator.clone();
+    indicator_stop_recording.connect_activate(move |_| {
+        _ffmpeg_record_interface.borrow_mut().clone().stop_record();
+        _indicator.borrow_mut().set_status(AppIndicatorStatus::Passive);
     });
 
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
+    let mut _area_capture = area_capture.clone();
+    let mut _indicator = indicator.clone();
+    record_button.connect_clicked(move |_| {
+        let _area_capture = _area_capture.borrow_mut().clone();
+        _ffmpeg_record_interface.borrow_mut().start_record(_area_capture.x, _area_capture.y, _area_capture.width, _area_capture.height);
+        _indicator.borrow_mut().set_status(AppIndicatorStatus::Active);
+    });
+
+    let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
+    let mut _indicator = indicator.clone();
     stop_button.connect_clicked(move |_| {
         _ffmpeg_record_interface.borrow_mut().clone().stop_record();
+        _indicator.borrow_mut().set_status(AppIndicatorStatus::Passive);
     });
 
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
@@ -275,9 +298,11 @@ fn main() {
 
     // close the application when main window destroy
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
+    let mut _indicator = indicator.clone();
     main_window.connect_destroy(move |_| {
         // stop recording before close the application
         _ffmpeg_record_interface.borrow_mut().clone().stop_record();
+        _indicator.borrow_mut().set_status(AppIndicatorStatus::Passive);
         gtk::main_quit();
     });
 
