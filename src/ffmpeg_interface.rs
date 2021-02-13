@@ -105,7 +105,6 @@ impl Ffmpeg {
 
         // start recording and return the process id
         self.process_id = Some(ffmpeg_command.spawn().unwrap().id());
-        println!("{}", self.process_id.unwrap());
         self.process_id.unwrap()
     }
 

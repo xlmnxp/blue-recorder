@@ -13,11 +13,15 @@ pub struct AreaCapture {
 
 impl AreaCapture {
     pub fn new() -> AreaCapture {
+        let coordinate = xwininfo_to_coordinate(
+            String::from_utf8(Command::new("xwininfo").arg("-root").output().unwrap().stdout).unwrap()
+        );
+
         AreaCapture {
-            x: 0,
-            y: 0,
-            width: 0,
-            height: 0,
+            x: coordinate.0,
+            y: coordinate.1,
+            width: coordinate.2,
+            height: coordinate.3,
         }
     }
 
