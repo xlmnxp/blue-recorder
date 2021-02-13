@@ -86,7 +86,7 @@ impl Ffmpeg {
                 .join(PathBuf::from(format!(
                     "{}.{}",
                     if self.filename.1.get_text().to_string().trim().eq("") {
-                        Utc::now().to_string()
+                        Utc::now().to_string().replace(" UTC", "")
                     } else {
                         self.filename.1.get_text().to_string().trim().to_string()
                     },
