@@ -2,7 +2,6 @@
 # Copyright (C) 2017, FOSS Project
 # This file is distributed under the same license as the Blue Recorder package.
 # M.Hanny Sabbagh <mhsabbagh@outlook.com>, 2017
-# Polskie tłumaczenie programu Blue Recorder.
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
@@ -18,130 +17,98 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
 
-#: blue-recorder:338 blue-recorder:358
 msgid "Blue Recorder"
 msgstr "Blue Recorder"
 
-#: blue-recorder:339
 msgid "AreaChooser"
 msgstr ""
 
-#: blue-recorder:340
 msgid "Blue Recorder Preferences"
 msgstr "Preferencje programu Blue Recorder"
 
-#: blue-recorder:342 blue-recorder:345
 msgid "File Name (Will be overwritten).."
 msgstr "Nazwa pliku (zostanie nadpisany).."
 
-#: blue-recorder:343 blue-recorder:344
 msgid "Enter your command here.."
 msgstr "Wpisz tu swoje polecenie.."
 
-#: blue-recorder:346
 msgid "MKV (Matroska multimedia container format)"
 msgstr "MKV (format pojemnika na multimedia Matroska)"
 
-#: blue-recorder:347
 msgid "AVI (Audio Video Interleaved)"
 msgstr "AVI (Audio Video Interleaved)"
 
-#: blue-recorder:348
 msgid "MP4 (MPEG-4 Part 14)"
 msgstr "MP4 (MPEG-4 część 14)"
 
-#: blue-recorder:349
 msgid "WMV (Windows Media Video)"
 msgstr "WMV (Windows Media Video)"
 
-#: blue-recorder:350
 msgid "GIF (Graphics Interchange Format)"
 msgstr "GIF (Graphics Interchange Format)"
 
-#: blue-recorder:351
 msgid "NUT (NUT Recording Format)"
 msgstr "NUT (format nagrywania NUT)"
 
-#: blue-recorder:353 blue-recorder:380
 msgid "Record Video"
 msgstr "Nagraj wideo"
 
-#: blue-recorder:354 blue-recorder:381
 msgid "Record Audio"
 msgstr "Nagraj dźwięk"
 
-#: blue-recorder:355
 msgid "Show Mouse"
 msgstr "Pokaż kursor"
 
-#: blue-recorder:356 blue-recorder:383
 msgid "Follow Mouse"
 msgstr "Podążaj za myszą"
 
-#: blue-recorder:363
 msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
 msgstr "Prosta nagrywarka pulpitu dla Linuksa. Wspiera Wayland i Xorg."
 
-#: blue-recorder:369
 msgid "Select a Window"
 msgstr "Wybierz okno"
 
-#: blue-recorder:370
 msgid "Select an Area"
 msgstr "Wybierz obszar"
 
-#: blue-recorder:371
 msgid "Frames:"
 msgstr "Ramki na sekundę:"
 
-#: blue-recorder:372
 msgid "Delay:"
 msgstr "Opóźnienie:"
 
-#: blue-recorder:373
 msgid "Run Command After Recording:"
 msgstr "Uruchom polecenie po nagrywaniu:"
 
-#: blue-recorder:374
 msgid "Default frames:"
 msgstr "Domyślne ramki na sekundę:"
 
-#: blue-recorder:375
 msgid "Default delay:"
 msgstr "Domyślne opóźnienie:"
 
-#: blue-recorder:376
 msgid "Default folder:"
 msgstr "Domyślny katalog:"
 
-#: blue-recorder:377
 msgid "Default pipeline:"
 msgstr "Domyślny kanał transportu:"
 
-#: blue-recorder:378
 msgid "Default command:"
 msgstr "Domyślna komenda:"
 
-#: blue-recorder:379
 msgid "Audio Input Source:"
 msgstr "Źródło dźwięku:"
 
-#: blue-recorder:382
 msgid "Record Mouse"
 msgstr "Nagrywaj kursor"
 
-#: blue-recorder:384
 msgid "Default filename:"
 msgstr "Domyślna nazwa pliku:"
 
-#: blue-recorder:385
 msgid "If you want, you can:"
 msgstr "Jeśli chcesz, możesz:"
 
-#: blue-recorder:415
 msgid "Default PulseAudio Input Source"
 msgstr "Domyślne źródło PulseAudio"
 
-#: blue-recorder:472
 msgid "Area Chooser"
 msgstr "Wybór obszaru"

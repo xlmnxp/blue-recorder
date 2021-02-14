@@ -1,4 +1,3 @@
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
@@ -11,7 +10,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: ./blue-recorder:91
 msgid ""
 "There seems to be a problem in recording. Try running 'blue-recorder' from "
 "the command line to see the issue."
@@ -19,19 +17,15 @@ msgstr ""
 "Похоже, при записи возникла проблема. Попробуйте запустить 'blue-recorder' "
 "из командной строки, чтобы узнать больше деталей."
 
-#: ./blue-recorder:106
 msgid "Stop Recording"
 msgstr "Остановить запись"
 
-#: ./blue-recorder:172
 msgid "Recording has started!"
 msgstr "Запись начата!"
 
-#: ./blue-recorder:235 ./blue-recorder:241
 msgid "Recording has stopped!"
 msgstr "Запись остановлена!"
 
-#: ./blue-recorder:258
 msgid ""
 "Your GIF image is currently being processed, this may take a while according"
 " to your PC's resources."
@@ -39,115 +33,88 @@ msgstr ""
 "Создание GIF-анимации в процессе. Это может занять некоторое время, в "
 "зависимости от имеющихся ресурсов вашего компьютера."
 
-#: ./blue-recorder:278
 msgid "File already exists!"
 msgstr "Файл уже существует!"
 
-#: ./blue-recorder:286
 msgid "Would you like to overwrite this file?"
 msgstr "Вы хотите перезаписать этот файл?"
 
-#: ./blue-recorder:324
 msgid "Sorry Jim, looks like you are using something we don't support"
 msgstr ""
 "Прости, Вася, похоже, что ты пользуешься чем-то, что мы пока не "
 "поддерживаем."
 
-#: ./blue-recorder:374
 msgid "About"
 msgstr "О программе"
 
-#: ./blue-recorder:379 ./blue-recorder:397
 msgid "Blue Recorder"
 msgstr ""
 
-#: ./blue-recorder:380
 msgid "AreaChooser"
 msgstr "Выбираем область"
 
-#: ./blue-recorder:383
 msgid "File Name.."
 msgstr "Имя файла"
 
-#: ./blue-recorder:384
 msgid "Enter your command here.."
 msgstr "Введите вашу команду здесь"
 
-#: ./blue-recorder:385
 msgid "MKV (Matroska multimedia container format)"
 msgstr ""
 
-#: ./blue-recorder:386
 msgid "AVI (Audio Video Interleaved)"
 msgstr ""
 
-#: ./blue-recorder:387
 msgid "MP4 (MPEG-4 Part 14)"
 msgstr ""
 
-#: ./blue-recorder:388
 msgid "WMV (Windows Media Video)"
 msgstr ""
 
-#: ./blue-recorder:389
 msgid "GIF (Graphics Interchange Format)"
 msgstr ""
 
-#: ./blue-recorder:390
 msgid "NUT (NUT Recording Format)"
 msgstr ""
 
-#: ./blue-recorder:392
 msgid "Record Video"
 msgstr "Записывать видео"
 
-#: ./blue-recorder:393
 msgid "Record Audio"
 msgstr "Записывать аудио"
 
-#: ./blue-recorder:394
 msgid "Show Mouse"
 msgstr "Записывать курсор"
 
-#: ./blue-recorder:395
 msgid "Follow Mouse"
 msgstr "Следовать за курсором"
 
-#: ./blue-recorder:402
 msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
 msgstr ""
 "Простой инструмент записи рабочего стола для Linux. С поддержкой Wayland и "
 "Xorg."
 
-#: ./blue-recorder:407
 msgid "Select a Window"
 msgstr "Выбрать окно"
 
-#: ./blue-recorder:408
 msgid "Select an Area"
 msgstr "Выбрать область"
 
-#: ./blue-recorder:409
 msgid "Frames:"
 msgstr "Кадров/сек:"
 
-#: ./blue-recorder:410
 msgid "Delay:"
 msgstr "Задержка:"
 
-#: ./blue-recorder:411
 msgid "Run Command After Recording:"
 msgstr "После записи выполнить команду:"
 
-#: ./blue-recorder:412
 msgid "Audio Input Source:"
 msgstr "Источник входного аудио-сигнала:"
 
-#: ./blue-recorder:428
 msgid "Default PulseAudio Input Source"
 msgstr "Источник входного сигнала PulseAudio по умолчанию"
 
-#: ./blue-recorder:456
 msgid ""
 "You didn't run the program using the application icon (desktop file). This "
 "will cause the program not to work. Run it using the icon from the menus "
@@ -158,14 +125,11 @@ msgstr ""
 "ярлык. (Необходимо предварительно экспортировать в окружение "
 "GDK_BACKEND=x11)"
 
-#: ./blue-recorder:476
 msgid "Your window position has been saved!"
 msgstr "Позиция окна сохранена!"
 
-#: ./blue-recorder:479
 msgid "Area Chooser"
 msgstr "Выбираем область"
 
-#: ./blue-recorder:501
 msgid "Your area position has been saved!"
 msgstr "Позиция области сохранена!"

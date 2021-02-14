@@ -2,7 +2,6 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
@@ -18,126 +17,101 @@ msgstr ""
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
 "Language: ar\n"
 
-#: blue-recorder:328 blue-recorder:348
 msgid "Blue Recorder"
 msgstr "المسجّل الأزرق"
 
-#: blue-recorder:329
 msgid "AreaChooser"
 msgstr "محدد المنطقة"
 
-#: blue-recorder:330
 msgid "Blue Recorder Preferences"
 msgstr "تفضيلات المسجّل الأزرق"
 
-#: blue-recorder:332 blue-recorder:335
 msgid "File Name (Will be overwritten).."
 msgstr "اسم الملف (سيتم الكتابة فوقه)"
 
-#: blue-recorder:333 blue-recorder:334
 msgid "Enter your command here.."
 msgstr "قم بإدخال الأمر هنا"
 
-#: blue-recorder:336
 msgid "MKV (Matroska multimedia container format)"
 msgstr "MKV (Matroska multimedia container format)"
 
-#: blue-recorder:337
 msgid "AVI (Audio Video Interleaved)"
 msgstr "AVI (Audio Video Interleaved)"
 
-#: blue-recorder:338
 msgid "MP4 (MPEG-4 Part 14)"
 msgstr "MP4 (MPEG-4 Part 14)"
 
-#: blue-recorder:339
 msgid "WMV (Windows Media Video)"
 msgstr "WMV (Windows Media Video)"
 
-#: blue-recorder:340
 msgid "NUT (NUT Recording Format)"
 msgstr "NUT (NUT Recording Format)"
 
-#: blue-recorder:341
 msgid "GIF (Graphics Interchange Format)"
 msgstr "GIF (Graphics Interchange Format)"
 
-#: blue-recorder:343 blue-recorder:370
 msgid "Record Video"
 msgstr "تسجيل الفيديو"
 
-#: blue-recorder:344 blue-recorder:371
 msgid "Record Audio"
 msgstr "تسجيل الصوت"
 
-#: blue-recorder:345
 msgid "Show Mouse"
 msgstr "إظهار الفأرة"
 
-#: blue-recorder:346 blue-recorder:373
 msgid "Follow Mouse"
 msgstr "متابعة الفأرة"
 
-#: blue-recorder:353
 msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
 msgstr "مسجّل شاشة بسيط لسطح مكتب لينكس، يدعم إكس ووايلاند."
 
-#: blue-recorder:359
 msgid "Select a Window"
 msgstr "اختر نافذة"
 
-#: blue-recorder:360
 msgid "Select an Area"
 msgstr "حدد منطقة"
 
-#: blue-recorder:361
 msgid "Frames:"
 msgstr "الإطارات:"
 
-#: blue-recorder:362
 msgid "Delay:"
 msgstr "التأخير:"
 
-#: blue-recorder:363
 msgid "Run Command After Recording:"
 msgstr "تشغيل أمر عند الانتهاء:"
 
-#: blue-recorder:364
 msgid "Default frames:"
 msgstr "عدد الإطارات الافتراضي:"
 
-#: blue-recorder:365
 msgid "Default delay:"
 msgstr "التأخير الافتراضي:"
 
-#: blue-recorder:366
 msgid "Default folder:"
 msgstr "المجلّد الافتراضي:"
 
-#: blue-recorder:367
 msgid "Default pipeline:"
 msgstr "أنبوب وايلاند الافتراضي:"
 
-#: blue-recorder:368
 msgid "Default command:"
 msgstr "تشغيل أمر عند الانتهاء:"
 
-#: blue-recorder:369
 msgid "Audio Input Source:"
 msgstr "مدخل الصوت:"
 
-#: blue-recorder:372
 msgid "Record Mouse"
 msgstr "تسجيل الفأرة"
 
-#: blue-recorder:374
 msgid "Default filename:"
 msgstr "اسم الملفّ الافتراضي:"
 
-#: blue-recorder:404
 msgid "Default PulseAudio Input Source"
 msgstr "مصدر صوت PulseAudio الافتراضي"
 
-#: blue-recorder:458
 msgid "Area Chooser"
 msgstr "محدد المنطقة"
+
+msgid "Your area position has been saved!"
+msgstr "احداثيات المنطقة المحددة حفظت"
+
+msgid "stop recording"
+msgstr "ايقاف التسجيل"

@@ -2,7 +2,6 @@
 # Copyright (C) 2017, FOSS Project
 # This file is distributed under the same license as the Blue Recorder package.
 # M.Hanny Sabbagh <mhsabbagh@outlook.com>, 2017
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
@@ -18,130 +17,98 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Language: es\n"
 
-#: blue-recorder:338 blue-recorder:358
 msgid "Blue Recorder"
 msgstr "Blue Recorder"
 
-#: blue-recorder:339
 msgid "AreaChooser"
 msgstr "Selector de área"
 
-#: blue-recorder:340
 msgid "Blue Recorder Preferences"
 msgstr "Preferencias de Blue Recorder"
 
-#: blue-recorder:342 blue-recorder:345
 msgid "File Name (Will be overwritten).."
 msgstr "Nombre de archivo (se sobrescribirá)…"
 
-#: blue-recorder:343 blue-recorder:344
 msgid "Enter your command here.."
 msgstr "Escriba aquí su orden…"
 
-#: blue-recorder:346
 msgid "MKV (Matroska multimedia container format)"
 msgstr "MKV (formato de contenedores multimedia Matroska)"
 
-#: blue-recorder:347
 msgid "AVI (Audio Video Interleaved)"
 msgstr "AVI (audio y vídeo intercalados)"
 
-#: blue-recorder:348
 msgid "MP4 (MPEG-4 Part 14)"
 msgstr "MP4 (MPEG-4 parte 14)"
 
-#: blue-recorder:349
 msgid "WMV (Windows Media Video)"
 msgstr "WMV (vídeo de Windows Media)"
 
-#: blue-recorder:350
 msgid "GIF (Graphics Interchange Format)"
 msgstr "GIF (formato de intercambio de gráficos)"
 
-#: blue-recorder:351
 msgid "NUT (NUT Recording Format)"
 msgstr "NUT (formato de grabación NUT)"
 
-#: blue-recorder:353 blue-recorder:380
 msgid "Record Video"
 msgstr "Grabar vídeo"
 
-#: blue-recorder:354 blue-recorder:381
 msgid "Record Audio"
 msgstr "Grabar audio"
 
-#: blue-recorder:355
 msgid "Show Mouse"
 msgstr "Mostrar el ratón"
 
-#: blue-recorder:356 blue-recorder:383
 msgid "Follow Mouse"
 msgstr "Seguir el ratón"
 
-#: blue-recorder:363
 msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
 msgstr "Grabadora de pantalla sencilla para equipos Linux. Admite Wayland y X.org."
 
-#: blue-recorder:369
 msgid "Select a Window"
 msgstr "Seleccionar una ventana"
 
-#: blue-recorder:370
 msgid "Select an Area"
 msgstr "Seleccionar un área"
 
-#: blue-recorder:371
 msgid "Frames:"
 msgstr "Fotogramas:"
 
-#: blue-recorder:372
 msgid "Delay:"
 msgstr "Retardo:"
 
-#: blue-recorder:373
 msgid "Run Command After Recording:"
 msgstr "Ejecutar una orden tras grabar:"
 
-#: blue-recorder:374
 msgid "Default frames:"
 msgstr "Fotogramas predeterminados:"
 
-#: blue-recorder:375
 msgid "Default delay:"
 msgstr "Retardo predeterminado:"
 
-#: blue-recorder:376
 msgid "Default folder:"
 msgstr "Carpeta predeterminada:"
 
-#: blue-recorder:377
 msgid "Default pipeline:"
 msgstr "Canalización predeterminada:"
 
-#: blue-recorder:378
 msgid "Default command:"
 msgstr "Orden predeterminada:"
 
-#: blue-recorder:379
 msgid "Audio Input Source:"
 msgstr "Origen de entrada de audio:"
 
-#: blue-recorder:382
 msgid "Record Mouse"
 msgstr "Grabar el ratón"
 
-#: blue-recorder:384
 msgid "Default filename:"
 msgstr "Nombre de archivo predeterminado:"
 
-#: blue-recorder:385
 msgid "If you want, you can:"
 msgstr "Si lo desea, puede:"
 
-#: blue-recorder:415
 msgid "Default PulseAudio Input Source"
 msgstr "Origen de entrada PulseAudio predeterminado"
 
-#: blue-recorder:472
 msgid "Area Chooser"
 msgstr "Selector de área"

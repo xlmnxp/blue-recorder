@@ -2,7 +2,6 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
@@ -18,126 +17,95 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Language: nl_NL\n"
 
-#: blue-recorder:328 blue-recorder:348
 msgid "Blue Recorder"
 msgstr "Blue Recorder"
 
-#: blue-recorder:329
 msgid "AreaChooser"
 msgstr "Gebiedskiezer"
 
-#: blue-recorder:330
 msgid "Blue Recorder Preferences"
 msgstr "Blue Recorder-voorkeuren"
 
-#: blue-recorder:332 blue-recorder:335
 msgid "File Name (Will be overwritten).."
 msgstr "Bestandsnaam (zal worden overschreven).."
 
-#: blue-recorder:333 blue-recorder:334
 msgid "Enter your command here.."
 msgstr "Voer hier uw opdracht in.."
 
-#: blue-recorder:336
 msgid "MKV (Matroska multimedia container format)"
 msgstr "MKV (Matroska multimedia container-formaat)"
 
-#: blue-recorder:337
 msgid "AVI (Audio Video Interleaved)"
 msgstr "AVI (Audio Video Interleaved)"
 
-#: blue-recorder:338
 msgid "MP4 (MPEG-4 Part 14)"
 msgstr "MP4 (MPEG-4 Part 14)"
 
-#: blue-recorder:339
 msgid "WMV (Windows Media Video)"
 msgstr "WMV (Windows Media Video)"
 
-#: blue-recorder:340
 msgid "NUT (NUT Recording Format)"
 msgstr "NUT (NUT-opnameformaat)"
 
-#: blue-recorder:341
 msgid "GIF (Graphics Interchange Format)"
 msgstr "GIF (Graphics Interchange Format)"
 
-#: blue-recorder:343 blue-recorder:370
 msgid "Record Video"
 msgstr "Video opnemen"
 
-#: blue-recorder:344 blue-recorder:371
 msgid "Record Audio"
 msgstr "Audio opnemen"
 
-#: blue-recorder:345
 msgid "Show Mouse"
 msgstr "Cursor weergeven"
 
-#: blue-recorder:346 blue-recorder:373
 msgid "Follow Mouse"
 msgstr "Cursor volgen"
 
-#: blue-recorder:353
 msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
 msgstr "Een eenvoudige schermopname-app voor Linux. Ondersteunt Wayland en Xorg."
 
-#: blue-recorder:359
 msgid "Select a Window"
 msgstr "Venster selecteren"
 
-#: blue-recorder:360
 msgid "Select an Area"
 msgstr "Gebied selecteren"
 
-#: blue-recorder:361
 msgid "Frames:"
 msgstr "Frames:"
 
-#: blue-recorder:362
 msgid "Delay:"
 msgstr "Vertraging:"
 
-#: blue-recorder:363
 msgid "Run Command After Recording:"
 msgstr "Opdracht uitvoeren na opname:"
 
-#: blue-recorder:364
 msgid "Default frames:"
 msgstr "Standaard aantal frames:"
 
-#: blue-recorder:365
 msgid "Default delay:"
 msgstr "Standaard vertraging:"
 
-#: blue-recorder:366
 msgid "Default folder:"
 msgstr "Standaard map:"
 
-#: blue-recorder:367
 msgid "Default pipeline:"
 msgstr "Standaard doorvoerlijn:"
 
-#: blue-recorder:368
 msgid "Default command:"
 msgstr "Standaard opdracht:"
 
-#: blue-recorder:369
 msgid "Audio Input Source:"
 msgstr "Audio-invoerbron:"
 
-#: blue-recorder:372
 msgid "Record Mouse"
 msgstr "Cursor opnemen"
 
-#: blue-recorder:374
 msgid "Default filename:"
 msgstr "Standaard bestandsnaam:"
 
-#: blue-recorder:404
 msgid "Default PulseAudio Input Source"
 msgstr "Standaard PulseAudio-invoerbron"
 
-#: blue-recorder:458
 msgid "Area Chooser"
 msgstr "Gebiedskiezer"
