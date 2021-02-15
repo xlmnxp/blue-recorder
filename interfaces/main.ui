@@ -148,7 +148,6 @@
             <property name="receives_default">True</property>
             <property name="relief">half</property>
             <property name="always_show_image">True</property>
-            <signal name="clicked" handler="recordclicked" swapped="no"/>
             <child>
               <object class="GtkGrid">
                 <property name="visible">True</property>
@@ -187,7 +186,6 @@
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="relief">none</property>
-            <signal name="clicked" handler="stoprecordingclicked" swapped="no"/>
             <child>
               <object class="GtkImage">
                 <property name="visible">True</property>
@@ -208,7 +206,6 @@
             <property name="image">image3</property>
             <property name="relief">none</property>
             <property name="always_show_image">True</property>
-            <signal name="clicked" handler="playbuttonclicked" swapped="no"/>
           </object>
           <packing>
             <property name="position">3</property>
@@ -260,7 +257,6 @@
                 <property name="margin_right">5</property>
                 <property name="margin_top">5</property>
                 <property name="margin_bottom">5</property>
-                <signal name="changed" handler="filenamechanged" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -278,7 +274,6 @@
                 <property name="margin_top">5</property>
                 <property name="margin_bottom">5</property>
                 <property name="action">select-folder</property>
-                <signal name="selection-changed" handler="folderchosen" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -326,7 +321,6 @@
                 <property name="margin_right">5</property>
                 <property name="margin_top">5</property>
                 <property name="margin_bottom">5</property>
-                <signal name="clicked" handler="selectwindow" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -381,7 +375,6 @@
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
                     <property name="draw_indicator">True</property>
-                    <signal name="toggled" handler="videoswitchchanged" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
@@ -395,7 +388,6 @@
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
                     <property name="draw_indicator">True</property>
-                    <signal name="toggled" handler="audioswitchchanged" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -409,7 +401,6 @@
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
                     <property name="draw_indicator">True</property>
-                    <signal name="toggled" handler="mouseswitchchanged" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
@@ -423,7 +414,6 @@
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
                     <property name="draw_indicator">True</property>
-                    <signal name="toggled" handler="follow_mouse_switch_changed" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -462,7 +452,6 @@
                     <property name="text" translatable="yes">30</property>
                     <property name="adjustment">adjustment2</property>
                     <property name="value">30</property>
-                    <signal name="value-changed" handler="frameschanged" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -488,7 +477,6 @@
                     <property name="text" translatable="yes">0</property>
                     <property name="adjustment">adjustment1</property>
                     <property name="climb_rate">1</property>
-                    <signal name="value-changed" handler="delaychanged" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -526,7 +514,6 @@
                 <property name="margin_bottom">5</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
-                <signal name="changed" handler="commandchanged" swapped="no"/>
               </object>
               <packing>
                 <property name="left_attach">1</property>

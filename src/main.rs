@@ -30,7 +30,7 @@ fn main() {
         return;
     }
 
-    let builder: Builder = Builder::from_file(Path::new("windows/ui.glade"));
+    let builder: Builder = Builder::from_file(Path::new("interfaces/main.ui"));
 
     // translate
     setlocale(LocaleCategory::LcAll, "");
