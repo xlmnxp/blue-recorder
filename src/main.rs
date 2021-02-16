@@ -89,7 +89,10 @@ fn main() {
     command_entry.set_text(&config_management::get("default", "command"));
 
     // CheckBox
-    format_chooser_combobox.append(Some("mkv"), &gettext("MKV (Matroska multimedia container format)"));
+    format_chooser_combobox.append(
+        Some("mkv"),
+        &gettext("MKV (Matroska multimedia container format)"),
+    );
     format_chooser_combobox.append(Some("avi"), &gettext("AVI (Audio Video Interleaved)"));
     format_chooser_combobox.append(Some("mp4"), &gettext("MP4 (MPEG-4 Part 14)"));
     format_chooser_combobox.append(Some("wmv"), &gettext("WMV (Windows Media Video)"));
@@ -165,9 +168,9 @@ fn main() {
     about_dialog.set_copyright(Some("© 2021 Salem Yaslem"));
     about_dialog.set_wrap_license(true);
     about_dialog.set_license(Some("Blue Recorder is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\nBlue Recorder is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\nSee the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with Blue Recorder. If not, see <http://www.gnu.org/licenses/>."));
-    about_dialog.set_comments(Some(
-        &gettext("A simple screen recorder for Linux desktop. Supports Wayland & Xorg."),
-    ));
+    about_dialog.set_comments(Some(&gettext(
+        "A simple screen recorder for Linux desktop. Supports Wayland & Xorg.",
+    )));
     about_dialog.set_authors(&[
         "Salem Yaslem <s@sy.sa>",
         "M.Hanny Sabbagh <mhsabbagh@outlook.com>",
@@ -264,6 +267,7 @@ fn main() {
             follow_mouse: follow_mouse_switch,
             record_frames: frames_spin,
             record_delay: delay_spin,
+            command: command_entry,
             process_id: None,
             saved_filename: None,
         }));

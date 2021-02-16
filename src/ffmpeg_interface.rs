@@ -1,3 +1,5 @@
+extern crate subprocess;
+use chrono::prelude::*;
 use gtk::{
     CheckButton, ComboBoxExt, ComboBoxText, Entry, EntryExt, FileChooser, FileChooserExt,
     SpinButton, SpinButtonExt, ToggleButtonExt,
@@ -6,7 +8,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::thread::sleep;
 use std::time::Duration;
-use chrono::prelude::*;
+use subprocess::Exec;
 
 #[derive(Clone)]
 pub struct Ffmpeg {
@@ -18,6 +20,7 @@ pub struct Ffmpeg {
     pub follow_mouse: CheckButton,
     pub record_frames: SpinButton,
     pub record_delay: SpinButton,
+    pub command: Entry,
     pub process_id: Option<u32>,
     pub saved_filename: Option<String>,
 }
@@ -109,18 +112,26 @@ impl Ffmpeg {
     }
 
     pub fn stop_record(self) {
+        // kill the process to stop recording
         if self.process_id.is_some() {
             Command::new("kill")
                 .arg(format!("{}", self.process_id.unwrap()))
                 .output()
                 .unwrap();
         }
+
+        // execute command after finish recording
+        if !(self.command.get_text().trim() == "") {
+            Exec::shell(self.command.get_text().trim()).popen().unwrap();
+        }
     }
 
     pub fn play_record(self) {
         if self.saved_filename.is_some() {
             Command::new("xdg-open")
-                .arg(self.saved_filename.unwrap()).spawn().unwrap();
+                .arg(self.saved_filename.unwrap())
+                .spawn()
+                .unwrap();
         }
     }
 }
