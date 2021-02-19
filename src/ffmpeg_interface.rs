@@ -87,7 +87,7 @@ impl Ffmpeg {
             }
 
             self.record_wayland(
-                self.saved_filename.as_ref().unwrap().to_string(),
+                format!("{}.temp", self.saved_filename.as_ref().unwrap().to_string()),
                 x,
                 y,
                 width,
@@ -171,6 +171,17 @@ impl Ffmpeg {
             gnome_screencast_proxy.stop_screencast().unwrap();
             if self.unbound.is_some() {
                 self.unbound.as_ref().unwrap().send(true).unwrap_or_default();
+
+                // convert webm to the format user choose using ffmpeg
+                let mut ffmpeg_convert_command = Command::new("ffmpeg");
+                ffmpeg_convert_command.arg("-f");
+                ffmpeg_convert_command.arg("webm");
+                ffmpeg_convert_command.arg("-i");
+                ffmpeg_convert_command.arg(format!("{}.temp", self.saved_filename.as_ref().unwrap()));
+                ffmpeg_convert_command.arg(self.saved_filename.as_ref().unwrap());
+                ffmpeg_convert_command.arg("-y");
+                ffmpeg_convert_command.output().unwrap();
+                std::fs::remove_file(format!("{}.temp", self.saved_filename.as_ref().unwrap())).unwrap();
             }
         }
 
@@ -190,9 +201,14 @@ impl Ffmpeg {
         let mut screencast_options: HashMap<&str, Value> = HashMap::new();
         screencast_options.insert("framerate", Value::new(self.record_frames.get_value()));
         screencast_options.insert("draw-cursor", Value::new(self.record_mouse.get_active()));
+        screencast_options.insert("pipeline", Value::new("vp8enc min_quantizer=10 max_quantizer=50 cq_level=13 cpu-used=5 deadline=1000000 threads=%T ! queue ! webmmux"));
+        
+        // make unbound channel for communication with record thread
         let (tx, tr): (Sender<bool>, Receiver<bool>) = mpsc::channel();
         self.unbound = Some(tx);
         let receiver: Receiver<bool> = tr;
+
+        // start recording in another thread
         std::thread::spawn(move || {
             gnome_screencast_proxy
                 .screencast_area(
