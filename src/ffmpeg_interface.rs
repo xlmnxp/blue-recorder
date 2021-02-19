@@ -1,5 +1,4 @@
 extern crate subprocess;
-// extern crate dbus;
 use chrono::prelude::*;
 use gtk::{
     CheckButton, ComboBoxExt, ComboBoxText, Entry, EntryExt, FileChooser, FileChooserExt,
@@ -10,6 +9,8 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::thread::sleep;
 use std::time::Duration;
+use std::sync::mpsc;
+use std::sync::mpsc::{Sender, Receiver};
 use subprocess::Exec;
 use zbus::dbus_proxy;
 use zvariant::Value;
@@ -52,14 +53,48 @@ pub struct Ffmpeg {
     pub command: Entry,
     pub process_id: Option<u32>,
     pub saved_filename: Option<String>,
+    pub unbound: Option<Sender<bool>>,
 }
 
 impl Ffmpeg {
     pub fn start_record(&mut self, x: u16, y: u16, width: u16, height: u16) -> u32 {
         if self.process_id.is_some() {
-            self.clone().stop_record();
+            self.stop_record();
         }
-        // self.clone().record_wayland();
+
+        self.saved_filename = Some(
+            self.filename
+                .0
+                .get_filename()
+                .unwrap()
+                .join(PathBuf::from(format!(
+                    "{}.{}",
+                    if self.filename.1.get_text().to_string().trim().eq("") {
+                        Utc::now().to_string().replace(" UTC", "")
+                    } else {
+                        self.filename.1.get_text().to_string().trim().to_string()
+                    },
+                    self.filename.2.get_active_id().unwrap().to_string()
+                )))
+                .as_path()
+                .display()
+                .to_string(),
+        );
+        
+        if is_wayland() {
+            if self.unbound.is_some() {
+                self.clone().unbound.unwrap().send(false).unwrap_or_default();
+            }
+
+            self.record_wayland(
+                self.saved_filename.as_ref().unwrap().to_string(),
+                x,
+                y,
+                width,
+                height,
+            );
+            return 0;
+        }
 
         let mut ffmpeg_command: Command = Command::new("ffmpeg");
 
@@ -108,25 +143,6 @@ impl Ffmpeg {
         ffmpeg_command.arg("-q");
         ffmpeg_command.arg("1");
 
-        self.saved_filename = Some(
-            self.filename
-                .0
-                .get_filename()
-                .unwrap()
-                .join(PathBuf::from(format!(
-                    "{}.{}",
-                    if self.filename.1.get_text().to_string().trim().eq("") {
-                        Utc::now().to_string().replace(" UTC", "")
-                    } else {
-                        self.filename.1.get_text().to_string().trim().to_string()
-                    },
-                    self.filename.2.get_active_id().unwrap().to_string()
-                )))
-                .as_path()
-                .display()
-                .to_string(),
-        );
-
         ffmpeg_command.arg(self.saved_filename.as_ref().unwrap());
         ffmpeg_command.arg("-y");
 
@@ -138,13 +154,24 @@ impl Ffmpeg {
         self.process_id.unwrap()
     }
 
-    pub fn stop_record(self) {
+    pub fn stop_record(&self) {
         // kill the process to stop recording
         if self.process_id.is_some() {
             Command::new("kill")
                 .arg(format!("{}", self.process_id.unwrap()))
                 .output()
                 .unwrap();
+        }
+
+        if is_wayland() {
+            // create new dbus session
+            let connection = zbus::Connection::new_session().unwrap();
+            // bind the connection to gnome screencast proxy
+            let gnome_screencast_proxy = GnomeScreencastProxy::new(&connection).unwrap();
+            gnome_screencast_proxy.stop_screencast().unwrap();
+            if self.unbound.is_some() {
+                self.unbound.as_ref().unwrap().send(true).unwrap_or_default();
+            }
         }
 
         // execute command after finish recording
@@ -154,27 +181,36 @@ impl Ffmpeg {
     }
 
     // Gnome screencast for record wayland
-    pub fn record_wayland(self) {
+    pub fn record_wayland(&mut self, filename: String, x: u16, y: u16, width: u16, height: u16) {
         // create new dbus session
         let connection = zbus::Connection::new_session().unwrap();
-
         // bind the connection to gnome screencast proxy
         let gnome_screencast_proxy = GnomeScreencastProxy::new(&connection).unwrap();
-        
         // options for gnome screencast
         let mut screencast_options: HashMap<&str, Value> = HashMap::new();
         screencast_options.insert("framerate", Value::new(self.record_frames.get_value()));
         screencast_options.insert("draw-cursor", Value::new(self.record_mouse.get_active()));
-        gnome_screencast_proxy
-            .screencast(
-                "/home/xlmnxp/Projects/blue-recorder/test/test.webm",
-                screencast_options,
-            )
-            .unwrap();
+        let (tx, tr): (Sender<bool>, Receiver<bool>) = mpsc::channel();
+        self.unbound = Some(tx);
+        let receiver: Receiver<bool> = tr;
+        std::thread::spawn(move || {
+            gnome_screencast_proxy
+                .screencast_area(
+                    x.into(),
+                    y.into(),
+                    width.into(),
+                    height.into(),
+                    &filename,
+                    screencast_options,
+                )
+                .unwrap();
 
-        // for testing it will record 20 seconds then stop the recording
-        sleep(Duration::from_secs(20u64));
-        gnome_screencast_proxy.stop_screencast().unwrap();
+                loop {
+                    if receiver.recv().unwrap_or(false) {
+                        break;
+                    }
+                }
+        });
     }
 
     pub fn play_record(self) {
@@ -185,4 +221,10 @@ impl Ffmpeg {
                 .unwrap();
         }
     }
+}
+
+fn is_wayland() -> bool {
+    std::env::var("XDG_SESSION_TYPE")
+        .unwrap()
+        .eq_ignore_ascii_case("wayland")
 }

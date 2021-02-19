@@ -147,15 +147,34 @@ fn main() {
     audio_switch.set_active(config_management::get_bool("default", "audiocheck"));
     mouse_switch.set_active(config_management::get_bool("default", "mousecheck"));
     follow_mouse_switch.set_active(config_management::get_bool("default", "followmousecheck"));
-    video_switch.connect_toggled(|switch: &CheckButton| {
+
+    let _mouse_switch = mouse_switch.clone();
+    let _follow_mouse_switch = follow_mouse_switch.clone();
+    video_switch.connect_toggled(move |switch: &CheckButton| {
         config_management::set_bool("default", "videocheck", switch.get_active());
+        if switch.get_active() {
+            _mouse_switch.set_sensitive(true);
+            _follow_mouse_switch.set_sensitive(true);
+        } else {
+            _mouse_switch.set_sensitive(false);
+            _follow_mouse_switch.set_sensitive(false);
+        }
     });
+    
+    let _follow_mouse_switch = follow_mouse_switch.clone();
+    mouse_switch.connect_toggled(move |switch: &CheckButton| {
+        config_management::set_bool("default", "mousecheck", switch.get_active());
+        if switch.get_active() {
+            _follow_mouse_switch.set_sensitive(true);
+        } else {
+            _follow_mouse_switch.set_sensitive(false);
+        }
+    });
+    
     audio_switch.connect_toggled(|switch: &CheckButton| {
         config_management::set_bool("default", "audiocheck", switch.get_active());
     });
-    mouse_switch.connect_toggled(|switch: &CheckButton| {
-        config_management::set_bool("default", "mousecheck", switch.get_active());
-    });
+    
     follow_mouse_switch.connect_toggled(|switch: &CheckButton| {
         config_management::set_bool("default", "followmousecheck", switch.get_active());
     });
@@ -270,6 +289,7 @@ fn main() {
             command: command_entry,
             process_id: None,
             saved_filename: None,
+            unbound: None
         }));
 
     // App Indicator
