@@ -7,10 +7,10 @@ use gtk::{
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::process::Command;
+use std::sync::mpsc;
+use std::sync::mpsc::{Receiver, Sender};
 use std::thread::sleep;
 use std::time::Duration;
-use std::sync::mpsc;
-use std::sync::mpsc::{Sender, Receiver};
 use subprocess::Exec;
 use zbus::dbus_proxy;
 use zvariant::Value;
@@ -80,19 +80,39 @@ impl Ffmpeg {
                 .display()
                 .to_string(),
         );
-        
         if is_wayland() {
-            if self.unbound.is_some() {
-                self.clone().unbound.unwrap().send(false).unwrap_or_default();
+            if self.record_video.get_active() {
+                if self.unbound.is_some() {
+                    self.clone()
+                        .unbound
+                        .unwrap()
+                        .send(false)
+                        .unwrap_or_default();
+                }
+                self.record_wayland(
+                    format!("{}.temp", self.saved_filename.as_ref().unwrap().to_string()),
+                    x,
+                    y,
+                    width,
+                    height,
+                );
             }
 
-            self.record_wayland(
-                format!("{}.temp", self.saved_filename.as_ref().unwrap().to_string()),
-                x,
-                y,
-                width,
-                height,
-            );
+            if self.record_audio.get_active() {
+                let mut ffmpeg_command = Command::new("ffmpeg");
+                ffmpeg_command.arg("-f");
+                ffmpeg_command.arg("pulse");
+                ffmpeg_command.arg("-i");
+                ffmpeg_command.arg(self.audio_id.get_active_id().unwrap().to_string());
+                ffmpeg_command.arg("-f");
+                ffmpeg_command.arg("ogg");
+                ffmpeg_command.arg(format!(
+                    "{}.temp.audio",
+                    self.saved_filename.as_ref().unwrap().to_string()
+                ));
+                ffmpeg_command.arg("-y");
+                self.process_id = Some(ffmpeg_command.spawn().unwrap().id());
+            }
             return 0;
         }
 
@@ -170,18 +190,70 @@ impl Ffmpeg {
             let gnome_screencast_proxy = GnomeScreencastProxy::new(&connection).unwrap();
             gnome_screencast_proxy.stop_screencast().unwrap();
             if self.unbound.is_some() {
-                self.unbound.as_ref().unwrap().send(true).unwrap_or_default();
+                let is_audio_record = std::path::Path::new(
+                    format!("{}.temp.audio", self.saved_filename.as_ref().unwrap()).as_str(),
+                )
+                .exists();
+                self.unbound
+                    .as_ref()
+                    .unwrap()
+                    .send(true)
+                    .unwrap_or_default();
 
                 // convert webm to the format user choose using ffmpeg
                 let mut ffmpeg_convert_command = Command::new("ffmpeg");
                 ffmpeg_convert_command.arg("-f");
                 ffmpeg_convert_command.arg("webm");
                 ffmpeg_convert_command.arg("-i");
-                ffmpeg_convert_command.arg(format!("{}.temp", self.saved_filename.as_ref().unwrap()));
-                ffmpeg_convert_command.arg(self.saved_filename.as_ref().unwrap());
+                ffmpeg_convert_command
+                    .arg(format!("{}.temp", self.saved_filename.as_ref().unwrap()));
+                ffmpeg_convert_command.arg(format!(
+                    "{}{}",
+                    self.saved_filename.as_ref().unwrap(),
+                    if is_audio_record {
+                       format!(".temp.without.audio.{}", self.filename.2.get_active_id().unwrap().to_string())
+                    } else {
+                        "".to_string()
+                    }
+                ));
                 ffmpeg_convert_command.arg("-y");
-                ffmpeg_convert_command.output().unwrap();
-                std::fs::remove_file(format!("{}.temp", self.saved_filename.as_ref().unwrap())).unwrap();
+                ffmpeg_convert_command.spawn().unwrap().wait().unwrap();
+                std::fs::remove_file(format!("{}.temp", self.saved_filename.as_ref().unwrap()))
+                    .unwrap();
+
+                if is_audio_record {
+                    // merge audio with video
+                    let mut ffmpeg_audio_merge_command = Command::new("ffmpeg");
+                    ffmpeg_audio_merge_command.arg("-i");
+                    ffmpeg_audio_merge_command.arg(format!(
+                        "{}.temp.without.audio.{}",
+                        self.saved_filename.as_ref().unwrap(),
+                        self.filename.2.get_active_id().unwrap().to_string()
+                    ));
+                    ffmpeg_audio_merge_command.arg("-i");
+                    ffmpeg_audio_merge_command.arg(format!(
+                        "{}.temp.audio",
+                        self.saved_filename.as_ref().unwrap()
+                    ));
+                    ffmpeg_audio_merge_command.arg("-c:v");
+                    ffmpeg_audio_merge_command.arg("copy");
+                    ffmpeg_audio_merge_command.arg("-c:a");
+                    ffmpeg_audio_merge_command.arg("aac");
+                    ffmpeg_audio_merge_command.arg(self.saved_filename.as_ref().unwrap());
+                    ffmpeg_audio_merge_command.arg("-y");
+                    ffmpeg_audio_merge_command.spawn().unwrap();
+                    std::fs::remove_file(format!(
+                        "{}.temp.audio",
+                        self.saved_filename.as_ref().unwrap()
+                    ))
+                    .unwrap();
+                    std::fs::remove_file(format!(
+                        "{}.temp.without.audio.{}",
+                        self.saved_filename.as_ref().unwrap(),
+                        self.filename.2.get_active_id().unwrap().to_string()
+                    ))
+                    .unwrap();
+                }
             }
         }
 
@@ -202,7 +274,6 @@ impl Ffmpeg {
         screencast_options.insert("framerate", Value::new(self.record_frames.get_value()));
         screencast_options.insert("draw-cursor", Value::new(self.record_mouse.get_active()));
         screencast_options.insert("pipeline", Value::new("vp8enc min_quantizer=10 max_quantizer=50 cq_level=13 cpu-used=5 deadline=1000000 threads=%T ! queue ! webmmux"));
-        
         // make unbound channel for communication with record thread
         let (tx, tr): (Sender<bool>, Receiver<bool>) = mpsc::channel();
         self.unbound = Some(tx);
@@ -221,11 +292,11 @@ impl Ffmpeg {
                 )
                 .unwrap();
 
-                loop {
-                    if receiver.recv().unwrap_or(false) {
-                        break;
-                    }
+            loop {
+                if receiver.recv().unwrap_or(false) {
+                    break;
                 }
+            }
         });
     }
 
