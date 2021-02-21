@@ -189,11 +189,15 @@ impl Ffmpeg {
             // bind the connection to gnome screencast proxy
             let gnome_screencast_proxy = GnomeScreencastProxy::new(&connection).unwrap();
             gnome_screencast_proxy.stop_screencast().unwrap();
+            let is_audio_record = std::path::Path::new(
+                format!("{}.temp.audio", self.saved_filename.as_ref().unwrap()).as_str(),
+            )
+            .exists();
+            let is_video_record = std::path::Path::new(
+                format!("{}.temp", self.saved_filename.as_ref().unwrap()).as_str(),
+            )
+            .exists();
             if self.unbound.is_some() {
-                let is_audio_record = std::path::Path::new(
-                    format!("{}.temp.audio", self.saved_filename.as_ref().unwrap()).as_str(),
-                )
-                .exists();
                 self.unbound
                     .as_ref()
                     .unwrap()
@@ -201,59 +205,82 @@ impl Ffmpeg {
                     .unwrap_or_default();
 
                 // convert webm to the format user choose using ffmpeg
-                let mut ffmpeg_convert_command = Command::new("ffmpeg");
-                ffmpeg_convert_command.arg("-f");
-                ffmpeg_convert_command.arg("webm");
-                ffmpeg_convert_command.arg("-i");
-                ffmpeg_convert_command
-                    .arg(format!("{}.temp", self.saved_filename.as_ref().unwrap()));
-                ffmpeg_convert_command.arg(format!(
-                    "{}{}",
-                    self.saved_filename.as_ref().unwrap(),
-                    if is_audio_record {
-                       format!(".temp.without.audio.{}", self.filename.2.get_active_id().unwrap().to_string())
-                    } else {
-                        "".to_string()
-                    }
-                ));
-                ffmpeg_convert_command.arg("-y");
-                ffmpeg_convert_command.spawn().unwrap().wait().unwrap();
-                std::fs::remove_file(format!("{}.temp", self.saved_filename.as_ref().unwrap()))
-                    .unwrap();
+                if is_video_record {
+                    let mut ffmpeg_convert_command = Command::new("ffmpeg");
+                    ffmpeg_convert_command.arg("-f");
+                    ffmpeg_convert_command.arg("webm");
+                    ffmpeg_convert_command.arg("-i");
+                    ffmpeg_convert_command
+                        .arg(format!("{}.temp", self.saved_filename.as_ref().unwrap()));
+                    ffmpeg_convert_command.arg(format!(
+                        "{}{}",
+                        self.saved_filename.as_ref().unwrap(),
+                        if is_audio_record {
+                            format!(
+                                ".temp.without.audio.{}",
+                                self.filename.2.get_active_id().unwrap().to_string()
+                            )
+                        } else {
+                            "".to_string()
+                        }
+                    ));
+                    ffmpeg_convert_command.arg("-y");
+                    ffmpeg_convert_command.output().unwrap();
+                    std::fs::remove_file(format!("{}.temp", self.saved_filename.as_ref().unwrap()))
+                        .unwrap();
 
-                if is_audio_record {
-                    // merge audio with video
-                    let mut ffmpeg_audio_merge_command = Command::new("ffmpeg");
-                    ffmpeg_audio_merge_command.arg("-i");
-                    ffmpeg_audio_merge_command.arg(format!(
-                        "{}.temp.without.audio.{}",
-                        self.saved_filename.as_ref().unwrap(),
-                        self.filename.2.get_active_id().unwrap().to_string()
-                    ));
-                    ffmpeg_audio_merge_command.arg("-i");
-                    ffmpeg_audio_merge_command.arg(format!(
-                        "{}.temp.audio",
-                        self.saved_filename.as_ref().unwrap()
-                    ));
-                    ffmpeg_audio_merge_command.arg("-c:v");
-                    ffmpeg_audio_merge_command.arg("copy");
-                    ffmpeg_audio_merge_command.arg("-c:a");
-                    ffmpeg_audio_merge_command.arg("aac");
-                    ffmpeg_audio_merge_command.arg(self.saved_filename.as_ref().unwrap());
-                    ffmpeg_audio_merge_command.arg("-y");
-                    ffmpeg_audio_merge_command.spawn().unwrap();
-                    std::fs::remove_file(format!(
-                        "{}.temp.audio",
-                        self.saved_filename.as_ref().unwrap()
-                    ))
-                    .unwrap();
-                    std::fs::remove_file(format!(
-                        "{}.temp.without.audio.{}",
-                        self.saved_filename.as_ref().unwrap(),
-                        self.filename.2.get_active_id().unwrap().to_string()
-                    ))
-                    .unwrap();
+                    if is_audio_record {
+                        // merge audio with video
+                        let mut ffmpeg_audio_merge_command = Command::new("ffmpeg");
+                        ffmpeg_audio_merge_command.arg("-i");
+                        ffmpeg_audio_merge_command.arg(format!(
+                            "{}.temp.without.audio.{}",
+                            self.saved_filename.as_ref().unwrap(),
+                            self.filename.2.get_active_id().unwrap().to_string()
+                        ));
+                        ffmpeg_audio_merge_command.arg("-i");
+                        ffmpeg_audio_merge_command.arg(format!(
+                            "{}.temp.audio",
+                            self.saved_filename.as_ref().unwrap()
+                        ));
+                        ffmpeg_audio_merge_command.arg("-c:v");
+                        ffmpeg_audio_merge_command.arg("copy");
+                        ffmpeg_audio_merge_command.arg("-c:a");
+                        ffmpeg_audio_merge_command.arg("aac");
+                        ffmpeg_audio_merge_command.arg(self.saved_filename.as_ref().unwrap());
+                        ffmpeg_audio_merge_command.arg("-y");
+                        ffmpeg_audio_merge_command.output().unwrap();
+                        std::fs::remove_file(format!(
+                            "{}.temp.audio",
+                            self.saved_filename.as_ref().unwrap()
+                        ))
+                        .unwrap();
+                        std::fs::remove_file(format!(
+                            "{}.temp.without.audio.{}",
+                            self.saved_filename.as_ref().unwrap(),
+                            self.filename.2.get_active_id().unwrap().to_string()
+                        ))
+                        .unwrap();
+                    }
                 }
+            } else if is_audio_record {
+                println!("convert audio");
+                Command::new("ffmpeg")
+                    .arg("-f")
+                    .arg("ogg")
+                    .arg("-i")
+                    .arg(format!(
+                        "{}.temp.audio",
+                        self.saved_filename.as_ref().unwrap()
+                    ))
+                    .arg(format!("{}", self.saved_filename.as_ref().unwrap()))
+                    .output()
+                    .unwrap();
+                std::fs::remove_file(format!(
+                    "{}.temp.audio",
+                    self.saved_filename.as_ref().unwrap()
+                ))
+                .unwrap();
             }
         }
 
