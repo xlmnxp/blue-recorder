@@ -56,9 +56,9 @@ apps:
       - home
       - audio-playback
       - audio-record
+      - screencast-legacy # for wayland support
     slots:
       - dbus-daemon
-      - gnome-shell-screencast
     common-id: sa.sy.blue-recorder
 
 slots:
@@ -66,7 +66,3 @@ slots:
     interface: dbus
     bus: session
     name: sa.sy.blue-recorder
-  gnome-shell-screencast:
-    bus: session
-    interface: dbus
-    name: org.gnome.shell.screencast
