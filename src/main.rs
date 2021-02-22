@@ -47,10 +47,12 @@ fn main() {
     setlocale(LocaleCategory::LcAll, "");
     bindtextdomain(
         "blue-recorder",
-        std::fs::canonicalize(Path::new("po"))
-            .unwrap()
-            .to_str()
-            .unwrap(),
+        {
+            let mut current_exec_dir = std::env::current_exe().unwrap();
+            current_exec_dir.pop();
+            current_exec_dir
+        }
+        .join(Path::new("po")).to_str().unwrap(),
     );
     textdomain("blue-recorder");
 
