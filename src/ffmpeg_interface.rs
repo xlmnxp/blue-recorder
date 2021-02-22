@@ -145,7 +145,7 @@ impl Ffmpeg {
         ffmpeg_command.arg("-i");
         ffmpeg_command.arg(format!(
             "{}+{},{}",
-            std::env::var("DISPLAY").expect(":1").as_str(),
+            std::env::var("DISPLAY").unwrap_or(":1".to_string()).as_str(),
             x,
             y
         ));

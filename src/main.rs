@@ -29,8 +29,19 @@ fn main() {
         println!("Failed to initialize GTK.");
         return;
     }
+    let builder: Builder;
+    let user_interface_path_abs = {
+        let mut current_exec_dir = std::env::current_exe().unwrap();
+        current_exec_dir.pop();
+        current_exec_dir
+    }
+    .join(Path::new("interfaces/main.ui"));
 
-    let builder: Builder = Builder::from_file(Path::new("interfaces/main.ui"));
+    if user_interface_path_abs.exists() {
+        builder = Builder::from_file(user_interface_path_abs);
+    } else {
+        builder = Builder::from_file("interfaces/main.ui");
+    }
 
     // translate
     setlocale(LocaleCategory::LcAll, "");
@@ -77,6 +88,7 @@ fn main() {
     // Windows
     main_window.set_title(&gettext("Blue Recorder"));
     // TODO: make area chooser window transparent
+    // NOTICE: it work as snap package
     area_chooser_window.set_title(&gettext("Area Chooser"));
     area_chooser_window.set_visual(Some(
         &gdk::Screen::get_rgba_visual(&gdk::Screen::get_default().unwrap()).unwrap(),
@@ -160,7 +172,6 @@ fn main() {
             _follow_mouse_switch.set_sensitive(false);
         }
     });
-    
     let _follow_mouse_switch = follow_mouse_switch.clone();
     mouse_switch.connect_toggled(move |switch: &CheckButton| {
         config_management::set_bool("default", "mousecheck", switch.get_active());
@@ -170,11 +181,9 @@ fn main() {
             _follow_mouse_switch.set_sensitive(false);
         }
     });
-    
     audio_switch.connect_toggled(|switch: &CheckButton| {
         config_management::set_bool("default", "audiocheck", switch.get_active());
     });
-    
     follow_mouse_switch.connect_toggled(|switch: &CheckButton| {
         config_management::set_bool("default", "followmousecheck", switch.get_active());
     });
@@ -289,16 +298,24 @@ fn main() {
             command: command_entry,
             process_id: None,
             saved_filename: None,
-            unbound: None
+            unbound: None,
         }));
 
     // App Indicator
+    let mut indicator_icon_path = {
+        let mut current_exec_dir = std::env::current_exe().unwrap();
+        current_exec_dir.pop();
+        current_exec_dir
+    }
+    .join(Path::new("data/blue-recorder.png"));
+
+    if !indicator_icon_path.exists() {
+        indicator_icon_path = std::fs::canonicalize(Path::new("data/blue-recorder.png")).unwrap();
+    }
+
     let indicator = Rc::new(RefCell::new(AppIndicator::new(
         "Blue Recorder",
-        std::fs::canonicalize(Path::new("data/blue-recorder.png"))
-            .unwrap()
-            .to_str()
-            .unwrap(),
+        indicator_icon_path.to_str().unwrap(),
     )));
     indicator
         .clone()

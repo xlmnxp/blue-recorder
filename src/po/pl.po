@@ -1,0 +1,114 @@
+# Blue Recorder
+# Copyright (C) 2017, FOSS Project
+# This file is distributed under the same license as the Blue Recorder package.
+# M.Hanny Sabbagh <mhsabbagh@outlook.com>, 2017
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-08-08 10:53+0300\n"
+"PO-Revision-Date: 2018-08-14 16:01+0200\n"
+"Last-Translator: Jakub Kaszycki <jakub@kaszycki.net.pl>\n"
+"Language-Team: Polish\n"
+"Language: pl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
+"|| n%100>=20) ? 1 : 2);\n"
+
+msgid "Blue Recorder"
+msgstr "Blue Recorder"
+
+msgid "AreaChooser"
+msgstr ""
+
+msgid "Blue Recorder Preferences"
+msgstr "Preferencje programu Blue Recorder"
+
+msgid "File Name (Will be overwritten).."
+msgstr "Nazwa pliku (zostanie nadpisany).."
+
+msgid "Enter your command here.."
+msgstr "Wpisz tu swoje polecenie.."
+
+msgid "MKV (Matroska multimedia container format)"
+msgstr "MKV (format pojemnika na multimedia Matroska)"
+
+msgid "AVI (Audio Video Interleaved)"
+msgstr "AVI (Audio Video Interleaved)"
+
+msgid "MP4 (MPEG-4 Part 14)"
+msgstr "MP4 (MPEG-4 część 14)"
+
+msgid "WMV (Windows Media Video)"
+msgstr "WMV (Windows Media Video)"
+
+msgid "GIF (Graphics Interchange Format)"
+msgstr "GIF (Graphics Interchange Format)"
+
+msgid "NUT (NUT Recording Format)"
+msgstr "NUT (format nagrywania NUT)"
+
+msgid "Record Video"
+msgstr "Nagraj wideo"
+
+msgid "Record Audio"
+msgstr "Nagraj dźwięk"
+
+msgid "Show Mouse"
+msgstr "Pokaż kursor"
+
+msgid "Follow Mouse"
+msgstr "Podążaj za myszą"
+
+msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
+msgstr "Prosta nagrywarka pulpitu dla Linuksa. Wspiera Wayland i Xorg."
+
+msgid "Select a Window"
+msgstr "Wybierz okno"
+
+msgid "Select an Area"
+msgstr "Wybierz obszar"
+
+msgid "Frames:"
+msgstr "Ramki na sekundę:"
+
+msgid "Delay:"
+msgstr "Opóźnienie:"
+
+msgid "Run Command After Recording:"
+msgstr "Uruchom polecenie po nagrywaniu:"
+
+msgid "Default frames:"
+msgstr "Domyślne ramki na sekundę:"
+
+msgid "Default delay:"
+msgstr "Domyślne opóźnienie:"
+
+msgid "Default folder:"
+msgstr "Domyślny katalog:"
+
+msgid "Default pipeline:"
+msgstr "Domyślny kanał transportu:"
+
+msgid "Default command:"
+msgstr "Domyślna komenda:"
+
+msgid "Audio Input Source:"
+msgstr "Źródło dźwięku:"
+
+msgid "Record Mouse"
+msgstr "Nagrywaj kursor"
+
+msgid "Default filename:"
+msgstr "Domyślna nazwa pliku:"
+
+msgid "If you want, you can:"
+msgstr "Jeśli chcesz, możesz:"
+
+msgid "Default PulseAudio Input Source"
+msgstr "Domyślne źródło PulseAudio"
+
+msgid "Area Chooser"
+msgstr "Wybór obszaru"

@@ -34,7 +34,7 @@ fn default() {
         String::from("file://")
             .add(
                 glib::get_user_special_dir(glib::UserDirectory::Videos)
-                    .expect(std::env::var("HOME").expect("/").as_str())
+                    .unwrap_or(PathBuf::from(std::env::var("HOME").unwrap_or("/".to_string()).as_str()))
                     .to_str()
                     .unwrap(),
             )

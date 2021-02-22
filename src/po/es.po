@@ -1,0 +1,114 @@
+# Blue Recorder
+# Copyright (C) 2017, FOSS Project
+# This file is distributed under the same license as the Blue Recorder package.
+# M.Hanny Sabbagh <mhsabbagh@outlook.com>, 2017
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-08-08 10:53+0300\n"
+"PO-Revision-Date: 2019-01-22 21:46-0600\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.2.1\n"
+"Last-Translator: Adolfo Jayme Barrientos <fitojb@ubuntu.com>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: es\n"
+
+msgid "Blue Recorder"
+msgstr "Blue Recorder"
+
+msgid "AreaChooser"
+msgstr "Selector de área"
+
+msgid "Blue Recorder Preferences"
+msgstr "Preferencias de Blue Recorder"
+
+msgid "File Name (Will be overwritten).."
+msgstr "Nombre de archivo (se sobrescribirá)…"
+
+msgid "Enter your command here.."
+msgstr "Escriba aquí su orden…"
+
+msgid "MKV (Matroska multimedia container format)"
+msgstr "MKV (formato de contenedores multimedia Matroska)"
+
+msgid "AVI (Audio Video Interleaved)"
+msgstr "AVI (audio y vídeo intercalados)"
+
+msgid "MP4 (MPEG-4 Part 14)"
+msgstr "MP4 (MPEG-4 parte 14)"
+
+msgid "WMV (Windows Media Video)"
+msgstr "WMV (vídeo de Windows Media)"
+
+msgid "GIF (Graphics Interchange Format)"
+msgstr "GIF (formato de intercambio de gráficos)"
+
+msgid "NUT (NUT Recording Format)"
+msgstr "NUT (formato de grabación NUT)"
+
+msgid "Record Video"
+msgstr "Grabar vídeo"
+
+msgid "Record Audio"
+msgstr "Grabar audio"
+
+msgid "Show Mouse"
+msgstr "Mostrar el ratón"
+
+msgid "Follow Mouse"
+msgstr "Seguir el ratón"
+
+msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
+msgstr "Grabadora de pantalla sencilla para equipos Linux. Admite Wayland y X.org."
+
+msgid "Select a Window"
+msgstr "Seleccionar una ventana"
+
+msgid "Select an Area"
+msgstr "Seleccionar un área"
+
+msgid "Frames:"
+msgstr "Fotogramas:"
+
+msgid "Delay:"
+msgstr "Retardo:"
+
+msgid "Run Command After Recording:"
+msgstr "Ejecutar una orden tras grabar:"
+
+msgid "Default frames:"
+msgstr "Fotogramas predeterminados:"
+
+msgid "Default delay:"
+msgstr "Retardo predeterminado:"
+
+msgid "Default folder:"
+msgstr "Carpeta predeterminada:"
+
+msgid "Default pipeline:"
+msgstr "Canalización predeterminada:"
+
+msgid "Default command:"
+msgstr "Orden predeterminada:"
+
+msgid "Audio Input Source:"
+msgstr "Origen de entrada de audio:"
+
+msgid "Record Mouse"
+msgstr "Grabar el ratón"
+
+msgid "Default filename:"
+msgstr "Nombre de archivo predeterminado:"
+
+msgid "If you want, you can:"
+msgstr "Si lo desea, puede:"
+
+msgid "Default PulseAudio Input Source"
+msgstr "Origen de entrada PulseAudio predeterminado"
+
+msgid "Area Chooser"
+msgstr "Selector de área"
