@@ -1,0 +1,7 @@
+full packages:
+lzo = 300M
+xz = 228M
+
+only needed packages:
+lzo = 226M
+xz = 170M
