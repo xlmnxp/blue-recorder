@@ -19,7 +19,7 @@ parts:
     stage-snaps:
       - ffmpeg
     stage-packages:
-      - libappindicator3-dev
+      - libappindicator3-1
       - x11-utils
       - xdg-utils
     build-packages:
