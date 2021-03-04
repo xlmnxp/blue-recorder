@@ -1,0 +1,64 @@
+#    TO DO:
+# 1- Resize icon to 128x128
+# 2- Remove full access to dbus. not allowed in flathub https://github.com/flathub/flathub/wiki/App-Requirements#dbus-access
+# 3- Add more requirements to sa.sy.bluerecorder.metainfo.xml
+app-id: sa.sy.bluerecorder
+runtime: org.gnome.Platform
+runtime-version: "3.38"
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+cleanup:
+  - /share/man
+command: /app/opt/blue-recorder
+finish-args:
+  - --filesystem=home
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --device=dri
+  - --socket=system-bus 
+  - --socket=session-bus
+modules:
+  - shared-modules/libappindicator/libappindicator-gtk3-12.10.json
+  - shared-modules/dbus-glib/dbus-glib-0.110.json
+
+  - name: bluerecorder
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin
+      env:
+        CARGO_HOME: "/run/build/bluerecorder/cargo"
+        RUST_BACKTRACE: "1"
+    build-commands:
+      - mkdir -p $FLATPAK_DEST/opt ${FLATPAK_DEST}/share/icons/hicolor/96x96/apps/
+      - install -D flatpak/sa.sy.bluerecorder.metainfo.xml -t ${FLATPAK_DEST}/usr/share/metainfo/
+      - install -D flatpak/sa.sy.bluerecorder.desktop -t ${FLATPAK_DEST}/share/applications/
+      - cp -v data/blue-recorder.png ${FLATPAK_DEST}/share/icons/hicolor/96x96/apps/sa.sy.bluerecorder.png 
+      - cargo --offline fetch --manifest-path Cargo.toml --verbose 
+      - cargo --offline build --release --verbose
+      - cp target/release/blue-recorder $FLATPAK_DEST/opt 
+      - cp -a data interfaces po $FLATPAK_DEST/opt
+    sources:
+      - cargo-sources.json
+      - type: git
+        url: file:///home/suliman/git/my-fork-blue-recorder
+        #url: https://github.com/xlmnxp/blue-recorder.git
+
+  - name: xwininfo
+    sources: 
+      - type: archive
+        url: https://xorg.freedesktop.org/archive/individual/app/xwininfo-1.1.5.tar.bz2
+        md5: 26d46f7ef0588d3392da3ad5802be420
+
+  - name: ffmpeg
+    config-opts:
+      - --enable-shared
+      - --disable-static
+      - --disable-doc
+      - --enable-libpulse
+    sources:
+      - type: archive
+        url: http://www.ffmpeg.org/releases/ffmpeg-4.3.2.tar.xz
+        md5: 29529337d9b8f794a6142db10b717ec5
