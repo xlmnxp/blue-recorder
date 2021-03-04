@@ -2,6 +2,7 @@
 # 1- Resize icon to 128x128
 # 2- Remove full access to dbus. not allowed in flathub https://github.com/flathub/flathub/wiki/App-Requirements#dbus-access
 # 3- Add more requirements to sa.sy.bluerecorder.metainfo.xml
+# 4- Clean more files to get small pkg size
 app-id: sa.sy.bluerecorder
 runtime: org.gnome.Platform
 runtime-version: "3.38"
