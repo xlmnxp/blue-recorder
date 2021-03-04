@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>sa.sy.bluerecorder</id>
+  
+  <name>Blue Recorder</name>
+  <summary>A simple screen recorder for Linux desktop. Supports Wayland &amp; Xorg</summary>
+  
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+  
+  <description>
+    <p>
+      A simple desktop recorder for Linux systems. Built using Rust, GTK+ 3 and ffmpeg. It supports recording audio and video on almost all Linux interfaces with support for Wayland display server on GNOME session. The following formats are currently supported: mkv, avi, mp4, wmv, gif and nut (And only WebM for Wayland&apos;s GNOME session). You can stop the recording process easily by right-clicking the icon and choosing &quot;Stop Record&quot;. Or middle-clicking the recording icon in the notifications area (but doesn&apos;t work on all interfaces). You can choose the audio input source you want from the list. You can also set the default values you want by simply changing them in the interface, and the program will save them for you for the next time you open it. Based on GREEN RECORDER but rewritten in RUST
+    </p>
+  </description>
+  
+  <launchable type="desktop-id">sa.sy.bluerecorder.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://dashboard.snapcraft.io/site_media/appmedia/2021/02/blue-recorder.png</image>
+    </screenshot>
+  </screenshots>
+  
+  <icon type="stock">sa.sy.bluerecorder</icon>
+  
+  <categories>
+    <category>Graphics</category>
+    <category>GTK</category>
+  </categories>
+  
+  <provides>
+    <binary>blue-recorder</binary>
+  </provides>
+</component>
