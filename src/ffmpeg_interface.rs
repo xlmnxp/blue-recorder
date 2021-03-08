@@ -1,11 +1,7 @@
 extern crate subprocess;
 use chrono::prelude::*;
 use gtk::prelude::*;
-use gtk::{
-    CheckButton, ComboBoxText, Entry, FileChooser,
-    SpinButton, Dialog, ProgressBar,
-    Window
-};
+use gtk::{CheckButton, ComboBoxText, Dialog, Entry, FileChooser, ProgressBar, SpinButton, Window};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::process::Command;
@@ -27,8 +23,9 @@ impl ProgressWidget {
     pub fn new(window: &Window) -> ProgressWidget {
         ProgressWidget {
             dialog: Dialog::new(),
-            progress: ProgressBar::new()
-        }.init(&window)
+            progress: ProgressBar::new(),
+        }
+        .init(&window)
     }
 
     pub fn init(&self, window: &Window) -> ProgressWidget {
@@ -97,7 +94,7 @@ pub struct Ffmpeg {
     pub process_id: Option<u32>,
     pub saved_filename: Option<String>,
     pub unbound: Option<Sender<bool>>,
-    pub progress_widget: ProgressWidget
+    pub progress_widget: ProgressWidget,
 }
 
 impl Ffmpeg {
@@ -224,7 +221,9 @@ impl Ffmpeg {
         &self.progress_widget.show();
         // kill the process to stop recording
         if self.process_id.is_some() {
-            &self.progress_widget.set_progress("Stop Recording".to_string(), 1, 5);
+            &self
+                .progress_widget
+                .set_progress("Stop Recording".to_string(), 1, 5);
             Command::new("kill")
                 .arg(format!("{}", self.process_id.unwrap()))
                 .output()
@@ -246,7 +245,11 @@ impl Ffmpeg {
             )
             .exists();
             if self.unbound.is_some() {
-                &self.progress_widget.set_progress("Stop Wayland Video Recording".to_string(), 2, 5);
+                &self.progress_widget.set_progress(
+                    "Stop Wayland Video Recording".to_string(),
+                    2,
+                    5,
+                );
                 self.unbound
                     .as_ref()
                     .unwrap()
@@ -279,7 +282,11 @@ impl Ffmpeg {
                         .unwrap();
 
                     if is_audio_record {
-                        &self.progress_widget.set_progress("Stop Wayland Audio Recording".to_string(), 3, 5);
+                        &self.progress_widget.set_progress(
+                            "Stop Wayland Audio Recording".to_string(),
+                            3,
+                            5,
+                        );
 
                         // merge audio with video
                         let mut ffmpeg_audio_merge_command = Command::new("ffmpeg");
@@ -315,7 +322,11 @@ impl Ffmpeg {
                     }
                 }
             } else if is_audio_record {
-                &self.progress_widget.set_progress("Convert Audio to choosen format".to_string(), 3, 5);
+                &self.progress_widget.set_progress(
+                    "Convert Audio to choosen format".to_string(),
+                    3,
+                    5,
+                );
                 println!("convert audio");
                 Command::new("ffmpeg")
                     .arg("-f")
@@ -338,11 +349,17 @@ impl Ffmpeg {
 
         // execute command after finish recording
         if !(self.command.get_text().trim() == "") {
-            &self.progress_widget.set_progress("execute custom command after finish".to_string(), 4, 5);
+            &self.progress_widget.set_progress(
+                "execute custom command after finish".to_string(),
+                4,
+                5,
+            );
             Exec::shell(self.command.get_text().trim()).popen().unwrap();
         }
 
-        &self.progress_widget.set_progress("Finish".to_string(), 5, 5);
+        &self
+            .progress_widget
+            .set_progress("Finish".to_string(), 5, 5);
         &self.progress_widget.hide();
     }
 
@@ -385,10 +402,19 @@ impl Ffmpeg {
 
     pub fn play_record(self) {
         if self.saved_filename.is_some() {
-            Command::new("xdg-open")
-                .arg(self.saved_filename.unwrap())
-                .spawn()
-                .unwrap();
+            if is_snap() {
+                // open the video using snapctrl for snap package
+                Command::new("snapctl")
+                    .arg("user-open")
+                    .arg(self.saved_filename.unwrap())
+                    .spawn()
+                    .unwrap();
+            } else {
+                Command::new("xdg-open")
+                    .arg(self.saved_filename.unwrap())
+                    .spawn()
+                    .unwrap();
+            }
         }
     }
 }
@@ -397,4 +423,8 @@ fn is_wayland() -> bool {
     std::env::var("XDG_SESSION_TYPE")
         .unwrap()
         .eq_ignore_ascii_case("wayland")
+}
+
+fn is_snap() -> bool {
+    std::env::var("SNAP").unwrap_or(String::new()).len() > 0
 }

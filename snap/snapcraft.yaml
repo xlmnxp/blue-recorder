@@ -21,7 +21,6 @@ parts:
     stage-packages:
       - libappindicator3-1
       - x11-utils
-      - xdg-utils
     build-packages:
       - libappindicator3-dev
       - clang
