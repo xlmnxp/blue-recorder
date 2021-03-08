@@ -2,7 +2,7 @@ extern crate subprocess;
 use chrono::prelude::*;
 use gtk::prelude::*;
 use gtk::{
-    CheckButton, ComboBoxText, Entry, EntryExt, FileChooser,
+    CheckButton, ComboBoxText, Entry, FileChooser,
     SpinButton, Dialog, ProgressBar,
     Window
 };
