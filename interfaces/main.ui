@@ -130,13 +130,12 @@
   </object>
   <object class="GtkWindow" id="main_window">
     <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="opacity">0.99999999977648257</property>
+    <property name="can_focus">True</property>
     <property name="resizable">False</property>
     <property name="window_position">center</property>
     <property name="gravity">center</property>
     <child type="titlebar">
-      <object class="GtkHeaderBar" id="headerbar1">
+      <object class="GtkHeaderBar">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="has_subtitle">False</property>
@@ -147,7 +146,6 @@
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="relief">half</property>
-            <property name="always_show_image">True</property>
             <child>
               <object class="GtkGrid">
                 <property name="visible">True</property>
@@ -185,12 +183,35 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="relief">none</property>
+            <property name="relief">half</property>
             <child>
-              <object class="GtkImage">
+              <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="icon_name">media-playback-stop</property>
+                <property name="column_spacing">2</property>
+                <property name="row_homogeneous">True</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="icon_name">media-playback-stop</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Stop Recording</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
               </object>
             </child>
           </object>

@@ -1,8 +1,10 @@
 extern crate subprocess;
 use chrono::prelude::*;
+use gtk::prelude::*;
 use gtk::{
-    CheckButton, ComboBoxExt, ComboBoxText, Entry, EntryExt, FileChooser, FileChooserExt,
-    SpinButton, SpinButtonExt, ToggleButtonExt,
+    CheckButton, ComboBoxText, Entry, EntryExt, FileChooser,
+    SpinButton, Dialog, ProgressBar,
+    Window
 };
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -14,6 +16,47 @@ use std::time::Duration;
 use subprocess::Exec;
 use zbus::dbus_proxy;
 use zvariant::Value;
+
+#[derive(Clone)]
+pub struct ProgressWidget {
+    pub dialog: Dialog,
+    pub progress: ProgressBar,
+}
+
+impl ProgressWidget {
+    pub fn new(window: &Window) -> ProgressWidget {
+        ProgressWidget {
+            dialog: Dialog::new(),
+            progress: ProgressBar::new()
+        }.init(&window)
+    }
+
+    pub fn init(&self, window: &Window) -> ProgressWidget {
+        self.dialog.set_title("Progress");
+        self.dialog.set_transient_for(Some(window));
+        self.progress.set_fraction(0.0);
+        self.dialog.get_content_area().add(&self.progress);
+        self.progress.set_show_text(true);
+        self.dialog.set_deletable(false);
+        self.dialog.set_modal(true);
+        self.clone()
+    }
+
+    pub fn set_progress(&self, title: String, value: i32, max: i32) {
+        let progress_precentage: f64 = value as f64 / max as f64;
+        self.progress.set_text(Some(&title));
+        self.progress.set_fraction(progress_precentage);
+    }
+
+    pub fn show(&self) {
+        self.progress.set_fraction(0.0);
+        self.dialog.show_all();
+    }
+
+    pub fn hide(&self) {
+        self.dialog.emit_close();
+    }
+}
 
 trait GnomeScreencastResult {}
 
@@ -54,6 +97,7 @@ pub struct Ffmpeg {
     pub process_id: Option<u32>,
     pub saved_filename: Option<String>,
     pub unbound: Option<Sender<bool>>,
+    pub progress_widget: ProgressWidget
 }
 
 impl Ffmpeg {
@@ -145,7 +189,9 @@ impl Ffmpeg {
         ffmpeg_command.arg("-i");
         ffmpeg_command.arg(format!(
             "{}+{},{}",
-            std::env::var("DISPLAY").unwrap_or(":1".to_string()).as_str(),
+            std::env::var("DISPLAY")
+                .unwrap_or(":1".to_string())
+                .as_str(),
             x,
             y
         ));
@@ -175,8 +221,10 @@ impl Ffmpeg {
     }
 
     pub fn stop_record(&self) {
+        &self.progress_widget.show();
         // kill the process to stop recording
         if self.process_id.is_some() {
+            &self.progress_widget.set_progress("Stop Recording".to_string(), 1, 5);
             Command::new("kill")
                 .arg(format!("{}", self.process_id.unwrap()))
                 .output()
@@ -198,6 +246,7 @@ impl Ffmpeg {
             )
             .exists();
             if self.unbound.is_some() {
+                &self.progress_widget.set_progress("Stop Wayland Video Recording".to_string(), 2, 5);
                 self.unbound
                     .as_ref()
                     .unwrap()
@@ -230,6 +279,8 @@ impl Ffmpeg {
                         .unwrap();
 
                     if is_audio_record {
+                        &self.progress_widget.set_progress("Stop Wayland Audio Recording".to_string(), 3, 5);
+
                         // merge audio with video
                         let mut ffmpeg_audio_merge_command = Command::new("ffmpeg");
                         ffmpeg_audio_merge_command.arg("-i");
@@ -264,6 +315,7 @@ impl Ffmpeg {
                     }
                 }
             } else if is_audio_record {
+                &self.progress_widget.set_progress("Convert Audio to choosen format".to_string(), 3, 5);
                 println!("convert audio");
                 Command::new("ffmpeg")
                     .arg("-f")
@@ -286,8 +338,12 @@ impl Ffmpeg {
 
         // execute command after finish recording
         if !(self.command.get_text().trim() == "") {
+            &self.progress_widget.set_progress("execute custom command after finish".to_string(), 4, 5);
             Exec::shell(self.command.get_text().trim()).popen().unwrap();
         }
+
+        &self.progress_widget.set_progress("Finish".to_string(), 5, 5);
+        &self.progress_widget.hide();
     }
 
     // Gnome screencast for record wayland

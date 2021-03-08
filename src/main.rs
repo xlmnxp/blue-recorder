@@ -8,13 +8,14 @@ mod config_management;
 mod ffmpeg_interface;
 
 // use gio::prelude::*;
+use ffmpeg_interface::{Ffmpeg, ProgressWidget};
 use gettextrs::{bindtextdomain, gettext, setlocale, textdomain, LocaleCategory};
 use glib::signal::Inhibit;
 use gtk::prelude::*;
 use gtk::ComboBoxText;
 use gtk::{
-    AboutDialog, Builder, Button, CheckButton, CssProvider, Entry, FileChooser, Label, MenuItem,
-    SpinButton, Window,
+    AboutDialog, Builder, Button, CheckButton, CssProvider, Entry, FileChooser, Label,
+    MenuItem, SpinButton, Window,
 };
 use libappindicator::{AppIndicator, AppIndicatorStatus};
 use std::cell::RefCell;
@@ -52,7 +53,9 @@ fn main() {
             current_exec_dir.pop();
             current_exec_dir
         }
-        .join(Path::new("po")).to_str().unwrap(),
+        .join(Path::new("po"))
+        .to_str()
+        .unwrap(),
     );
     textdomain("blue-recorder");
 
@@ -85,7 +88,6 @@ fn main() {
     let mouse_switch: CheckButton = builder.get_object("mouseswitch").unwrap();
     let follow_mouse_switch: CheckButton = builder.get_object("followmouseswitch").unwrap();
     let about_menu_item: MenuItem = builder.get_object("about_menu_item").unwrap();
-
     // --- default properties
     // Windows
     main_window.set_title(&gettext("Blue Recorder"));
@@ -95,6 +97,9 @@ fn main() {
     area_chooser_window.set_visual(Some(
         &gdk::Screen::get_rgba_visual(&gdk::Screen::get_default().unwrap()).unwrap(),
     ));
+
+    stop_button.hide();
+    play_button.hide();
 
     // Entries
     filename_entry.set_placeholder_text(Some(&gettext("Default filename:")));
@@ -287,8 +292,8 @@ fn main() {
     });
 
     // init record struct
-    let ffmpeg_record_interface: Rc<RefCell<ffmpeg_interface::Ffmpeg>> =
-        Rc::new(RefCell::new(ffmpeg_interface::Ffmpeg {
+    let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> =
+        Rc::new(RefCell::new(Ffmpeg {
             filename: (folder_chooser, filename_entry, format_chooser_combobox),
             record_video: video_switch,
             record_audio: audio_switch,
@@ -301,6 +306,7 @@ fn main() {
             process_id: None,
             saved_filename: None,
             unbound: None,
+            progress_widget: ProgressWidget::new(&main_window)
         }));
 
     // App Indicator
@@ -331,16 +337,25 @@ fn main() {
     // when indictor stop recording button clicked
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     let mut _indicator = indicator.clone();
+    let _stop_button = stop_button.clone();
+    let _play_button = play_button.clone();
+    let _record_button = record_button.clone();
     indicator_stop_recording.connect_activate(move |_| {
         _ffmpeg_record_interface.borrow_mut().clone().stop_record();
         _indicator
             .borrow_mut()
             .set_status(AppIndicatorStatus::Passive);
+
+        _record_button.show();
+        _stop_button.hide();
+        _play_button.show();
     });
 
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     let mut _area_capture = area_capture.clone();
     let mut _indicator = indicator.clone();
+    let _stop_button = stop_button.clone();
+    let _record_button = record_button.clone();
     record_button.connect_clicked(move |_| {
         let _area_capture = _area_capture.borrow_mut().clone();
         _ffmpeg_record_interface.borrow_mut().start_record(
@@ -352,15 +367,25 @@ fn main() {
         _indicator
             .borrow_mut()
             .set_status(AppIndicatorStatus::Active);
+
+        _record_button.hide();
+        _stop_button.show();
     });
 
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     let mut _indicator = indicator.clone();
+    let _stop_button = stop_button.clone();
+    let _play_button = play_button.clone();
+    let _record_button = record_button.clone();
     stop_button.connect_clicked(move |_| {
         _ffmpeg_record_interface.borrow_mut().clone().stop_record();
         _indicator
             .borrow_mut()
             .set_status(AppIndicatorStatus::Passive);
+
+        _record_button.show();
+        _stop_button.hide();
+        _play_button.show();
     });
 
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
