@@ -51,7 +51,7 @@ impl ProgressWidget {
     }
 
     pub fn hide(&self) {
-        self.dialog.emit_close();
+        self.dialog.hide();
     }
 }
 
