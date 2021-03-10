@@ -1,4 +1,5 @@
 extern crate gdk;
+extern crate gdk_pixbuf;
 extern crate gettextrs;
 extern crate gio;
 extern crate gtk;
@@ -9,6 +10,7 @@ mod ffmpeg_interface;
 
 // use gio::prelude::*;
 use ffmpeg_interface::{Ffmpeg, ProgressWidget};
+use gdk_pixbuf::Pixbuf;
 use gettextrs::{bindtextdomain, gettext, setlocale, textdomain, LocaleCategory};
 use glib::signal::Inhibit;
 use gtk::prelude::*;
@@ -203,28 +205,6 @@ fn main() {
         config_management::set_bool("default", "followmousecheck", switch.get_active());
     });
 
-    // About Dialog
-    about_menu_item.set_label("about");
-    about_dialog.set_transient_for(Some(&main_window));
-    about_dialog.set_program_name(&gettext("Blue Recorder"));
-    about_dialog.set_version(Some("3.2.3"));
-    about_dialog.set_copyright(Some("© 2021 Salem Yaslem"));
-    about_dialog.set_wrap_license(true);
-    about_dialog.set_license(Some("Blue Recorder is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\nBlue Recorder is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\nSee the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with Blue Recorder. If not, see <http://www.gnu.org/licenses/>."));
-    about_dialog.set_comments(Some(&gettext(
-        "A simple screen recorder for Linux desktop. Supports Wayland & Xorg.",
-    )));
-    about_dialog.set_authors(&[
-        "Salem Yaslem <s@sy.sa>",
-        "M.Hanny Sabbagh <mhsabbagh@outlook.com>",
-        "Alessandro Toia <gort818@gmail.com>",
-        "Patreon Supporters: Ahmad Gharib, Medium,\nWilliam Grunow, Alex Benishek.",
-    ]);
-    about_dialog.set_artists(&["Mustapha Assabar"]);
-    about_dialog.set_website(Some("https://github.com/xlmnxp/blue-recorder/"));
-    about_dialog.set_logo_icon_name(Some("blue-recorder"));
-    about_dialog.set_transient_for(Some(&main_window));
-
     // Buttons
     window_grab_button.set_label(&gettext("Select a Window"));
     area_grab_button.set_label(&gettext("Select an Area"));
@@ -404,6 +384,31 @@ fn main() {
     play_button.connect_clicked(move |_| {
         _ffmpeg_record_interface.borrow_mut().clone().play_record();
     });
+
+    // About Dialog
+    about_menu_item.set_label("about");
+    about_dialog.set_transient_for(Some(&main_window));
+    about_dialog.set_program_name(&gettext("Blue Recorder"));
+    about_dialog.set_version(Some("3.2.3"));
+    about_dialog.set_copyright(Some("© 2021 Salem Yaslem"));
+    about_dialog.set_wrap_license(true);
+    about_dialog.set_license(Some("Blue Recorder is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\nBlue Recorder is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\nSee the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with Blue Recorder. If not, see <http://www.gnu.org/licenses/>."));
+    about_dialog.set_comments(Some(&gettext(
+        "A simple screen recorder for Linux desktop. Supports Wayland & Xorg.",
+    )));
+    about_dialog.set_authors(&[
+        "Salem Yaslem <s@sy.sa>",
+        "M.Hanny Sabbagh <mhsabbagh@outlook.com>",
+        "Alessandro Toia <gort818@gmail.com>",
+        "Patreon Supporters: Ahmad Gharib, Medium,\nWilliam Grunow, Alex Benishek.",
+    ]);
+    about_dialog.set_artists(&["Mustapha Assabar"]);
+    about_dialog.set_website(Some("https://github.com/xlmnxp/blue-recorder/"));
+    about_dialog.set_logo_icon_name(Some("blue-recorder"));
+    about_dialog.set_logo(Some(
+        &Pixbuf::from_file(&indicator_icon_path.to_str().unwrap()).unwrap(),
+    ));
+    about_dialog.set_transient_for(Some(&main_window));
 
     // Windows
     // hide area chooser after it deleted.
