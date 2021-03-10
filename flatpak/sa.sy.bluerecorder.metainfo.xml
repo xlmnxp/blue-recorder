@@ -21,8 +21,10 @@
     </screenshot>
   </screenshots>
   
-  <icon type="stock">sa.sy.bluerecorder</icon>
+  <icon>sa.sy.bluerecorder</icon>
   
+  <content_rating type="oars-1.0" />
+
   <categories>
     <category>Graphics</category>
     <category>GTK</category>
@@ -31,4 +33,10 @@
   <provides>
     <binary>blue-recorder</binary>
   </provides>
+
+  <url type="homepage">https://github.com/xlmnxp/blue-recorder</url>
+	<releases>
+		<release version="0+git.4c4762a" date="2021-03-09"/>
+	</releases>
+
 </component>
