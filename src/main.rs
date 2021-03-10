@@ -8,6 +8,7 @@ mod config_management;
 mod ffmpeg_interface;
 
 // use gio::prelude::*;
+use ffmpeg_interface::{Ffmpeg, ProgressWidget};
 use gettextrs::{bindtextdomain, gettext, setlocale, textdomain, LocaleCategory};
 use glib::signal::Inhibit;
 use gtk::prelude::*;
@@ -18,6 +19,7 @@ use gtk::{
 };
 use libappindicator::{AppIndicator, AppIndicatorStatus};
 use std::cell::RefCell;
+use std::ops::Add;
 use std::path::Path;
 use std::process::{Command, Stdio};
 use std::rc::Rc;
@@ -40,20 +42,30 @@ fn main() {
     if user_interface_path_abs.exists() {
         builder = Builder::from_file(user_interface_path_abs);
     } else {
-        builder = Builder::from_file("interfaces/main.ui");
+        builder = Builder::from_file(
+            std::env::var("INTERFACES_DIR")
+                .unwrap_or(String::from("interfaces/"))
+                .add("main.ui"),
+        );
     }
 
     // translate
+    let mut po_path_abs = {
+        let mut current_exec_dir = std::env::current_exe().unwrap();
+        current_exec_dir.pop();
+        current_exec_dir
+    }
+    .join(Path::new("po"));
+
+    if !po_path_abs.exists() {
+        po_path_abs = std::fs::canonicalize(Path::new(
+            &std::env::var("PO_DIR").unwrap_or(String::from("po")),
+        ))
+        .unwrap();
+    }
+
     setlocale(LocaleCategory::LcAll, "");
-    bindtextdomain(
-        "blue-recorder",
-        {
-            let mut current_exec_dir = std::env::current_exe().unwrap();
-            current_exec_dir.pop();
-            current_exec_dir
-        }
-        .join(Path::new("po")).to_str().unwrap(),
-    );
+    bindtextdomain("blue-recorder", po_path_abs.to_str().unwrap());
     textdomain("blue-recorder");
 
     // config initialize
@@ -85,7 +97,6 @@ fn main() {
     let mouse_switch: CheckButton = builder.get_object("mouseswitch").unwrap();
     let follow_mouse_switch: CheckButton = builder.get_object("followmouseswitch").unwrap();
     let about_menu_item: MenuItem = builder.get_object("about_menu_item").unwrap();
-
     // --- default properties
     // Windows
     main_window.set_title(&gettext("Blue Recorder"));
@@ -95,6 +106,9 @@ fn main() {
     area_chooser_window.set_visual(Some(
         &gdk::Screen::get_rgba_visual(&gdk::Screen::get_default().unwrap()).unwrap(),
     ));
+
+    stop_button.hide();
+    play_button.hide();
 
     // Entries
     filename_entry.set_placeholder_text(Some(&gettext("Default filename:")));
@@ -110,8 +124,7 @@ fn main() {
     format_chooser_combobox.append(Some("avi"), &gettext("AVI (Audio Video Interleaved)"));
     format_chooser_combobox.append(Some("mp4"), &gettext("MP4 (MPEG-4 Part 14)"));
     format_chooser_combobox.append(Some("wmv"), &gettext("WMV (Windows Media Video)"));
-    // TODO: gif not work at this time, fix it!
-    // format_chooser_combobox.append(Some("gif"), &gettext("GIF (Graphics Interchange Format)"));
+    format_chooser_combobox.append(Some("gif"), &gettext("GIF (Graphics Interchange Format)"));
     format_chooser_combobox.append(Some("nut"), &gettext("NUT (NUT Recording Format)"));
     format_chooser_combobox.set_active(Some(0));
 
@@ -287,21 +300,21 @@ fn main() {
     });
 
     // init record struct
-    let ffmpeg_record_interface: Rc<RefCell<ffmpeg_interface::Ffmpeg>> =
-        Rc::new(RefCell::new(ffmpeg_interface::Ffmpeg {
-            filename: (folder_chooser, filename_entry, format_chooser_combobox),
-            record_video: video_switch,
-            record_audio: audio_switch,
-            audio_id: audio_source_combobox,
-            record_mouse: mouse_switch,
-            follow_mouse: follow_mouse_switch,
-            record_frames: frames_spin,
-            record_delay: delay_spin,
-            command: command_entry,
-            process_id: None,
-            saved_filename: None,
-            unbound: None,
-        }));
+    let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
+        filename: (folder_chooser, filename_entry, format_chooser_combobox),
+        record_video: video_switch,
+        record_audio: audio_switch,
+        audio_id: audio_source_combobox,
+        record_mouse: mouse_switch,
+        follow_mouse: follow_mouse_switch,
+        record_frames: frames_spin,
+        record_delay: delay_spin,
+        command: command_entry,
+        process_id: None,
+        saved_filename: None,
+        unbound: None,
+        progress_widget: ProgressWidget::new(&main_window),
+    }));
 
     // App Indicator
     let mut indicator_icon_path = {
@@ -312,7 +325,12 @@ fn main() {
     .join(Path::new("data/blue-recorder.png"));
 
     if !indicator_icon_path.exists() {
-        indicator_icon_path = std::fs::canonicalize(Path::new("data/blue-recorder.png")).unwrap();
+        indicator_icon_path = std::fs::canonicalize(Path::new(
+            &std::env::var("DATA_DIR")
+                .unwrap_or(String::from("data/"))
+                .add("blue-recorder.png"),
+        ))
+        .unwrap();
     }
 
     let indicator = Rc::new(RefCell::new(AppIndicator::new(
@@ -331,16 +349,25 @@ fn main() {
     // when indictor stop recording button clicked
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     let mut _indicator = indicator.clone();
+    let _stop_button = stop_button.clone();
+    let _play_button = play_button.clone();
+    let _record_button = record_button.clone();
     indicator_stop_recording.connect_activate(move |_| {
         _ffmpeg_record_interface.borrow_mut().clone().stop_record();
         _indicator
             .borrow_mut()
             .set_status(AppIndicatorStatus::Passive);
+
+        _record_button.show();
+        _stop_button.hide();
+        _play_button.show();
     });
 
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     let mut _area_capture = area_capture.clone();
     let mut _indicator = indicator.clone();
+    let _stop_button = stop_button.clone();
+    let _record_button = record_button.clone();
     record_button.connect_clicked(move |_| {
         let _area_capture = _area_capture.borrow_mut().clone();
         _ffmpeg_record_interface.borrow_mut().start_record(
@@ -352,15 +379,25 @@ fn main() {
         _indicator
             .borrow_mut()
             .set_status(AppIndicatorStatus::Active);
+
+        _record_button.hide();
+        _stop_button.show();
     });
 
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     let mut _indicator = indicator.clone();
+    let _stop_button = stop_button.clone();
+    let _play_button = play_button.clone();
+    let _record_button = record_button.clone();
     stop_button.connect_clicked(move |_| {
         _ffmpeg_record_interface.borrow_mut().clone().stop_record();
         _indicator
             .borrow_mut()
             .set_status(AppIndicatorStatus::Passive);
+
+        _record_button.show();
+        _stop_button.hide();
+        _play_button.show();
     });
 
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
