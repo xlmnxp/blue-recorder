@@ -1,8 +1,3 @@
-#    TO DO:
-# 1- Resize icon to 128x128
-# 2- Remove full access to dbus. not allowed in flathub https://github.com/flathub/flathub/wiki/App-Requirements#dbus-access
-# 3- Add more requirements to sa.sy.bluerecorder.metainfo.xml
-# 4- Clean more files to get small pkg size
 app-id: sa.sy.bluerecorder
 runtime: org.gnome.Platform
 runtime-version: "3.38"
@@ -11,6 +6,8 @@ sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
 cleanup:
   - /share/man
+  - /share/doc
+  - /share/gtk-doc
 command: /app/opt/blue-recorder
 finish-args:
   - --filesystem=home
@@ -19,8 +16,8 @@ finish-args:
   - --socket=wayland
   - --socket=pulseaudio
   - --device=dri
-  - --socket=system-bus 
-  - --socket=session-bus
+  - --talk-name=org.gnome.Shell.Screencast
+  - --talk-name=org.kde.StatusNotifierWatcher
 modules:
   - shared-modules/libappindicator/libappindicator-gtk3-12.10.json
   - shared-modules/dbus-glib/dbus-glib-0.110.json
@@ -33,10 +30,10 @@ modules:
         CARGO_HOME: "/run/build/bluerecorder/cargo"
         RUST_BACKTRACE: "1"
     build-commands:
-      - mkdir -p $FLATPAK_DEST/opt ${FLATPAK_DEST}/share/icons/hicolor/96x96/apps/
-      - install -D flatpak/sa.sy.bluerecorder.metainfo.xml -t ${FLATPAK_DEST}/usr/share/metainfo/
-      - install -D flatpak/sa.sy.bluerecorder.desktop -t ${FLATPAK_DEST}/share/applications/
-      - cp -v data/blue-recorder.png ${FLATPAK_DEST}/share/icons/hicolor/96x96/apps/sa.sy.bluerecorder.png 
+      - mkdir -p $FLATPAK_DEST/opt $FLATPAK_DEST/share/icons/hicolor/128x128/apps/
+      - install -D flatpak/sa.sy.bluerecorder.metainfo.xml -t $FLATPAK_DEST/usr/share/metainfo/
+      - install -D flatpak/sa.sy.bluerecorder.desktop -t $FLATPAK_DEST/share/applications/
+      - cp -v data/blue-recorder@x128.png $FLATPAK_DEST/share/icons/hicolor/128x128/apps/sa.sy.bluerecorder.png
       - cargo --offline fetch --manifest-path Cargo.toml --verbose 
       - cargo --offline build --release --verbose
       - cp target/release/blue-recorder $FLATPAK_DEST/opt 
@@ -44,8 +41,9 @@ modules:
     sources:
       - cargo-sources.json
       - type: git
-        url: file:///home/suliman/git/my-fork-blue-recorder
+        url: https://github.com/me00001/blue-recorder.git
         #url: https://github.com/xlmnxp/blue-recorder.git
+        #commit:  
 
   - name: xwininfo
     sources: 
@@ -53,12 +51,29 @@ modules:
         url: https://xorg.freedesktop.org/archive/individual/app/xwininfo-1.1.5.tar.bz2
         md5: 26d46f7ef0588d3392da3ad5802be420
 
+  - name: libx264
+    config-opts:
+      - --enable-shared
+      - --disable-cli
+    sources:
+      - type: git
+        url: https://code.videolan.org/videolan/x264.git
+        branch: stable
+
   - name: ffmpeg
     config-opts:
       - --enable-shared
       - --disable-static
       - --disable-doc
+      - --disable-htmlpages
+      - --disable-manpages
+      - --disable-podpages
+      - --disable-txtpages
       - --enable-libpulse
+      - --enable-gpl
+      - --enable-libx264
+      - --enable-version3
+      - --enable-libvorbis
     sources:
       - type: archive
         url: http://www.ffmpeg.org/releases/ffmpeg-4.3.2.tar.xz
