@@ -48,14 +48,13 @@ impl ProgressWidget {
     pub fn show(&self) {
         self.progress.set_fraction(0.0);
         self.dialog.show_all();
+        self.dialog.show();
     }
 
     pub fn hide(&self) {
         self.dialog.hide();
     }
 }
-
-trait GnomeScreencastResult {}
 
 #[dbus_proxy(
     interface = "org.gnome.Shell.Screencast",

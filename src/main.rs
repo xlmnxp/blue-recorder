@@ -302,13 +302,13 @@ fn main() {
         current_exec_dir.pop();
         current_exec_dir
     }
-    .join(Path::new("data/blue-recorder.png"));
+    .join(Path::new("data/blue-recorder@x96.png"));
 
     if !indicator_icon_path.exists() {
         indicator_icon_path = std::fs::canonicalize(Path::new(
             &std::env::var("DATA_DIR")
                 .unwrap_or(String::from("data/"))
-                .add("blue-recorder.png"),
+                .add("blue-recorder@x96.png"),
         ))
         .unwrap();
     }
