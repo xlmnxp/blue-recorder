@@ -237,13 +237,14 @@ impl Ffmpeg {
             let gnome_screencast_proxy = GnomeScreencastProxy::new(&connection).unwrap();
             gnome_screencast_proxy.stop_screencast().unwrap();
             let is_audio_record = std::path::Path::new(
-                format!("{}.temp.audio", self.saved_filename.as_ref().unwrap()).as_str(),
+                format!("{}.temp.audio", self.saved_filename.as_ref().unwrap_or(&String::from(""))).as_str()
             )
             .exists();
             let is_video_record = std::path::Path::new(
-                format!("{}.temp", self.saved_filename.as_ref().unwrap()).as_str(),
+                format!("{}.temp", self.saved_filename.as_ref().unwrap_or(&String::from(""))).as_str()
             )
             .exists();
+            
             if self.unbound.is_some() {
                 &self.progress_widget.set_progress(
                     "Stop Wayland Video Recording".to_string(),

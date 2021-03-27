@@ -402,7 +402,7 @@ fn main() {
         "Alessandro Toia <gort818@gmail.com>",
         "Patreon Supporters: Ahmad Gharib, Medium,\nWilliam Grunow, Alex Benishek.",
     ]);
-    about_dialog.set_artists(&["Mustapha Assabar"]);
+    about_dialog.set_artists(&["Mustapha Assabar", "Abdullah Al-Baroty <albaroty@gmail.com>"]);
     about_dialog.set_website(Some("https://github.com/xlmnxp/blue-recorder/"));
     about_dialog.set_logo_icon_name(Some("blue-recorder"));
     about_dialog.set_logo(Some(
