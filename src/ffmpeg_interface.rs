@@ -1,7 +1,7 @@
 extern crate subprocess;
 use chrono::prelude::*;
 use gtk::prelude::*;
-use gtk::{CheckButton, ComboBoxText, Dialog, Entry, FileChooser, ProgressBar, SpinButton, Window};
+use gtk::{CheckButton, ComboBoxText, Entry, FileChooser, ProgressBar, SpinButton, Window, WindowType, WindowPosition};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::process::Command;
@@ -15,28 +15,34 @@ use zvariant::Value;
 
 #[derive(Clone)]
 pub struct ProgressWidget {
-    pub dialog: Dialog,
+    pub window: Window,
     pub progress: ProgressBar,
 }
 
 impl ProgressWidget {
     pub fn new(window: &Window) -> ProgressWidget {
         ProgressWidget {
-            dialog: Dialog::new(),
+            window: Window::new(WindowType::Toplevel),
             progress: ProgressBar::new(),
         }
         .init(&window)
     }
 
-    pub fn init(&self, window: &Window) -> ProgressWidget {
-        self.dialog.set_title("Progress");
-        self.dialog.set_transient_for(Some(window));
+    pub fn init(self, window: &Window) -> ProgressWidget {
+        self.window.set_title("Progress");
+        self.window.set_transient_for(Some(window));
         self.progress.set_fraction(0.0);
-        self.dialog.get_content_area().add(&self.progress);
         self.progress.set_show_text(true);
-        self.dialog.set_deletable(false);
-        self.dialog.set_modal(true);
-        self.clone()
+        self.progress.set_margin_start(10);
+        self.progress.set_margin_top(10);
+        self.progress.set_margin_end(10);
+        self.progress.set_margin_bottom(10);
+        self.window.add(&self.progress);
+        self.window.set_deletable(false);
+        self.window.set_position(WindowPosition::CenterOnParent);
+        self.window.set_modal(true);
+        self.window.resize(200, 50);
+        self
     }
 
     pub fn set_progress(&self, title: String, value: i32, max: i32) {
@@ -47,12 +53,12 @@ impl ProgressWidget {
 
     pub fn show(&self) {
         self.progress.set_fraction(0.0);
-        self.dialog.show_all();
-        self.dialog.show();
+        self.window.show();
+        self.window.show_all();
     }
 
     pub fn hide(&self) {
-        self.dialog.hide();
+        self.window.hide();
     }
 }
 
@@ -120,6 +126,7 @@ impl Ffmpeg {
                 .display()
                 .to_string(),
         );
+
         if is_wayland() {
             if self.record_video.get_active() {
                 if self.unbound.is_some() {
@@ -153,7 +160,8 @@ impl Ffmpeg {
                 ffmpeg_command.arg("-y");
                 self.process_id = Some(ffmpeg_command.spawn().unwrap().id());
             }
-            return 0;
+
+            return self.process_id.unwrap();
         }
 
         let mut ffmpeg_command: Command = Command::new("ffmpeg");
@@ -266,7 +274,7 @@ impl Ffmpeg {
                         .arg(format!("{}.temp", self.saved_filename.as_ref().unwrap()));
                     ffmpeg_convert_command.arg(format!(
                         "{}{}",
-                        self.saved_filename.as_ref().unwrap(),
+                        self.saved_filename.as_ref().unwrap_or(&String::new()),
                         if is_audio_record {
                             format!(
                                 ".temp.without.audio.{}",
