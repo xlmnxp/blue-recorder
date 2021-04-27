@@ -389,7 +389,7 @@ fn main() {
     about_menu_item.set_label("about");
     about_dialog.set_transient_for(Some(&main_window));
     about_dialog.set_program_name(&gettext("Blue Recorder"));
-    about_dialog.set_version(Some("3.2.3"));
+    about_dialog.set_version(Some("0.1.3"));
     about_dialog.set_copyright(Some("© 2021 Salem Yaslem"));
     about_dialog.set_wrap_license(true);
     about_dialog.set_license(Some("Blue Recorder is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\nBlue Recorder is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\nSee the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with Blue Recorder. If not, see <http://www.gnu.org/licenses/>."));
@@ -400,6 +400,7 @@ fn main() {
         "Salem Yaslem <s@sy.sa>",
         "M.Hanny Sabbagh <mhsabbagh@outlook.com>",
         "Alessandro Toia <gort818@gmail.com>",
+        "Suliman Altassan <suliman@dismail.de>",
         "Patreon Supporters: Ahmad Gharib, Medium,\nWilliam Grunow, Alex Benishek.",
     ]);
     about_dialog.set_artists(&["Mustapha Assabar", "Abdullah Al-Baroty <albaroty@gmail.com>"]);
