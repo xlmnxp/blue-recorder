@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Blue Recorder
+Comment=A simple screen recorder for Linux desktop. Supports Wayland & Xorg
+Icon=sa.sy.bluerecorder
+Exec=/app/opt/blue-recorder
+Categories=Graphics;GTK
