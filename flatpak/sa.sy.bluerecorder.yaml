@@ -30,7 +30,7 @@ modules:
         RUST_BACKTRACE: "1"
     build-commands:
       - mkdir -p $FLATPAK_DEST/opt $FLATPAK_DEST/share/icons/hicolor/128x128/apps/
-      - install -D flatpak/sa.sy.bluerecorder.metainfo.xml -t $FLATPAK_DEST/usr/share/metainfo/
+      - install -D flatpak/sa.sy.bluerecorder.metainfo.xml -t $FLATPAK_DEST/share/metainfo/
       - install -D flatpak/sa.sy.bluerecorder.desktop -t $FLATPAK_DEST/share/applications/
       - cp -v data/blue-recorder@x128.png $FLATPAK_DEST/share/icons/hicolor/128x128/apps/sa.sy.bluerecorder.png
       - cargo --offline fetch --manifest-path Cargo.toml --verbose 
