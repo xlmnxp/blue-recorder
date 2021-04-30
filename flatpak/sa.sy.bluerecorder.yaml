@@ -1,6 +1,6 @@
 app-id: sa.sy.bluerecorder
 runtime: org.gnome.Platform
-runtime-version: "3.38"
+runtime-version: "40"
 sdk: org.gnome.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
@@ -13,7 +13,6 @@ finish-args:
   - --filesystem=home
   - --share=ipc
   - --socket=x11
-  - --socket=wayland
   - --socket=pulseaudio
   - --device=dri
   - --talk-name=org.gnome.Shell.Screencast
@@ -31,7 +30,7 @@ modules:
         RUST_BACKTRACE: "1"
     build-commands:
       - mkdir -p $FLATPAK_DEST/opt $FLATPAK_DEST/share/icons/hicolor/128x128/apps/
-      - install -D flatpak/sa.sy.bluerecorder.metainfo.xml -t $FLATPAK_DEST/usr/share/metainfo/
+      - install -D flatpak/sa.sy.bluerecorder.metainfo.xml -t $FLATPAK_DEST/share/metainfo/
       - install -D flatpak/sa.sy.bluerecorder.desktop -t $FLATPAK_DEST/share/applications/
       - cp -v data/blue-recorder@x128.png $FLATPAK_DEST/share/icons/hicolor/128x128/apps/sa.sy.bluerecorder.png
       - cargo --offline fetch --manifest-path Cargo.toml --verbose 
