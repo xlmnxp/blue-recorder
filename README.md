@@ -14,8 +14,7 @@ it based on [Green Recorder](https://github.com/mhsabbagh/green-recorder) and re
 ## Installation
 Blue Recorder available as Snap package
 
-
-[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/blue-recorder)
+<a href='https://snapcraft.io/blue-recorder'><img height='60' alt='Get it from the Snap Store' src='https://snapcraft.io/static/images/badges/en/snap-store-black.svg'/></a> <a href='https://flathub.org/apps/details/sa.sy.bluerecorder'><img height='60' alt='Download on Flathub' src='https://flathub.org/assets/badges/flathub-badge-en.png'/></a>
 
 ## Build from source
 Blue Recorder depend in the following dependencies 
