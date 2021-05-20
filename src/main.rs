@@ -132,22 +132,27 @@ fn main() {
 
     // get audio sources
     let sources_descriptions: Vec<String> = {
+        let list_sources_child = Command::new("pactl")
+        .args(&["list", "sources"])
+        .stdout(Stdio::piped())
+        .spawn();
         let sources_descriptions = String::from_utf8(
+            if list_sources_child.is_ok() {
             Command::new("grep")
                 .args(&["-e", "device.description"])
                 .stdin(
-                    Command::new("pactl")
-                        .args(&["list", "sources"])
-                        .stdout(Stdio::piped())
-                        .spawn()
-                        .unwrap()
-                        .stdout
-                        .take()
-                        .unwrap(),
+                    list_sources_child
+                    .unwrap()
+                    .stdout
+                    .take()
+                    .unwrap(),
                 )
                 .output()
                 .unwrap()
-                .stdout,
+                .stdout
+            } else {
+                Vec::new()
+            }
         )
         .unwrap();
         sources_descriptions
