@@ -463,10 +463,10 @@ impl Ffmpeg {
 
 fn is_wayland() -> bool {
     std::env::var("XDG_SESSION_TYPE")
-        .unwrap()
+        .unwrap_or_default()
         .eq_ignore_ascii_case("wayland")
 }
 
 fn is_snap() -> bool {
-    std::env::var("SNAP").unwrap_or(String::new()).len() > 0
+    std::env::var("SNAP").unwrap_or_default().len() > 0
 }
