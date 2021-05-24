@@ -67,8 +67,8 @@ fn main() {
     }
 
     setlocale(LocaleCategory::LcAll, "");
-    bindtextdomain("blue-recorder", po_path_abs.to_str().unwrap());
-    textdomain("blue-recorder");
+    bindtextdomain("blue-recorder", po_path_abs.to_str().unwrap()).unwrap();
+    textdomain("blue-recorder").unwrap();
 
     // config initialize
     config_management::initialize();
