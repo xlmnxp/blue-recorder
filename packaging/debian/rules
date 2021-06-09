@@ -1,0 +1,24 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+override_dh_auto_clean:
+	cargo clean
+
+
+override_dh_auto_build:
+	cargo build --release
+
+
+override_dh_auto_install:
+	desktop-file-edit --set-icon=blue-recorder "data/blue-recorder.desktop"
+	install -Dm0644 "data/blue-recorder.desktop" "debian/blue-recorder/usr/share/applications/blue-recorder.desktop"
+	install -Dm04755 "target/release/blue-recorder" "debian/blue-recorder/opt/blue-recorder/blue-recorder"
+	cp -r "data" "debian/blue-recorder/opt/blue-recorder/data/"
+	cp -r "po" "debian/blue-recorder/opt/blue-recorder/po/"
+	mkdir -p "debian/blue-recorder/usr/bin/"
+	ln -s "/opt/blue-recorder/blue-recorder"
+	mv blue-recorder "debian/blue-recorder/usr/bin"
+	install -Dm0644 "interfaces/main.ui" "debian/blue-recorder/opt/blue-recorder/interfaces/main.ui"
+	install -Dm0644 "data/blue-recorder.svg" "debian/blue-recorder/usr/share/pixmaps/blue-recorder.svg"
+
