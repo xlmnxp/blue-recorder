@@ -1,0 +1,117 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# usolmz <u2slmz@protonmail.ch>, YEAR.
+msgid ""
+msgstr ""
+"Project-Id-Version: Blue Recorder 0.1.4\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-08-06 19:05+0300\n"
+"PO-Revision-Date: 2021-05-31 23:46+0300\n"
+"Language-Team: usolmz,u2slmz@protonmail.ch\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.4.3\n"
+"Last-Translator: Alvehe <alvehetv@alvehe.com>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: tr_TR\n"
+
+msgid "Blue Recorder"
+msgstr "Blue Kayıt"
+
+msgid "AreaChooser"
+msgstr "AlanSeçin"
+
+msgid "Blue Recorder Preferences"
+msgstr "Blue Kayıt Tercihleri"
+
+msgid "File Name (Will be overwritten).."
+msgstr "Dosya Adı (Üstüne yazılacak).."
+
+msgid "Enter your command here.."
+msgstr "Komutunuzu buraya giriniz.."
+
+msgid "MKV (Matroska multimedia container format)"
+msgstr "MKV (Matroska çokluortam biçemi)"
+
+msgid "AVI (Audio Video Interleaved)"
+msgstr "AVI (Ses Görüntü Birleşimi)"
+
+msgid "MP4 (MPEG-4 Part 14)"
+msgstr "MP4 (MPEG-4 Part 14)"
+
+msgid "WMV (Windows Media Video)"
+msgstr "WMV (Windows Video Ortamı)"
+
+msgid "NUT (NUT Recording Format)"
+msgstr "NUT (NUT Kayıt Biçemi)"
+
+msgid "GIF (Graphics Interchange Format)"
+msgstr "GİF (Grafik Değiştirme Biçimi)"
+
+msgid "Record Video"
+msgstr "Video Kaydet"
+
+msgid "Record Audio"
+msgstr "Ses Kaydet"
+
+msgid "Show Mouse"
+msgstr "Fareyi Göster"
+
+msgid "Follow Mouse"
+msgstr "Fare Takip"
+
+msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
+msgstr "Linux masaüstü için basit bir ekran kaydedici. Wayland ve Xorg'u Destekler."
+
+msgid "Select a Window"
+msgstr "Bir Pencere Seçin"
+
+msgid "Select an Area"
+msgstr "Bir Alan Seçin"
+
+msgid "Frames:"
+msgstr "Kareler:"
+
+msgid "Delay:"
+msgstr "Gecikme:"
+
+msgid "Run Command After Recording:"
+msgstr "Kayıttan sonra komutu çalıştırın:"
+
+msgid "Default frames:"
+msgstr "Varsayılan Kareler:"
+
+msgid "Default delay:"
+msgstr "Varsayılan gecikme:"
+
+msgid "Default folder:"
+msgstr "Varsayılan klasör:"
+
+msgid "Default pipeline:"
+msgstr "Varsayılan hat:"
+
+msgid "Default command:"
+msgstr "Varsayılan komut:"
+
+msgid "Audio Input Source:"
+msgstr "Ses Giriş Kaynağı:"
+
+msgid "Record Mouse"
+msgstr "Fareyi Kaydet"
+
+msgid "Default filename:"
+msgstr "Varsayılan dosyaadı:"
+
+msgid "Default PulseAudio Input Source"
+msgstr "Varsayılan PulseAudio Giriş Kaynağı"
+
+msgid "Area Chooser"
+msgstr "Alan Seç"
+
+msgid "Your area position has been saved!"
+msgstr "Bölge konumunuza kaydedildi!"
+
+msgid "stop recording"
+msgstr "kaydı durdur"
