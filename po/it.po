@@ -2,7 +2,6 @@
 # Copyright (C) 2017, FOSS Project
 # This file is distributed under the same license as the Blue Recorder package.
 # Albano Battistella <albano_battistella@hotmail.com>, 2021.
-
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
@@ -14,7 +13,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
-
 
 msgid "There seems to be a problem in recording. Try running 'blue-recorder' from the command line to see the issue."
 msgstr "Sembra esserci un problema nella registrazione. Prova a eseguire "blue-recorder" dalla riga di comando per vedere il problema."
