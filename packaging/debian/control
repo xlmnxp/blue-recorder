@@ -1,0 +1,13 @@
+Source: blue-recorder
+Section: video
+Priority: optional
+Maintainer: Salem Yaslem
+Standards-Version: 3.9.6
+Build-Depends: debhelper (>= 9.20120311), cargo, clang, libappindicator3-dev, gettext, build-essential
+Homepage: https://github.com/xlmnxp/blue-recorder
+
+Package: blue-recorder
+Architecture: amd64
+Depends: ffmpeg, libappindicator3-1, pulseaudio, x11-utils
+Replaces: blue-recorder
+Description: A simple desktop recorder for Linux systems. Built using Rust, GTK+ 3 and ffmpeg. It supports recording audio  and video on almost all Linux interfaces with support for Wayland display server on GNOME session.
