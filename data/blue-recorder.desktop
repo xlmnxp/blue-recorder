@@ -10,6 +10,6 @@ Comment[ru]=Записывайте ваш рабочий стол легко, и
 Exec=blue-recorder
 Terminal=false
 Type=Application
-Icon=${SNAP}/meta/gui/blue-recorder.png
+Icon=blue-recorder
 Categories=GTK;AudioVideo;
 StartupNotify=false
