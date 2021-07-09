@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=Blue Recorder
+Name[ar]=المسجّل الأزرق
+GenericName=Blue Recorder
+GenericName[ar]=المسجّل الأزرق
+Comment=Record your desktop easily using a simple GUI
+Comment[ar]=سجّل سطح مكتبك باستخدام واجهة رسومية سهلة
+Comment[fr]=Enregistrez votre bureau facilement avec une interface simple
+Comment[ru]=Записывайте ваш рабочий стол легко, используя простой интерфейс
+Exec=blue-recorder
+Terminal=false
+Type=Application
+Icon=${SNAP}/meta/gui/blue-recorder.png
+Categories=GTK;AudioVideo;
+StartupNotify=false
