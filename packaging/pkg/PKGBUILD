@@ -15,10 +15,10 @@ conflicts=("blue-recorder")
 source=("$pkgname::git+https://github.com/xlmnxp/blue-recorder.git")
 sha256sums=("SKIP")
 
-prepare() {
-    cd $pkgname
-    sed -i  's+Icon=${SNAP}/meta/gui/blue-recorder.png+Icon=blue-recorder+g' data/blue-recorder.desktop
-}
+#prepare() {
+#    cd $pkgname
+#    sed -i  's+Icon=${SNAP}/meta/gui/blue-recorder.png+Icon=blue-recorder+g' data/blue-recorder.desktop
+#}
 
 build() 
    {
