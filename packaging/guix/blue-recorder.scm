@@ -1014,20 +1014,20 @@ useful types and distributions, and some randomness-related algorithms.")
 
 (define-public blue-recorder
  (let ((version "1.3.2")
-       (commit "e160bfcceb58d66a3a1c075b158bf9c1a5bcf0d3"))
+       (commit "d67dc8882ae446feca9cc44076f0839a0aeb845c"))
   (package
    (name "blue-recorder")
    (version (git-version version "+4commits" commit))
    (source (origin
             (method git-fetch)
             (uri (git-reference
-                  (url "https://gitlab.com/gitlab_ly/blue-recorder/")
+                  (url "https://github.com/xlmnxp/blue-recorder/")
                   (commit commit)
                   (recursive? #t)))
             (file-name (git-file-name name version))
             (sha256
              (base32
-              "0vchxxxgawh6zgh91l6dapx6a6gyfwz7vhwzlnh6nq6734rjhjxa"))))
+              "0q6af66bw6qqrr99gw09750hmd63d1d5zaalrmbk3jqf8kmyzkaa"))))
     (build-system cargo-build-system)
     (arguments
      `(#:cargo-inputs
