@@ -34,7 +34,7 @@ parts:
 apps:
   blue-recorder:
     command: blue-recorder
-    desktop: snap/gui/blue-recorder.desktop
+    desktop: data/snap/blue-recorder.desktop
     extensions:
       - gnome-3-28
     plugs:
