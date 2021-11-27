@@ -126,7 +126,7 @@ impl Ffmpeg {
                 .join(PathBuf::from(format!(
                     "{}.{}",
                     if self.filename.1.get_text().to_string().trim().eq("") {
-                        Utc::now().to_string().replace(" UTC", "")
+                        Utc::now().to_string().replace(" UTC", "").replace(" ", "-")
                     } else {
                         self.filename.1.get_text().to_string().trim().to_string()
                     },
@@ -180,18 +180,6 @@ impl Ffmpeg {
             // record video with specified width and hight
             ffmpeg_command.arg("-video_size");
             ffmpeg_command.arg(format!("{}x{}", width, height));
-            // if show mouse switch is enabled, draw the mouse to video
-            ffmpeg_command.arg("-draw_mouse");
-            if self.record_mouse.get_active() {
-                ffmpeg_command.arg("1");
-            } else {
-                ffmpeg_command.arg("0");
-            }
-            // if follow mouse switch is enabled, follow the mouse
-            if self.follow_mouse.get_active() {
-                ffmpeg_command.arg("-follow_mouse");
-                ffmpeg_command.arg("centered");
-            }
             ffmpeg_command.arg("-framerate");
             ffmpeg_command.arg(format!("{}", self.record_frames.get_value()));
             ffmpeg_command.arg("-f");
@@ -200,12 +188,27 @@ impl Ffmpeg {
             ffmpeg_command.arg(format!(
                 "{}+{},{}",
                 std::env::var("DISPLAY")
-                    .unwrap_or(":1".to_string())
+                    .unwrap_or(":0".to_string())
                     .as_str(),
                 x,
                 y
             ));
-            ffmpeg_command.arg("-q");
+
+            // if show mouse switch is enabled, draw the mouse to video
+            ffmpeg_command.arg("-draw_mouse");
+            if self.record_mouse.get_active() {
+                ffmpeg_command.arg("1");
+            } else {
+                ffmpeg_command.arg("0");
+            }
+
+            // if follow mouse switch is enabled, follow the mouse
+            if self.follow_mouse.get_active() {
+                ffmpeg_command.arg("-follow_mouse");
+                ffmpeg_command.arg("centered");
+            }
+            
+            ffmpeg_command.arg("-crf");
             ffmpeg_command.arg("1");
             ffmpeg_command.arg(self.saved_filename.as_ref().unwrap().to_string());
             ffmpeg_command.arg("-y");
@@ -419,7 +422,6 @@ impl Ffmpeg {
         // make unbound channel for communication with record thread
         let (tx, tr): (Sender<bool>, Receiver<bool>) = mpsc::channel();
         self.unbound = Some(tx);
-        let receiver: Receiver<bool> = tr;
 
         // start recording in another thread
         std::thread::spawn(move || {
@@ -435,7 +437,7 @@ impl Ffmpeg {
                 .unwrap();
 
             loop {
-                if receiver.recv().unwrap_or(false) {
+                if tr.recv().unwrap_or(false) {
                     break;
                 }
             }
