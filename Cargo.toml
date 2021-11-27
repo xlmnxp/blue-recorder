@@ -15,8 +15,8 @@ chrono = "0.4.19"
 libappindicator = "0.5.2"
 gettext-rs = "0.7.0"
 subprocess = "0.2.6"
-zbus = "1.8.0"
-zvariant = "2.3.0"
+zbus = "1.9.2"
+zvariant = "2.10.0"
 gdk-pixbuf = "0.9.0"
 
 [dependencies.gtk]
