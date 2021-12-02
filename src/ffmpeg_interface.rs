@@ -167,7 +167,7 @@ impl Ffmpeg {
                     x,
                     y,
                     width,
-                    height,
+                    height
                 );
             }
 
@@ -308,7 +308,8 @@ impl Ffmpeg {
                 }
             }
         }
-        if is_video_record {
+
+        if is_video_record && !is_wayland() {
             let mut move_command = Command::new("mv");
             move_command.arg(format!(
                 "{}{}",
@@ -330,7 +331,7 @@ impl Ffmpeg {
             move_command.output().unwrap();
 
             // if audio record, then merge video with audio
-            if is_audio_record {
+            if is_audio_record && is_video_record {
                 &self
                     .progress_widget
                     .set_progress("Save Audio Recording".to_string(), 4, 6);
@@ -369,7 +370,7 @@ impl Ffmpeg {
             }
         }
         // if only audio is recording then convert it to chosen fromat
-        else if is_audio_record {
+        else if is_audio_record && !is_video_record {
             &self
                 .progress_widget
                 .set_progress("Convert Audio to choosen format".to_string(), 4, 6);
