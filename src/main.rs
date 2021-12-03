@@ -356,18 +356,24 @@ fn main() {
     let _record_button = record_button.clone();
     record_button.connect_clicked(move |_| {
         let _area_capture = _area_capture.borrow_mut().clone();
-        _ffmpeg_record_interface.borrow_mut().start_record(
+        match _ffmpeg_record_interface.borrow_mut().start_record(
             _area_capture.x,
             _area_capture.y,
             _area_capture.width,
             _area_capture.height,
-        );
-        _indicator
-            .borrow_mut()
-            .set_status(AppIndicatorStatus::Active);
-
-        _record_button.hide();
-        _stop_button.show();
+        ) {
+            (None, None) => {
+                // do nothing if the start_record function return nothing
+            }
+            _ => {
+                _indicator
+                    .borrow_mut()
+                    .set_status(AppIndicatorStatus::Active);
+        
+                _record_button.hide();
+                _stop_button.show();
+            }
+        }
     });
 
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();

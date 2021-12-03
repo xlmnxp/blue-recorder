@@ -1,6 +1,8 @@
 extern crate subprocess;
 use chrono::prelude::*;
+use gettextrs::gettext;
 use gtk::prelude::*;
+use gtk::{ButtonsType, DialogFlags, MessageDialog, MessageType, ResponseType};
 use gtk::{
     CheckButton, ComboBoxText, Entry, FileChooser, ProgressBar, SpinButton, Window, WindowPosition,
     WindowType,
@@ -15,8 +17,6 @@ use std::time::Duration;
 use subprocess::Exec;
 use zbus::dbus_proxy;
 use zvariant::Value;
-use gtk::{ButtonsType, DialogFlags, MessageType, MessageDialog, ResponseType};
-use gettextrs::gettext;
 
 #[derive(Clone)]
 pub struct ProgressWidget {
@@ -139,17 +139,24 @@ impl Ffmpeg {
                 .to_string(),
         );
 
-        let is_file_already_exists = std::path::Path::new(format!("{}", self.saved_filename.unwrap()))
-        .exists();
+        let is_file_already_exists =
+            std::path::Path::new(format!("{}", self.saved_filename.clone().unwrap()).as_str())
+                .exists();
 
         if is_file_already_exists {
-            if MessageDialog::new(None::<&Window>,
+            let message_dialog = MessageDialog::new(
+                None::<&Window>,
                 DialogFlags::empty(),
-                MessageType::Question,
-                ButtonsType::Ok,
-                &gettext("Would you like to overwrite this file?")).run() != ResponseType::Ok {
-                    return (None, None);
-                }
+                MessageType::Warning,
+                ButtonsType::OkCancel,
+                &gettext("Would you like to overwrite this file?"),
+            );
+
+            if message_dialog.run() != ResponseType::Ok {
+                message_dialog.hide();
+                return (None, None);
+            }
+            message_dialog.hide();
         }
 
         if self.record_audio.get_active() {
@@ -182,7 +189,7 @@ impl Ffmpeg {
                     x,
                     y,
                     width,
-                    height
+                    height,
                 );
             }
 
@@ -222,7 +229,6 @@ impl Ffmpeg {
                 ffmpeg_command.arg("-follow_mouse");
                 ffmpeg_command.arg("centered");
             }
-            
             ffmpeg_command.arg("-crf");
             ffmpeg_command.arg("1");
             ffmpeg_command.arg(self.saved_filename.as_ref().unwrap().to_string());
