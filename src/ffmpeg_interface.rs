@@ -15,6 +15,8 @@ use std::time::Duration;
 use subprocess::Exec;
 use zbus::dbus_proxy;
 use zvariant::Value;
+use gtk::{ButtonsType, DialogFlags, MessageType, MessageDialog, ResponseType};
+use gettextrs::gettext;
 
 #[derive(Clone)]
 pub struct ProgressWidget {
@@ -136,6 +138,19 @@ impl Ffmpeg {
                 .display()
                 .to_string(),
         );
+
+        let is_file_already_exists = std::path::Path::new(format!("{}", self.saved_filename.unwrap()))
+        .exists();
+
+        if is_file_already_exists {
+            if MessageDialog::new(None::<&Window>,
+                DialogFlags::empty(),
+                MessageType::Question,
+                ButtonsType::Ok,
+                &gettext("Would you like to overwrite this file?")).run() != ResponseType::Ok {
+                    return (None, None);
+                }
+        }
 
         if self.record_audio.get_active() {
             let mut ffmpeg_command = Command::new("ffmpeg");
