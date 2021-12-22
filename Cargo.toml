@@ -1,6 +1,6 @@
 [package]
 name = "blue-recorder"
-version = "0.1.4"
+version = "0.1.5"
 authors = ["Salem Yaslem <s@sy.sa>"]
 edition = "2018"
 
