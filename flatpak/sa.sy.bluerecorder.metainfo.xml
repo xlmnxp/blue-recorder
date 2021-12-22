@@ -34,6 +34,7 @@
 
   <url type="homepage">https://github.com/xlmnxp/blue-recorder</url>
 	<releases>
+		<release version="0.1.5" date="2021-12-22"/>
 		<release version="0.1.4" date="2021-05-24"/>
 		<release version="0.1.3" date="2021-04-27"/>
 	</releases>
