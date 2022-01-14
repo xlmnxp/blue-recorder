@@ -33,23 +33,8 @@ fn main() {
         println!("Failed to initialize GTK.");
         return;
     }
-    let builder: Builder;
-    let user_interface_path_abs = {
-        let mut current_exec_dir = std::env::current_exe().unwrap();
-        current_exec_dir.pop();
-        current_exec_dir
-    }
-    .join(Path::new("interfaces/main.ui"));
-
-    if user_interface_path_abs.exists() {
-        builder = Builder::from_file(user_interface_path_abs);
-    } else {
-        builder = Builder::from_file(
-            std::env::var("INTERFACES_DIR")
-                .unwrap_or(String::from("interfaces/"))
-                .add("main.ui"),
-        );
-    }
+    let ui_src = include_str!("../interfaces/main.ui").to_string();
+    let builder: Builder = Builder::from_string(ui_src.as_str());
 
     // translate
     let mut po_path_abs = {
