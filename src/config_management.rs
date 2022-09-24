@@ -28,9 +28,7 @@ pub fn initialize() -> PathBuf {
 fn default() {
     set("default", "frame", "60");
     set("default", "delay", "0");
-    set(
-        "default",
-        "folder",
+    set("default", "folder",
         String::from("file://")
             .add(
                 glib::get_user_special_dir(glib::UserDirectory::Videos)

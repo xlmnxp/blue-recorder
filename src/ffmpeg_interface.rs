@@ -1,12 +1,11 @@
 extern crate subprocess;
 use chrono::prelude::*;
 use gettextrs::gettext;
+use gio::File;
 use gtk::prelude::*;
 use gtk::{ButtonsType, DialogFlags, MessageDialog, MessageType, ResponseType};
 use gtk::{
-    CheckButton, ComboBoxText, Entry, FileChooser, ProgressBar, SpinButton, Window, WindowPosition,
-    WindowType,
-};
+    CheckButton, ComboBoxText, Entry, ProgressBar, SpinButton, Window};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::process::Command;
@@ -27,14 +26,14 @@ pub struct ProgressWidget {
 impl ProgressWidget {
     pub fn new(window: &Window) -> ProgressWidget {
         ProgressWidget {
-            window: Window::new(WindowType::Toplevel),
+            window: Window::new(),
             progress: ProgressBar::new(),
         }
         .init(&window)
     }
 
     pub fn init(self, window: &Window) -> ProgressWidget {
-        self.window.set_title("Progress");
+        self.window.set_title(Some("Progress"));
         self.window.set_transient_for(Some(window));
         self.progress.set_fraction(0.0);
         self.progress.set_show_text(true);
@@ -42,11 +41,10 @@ impl ProgressWidget {
         self.progress.set_margin_top(10);
         self.progress.set_margin_end(10);
         self.progress.set_margin_bottom(10);
-        self.window.add(&self.progress);
+        self.window.set_child(Some(&self.progress));
         self.window.set_deletable(false);
-        self.window.set_position(WindowPosition::CenterOnParent);
         self.window.set_modal(true);
-        self.window.resize(200, 50);
+        self.window.set_default_size(200, 50);
         self
     }
 
@@ -59,7 +57,6 @@ impl ProgressWidget {
     pub fn show(&self) {
         self.progress.set_fraction(0.0);
         self.window.show();
-        self.window.show_all();
     }
 
     pub fn hide(&self) {
@@ -92,7 +89,7 @@ trait GnomeScreencast {
 
 #[derive(Clone)]
 pub struct Ffmpeg {
-    pub filename: (FileChooser, Entry, ComboBoxText),
+    pub filename: (File, Entry, ComboBoxText),
     pub record_video: CheckButton,
     pub record_audio: CheckButton,
     pub audio_id: ComboBoxText,
@@ -123,16 +120,16 @@ impl Ffmpeg {
         self.saved_filename = Some(
             self.filename
                 .0
-                .get_filename()
+                .path()
                 .unwrap()
                 .join(PathBuf::from(format!(
                     "{}.{}",
-                    if self.filename.1.get_text().to_string().trim().eq("") {
+                    if self.filename.1.text().to_string().trim().eq("") {
                         Utc::now().to_string().replace(" UTC", "").replace(" ", "-")
                     } else {
-                        self.filename.1.get_text().to_string().trim().to_string()
+                        self.filename.1.text().to_string().trim().to_string()
                     },
-                    self.filename.2.get_active_id().unwrap().to_string()
+                    self.filename.2.active_id().unwrap().to_string()
                 )))
                 .as_path()
                 .display()
@@ -152,19 +149,22 @@ impl Ffmpeg {
                 &gettext("Would you like to overwrite this file?"),
             );
 
-            if message_dialog.run() != ResponseType::Ok {
+            message_dialog.connect_response(glib::clone!(@strong message_dialog => move |_, response| {
+            message_dialog.show();
+            if response != ResponseType::Ok {
                 message_dialog.hide();
-                return (None, None);
+                return;
             }
             message_dialog.hide();
+            }));
         }
 
-        if self.record_audio.get_active() {
+        if self.record_audio.is_active() {
             let mut ffmpeg_command = Command::new("ffmpeg");
             ffmpeg_command.arg("-f");
             ffmpeg_command.arg("pulse");
             ffmpeg_command.arg("-i");
-            ffmpeg_command.arg(self.audio_id.get_active_id().unwrap().to_string());
+            ffmpeg_command.arg(self.audio_id.active_id().unwrap().to_string());
             ffmpeg_command.arg("-f");
             ffmpeg_command.arg("ogg");
             ffmpeg_command.arg(format!(
@@ -176,7 +176,7 @@ impl Ffmpeg {
         }
 
         if is_wayland() {
-            if self.record_video.get_active() {
+            if self.record_video.is_active() {
                 if self.unbound.is_some() {
                     self.clone()
                         .unbound
@@ -196,14 +196,14 @@ impl Ffmpeg {
             return (None, self.audio_process_id);
         }
 
-        if self.record_video.get_active() {
+        if self.record_video.is_active() {
             let mut ffmpeg_command: Command = Command::new("ffmpeg");
 
             // record video with specified width and hight
             ffmpeg_command.arg("-video_size");
             ffmpeg_command.arg(format!("{}x{}", width, height));
             ffmpeg_command.arg("-framerate");
-            ffmpeg_command.arg(format!("{}", self.record_frames.get_value()));
+            ffmpeg_command.arg(format!("{}", self.record_frames.value()));
             ffmpeg_command.arg("-f");
             ffmpeg_command.arg("x11grab");
             ffmpeg_command.arg("-i");
@@ -218,14 +218,14 @@ impl Ffmpeg {
 
             // if show mouse switch is enabled, draw the mouse to video
             ffmpeg_command.arg("-draw_mouse");
-            if self.record_mouse.get_active() {
+            if self.record_mouse.is_active() {
                 ffmpeg_command.arg("1");
             } else {
                 ffmpeg_command.arg("0");
             }
 
             // if follow mouse switch is enabled, follow the mouse
-            if self.follow_mouse.get_active() {
+            if self.follow_mouse.is_active() {
                 ffmpeg_command.arg("-follow_mouse");
                 ffmpeg_command.arg("centered");
             }
@@ -234,7 +234,7 @@ impl Ffmpeg {
             ffmpeg_command.arg(self.saved_filename.as_ref().unwrap().to_string());
             ffmpeg_command.arg("-y");
             // sleep for delay
-            sleep(Duration::from_secs(self.record_delay.get_value() as u64));
+            sleep(Duration::from_secs(self.record_delay.value() as u64));
             // start recording and return the process id
             self.video_process_id = Some(ffmpeg_command.spawn().unwrap().id());
             return (self.video_process_id, self.audio_process_id);
@@ -316,7 +316,7 @@ impl Ffmpeg {
                         if is_audio_record {
                             format!(
                                 ".temp.without.audio.{}",
-                                self.filename.2.get_active_id().unwrap().to_string()
+                                self.filename.2.active_id().unwrap().to_string()
                             )
                         } else {
                             "".to_string()
@@ -343,7 +343,7 @@ impl Ffmpeg {
                 if is_audio_record {
                     format!(
                         ".temp.without.audio.{}",
-                        self.filename.2.get_active_id().unwrap().to_string()
+                        self.filename.2.active_id().unwrap().to_string()
                     )
                 } else {
                     "".to_string()
@@ -362,7 +362,7 @@ impl Ffmpeg {
                 ffmpeg_audio_merge_command.arg(format!(
                     "{}.temp.without.audio.{}",
                     self.saved_filename.as_ref().unwrap(),
-                    self.filename.2.get_active_id().unwrap().to_string()
+                    self.filename.2.active_id().unwrap().to_string()
                 ));
                 ffmpeg_audio_merge_command.arg("-i");
                 ffmpeg_audio_merge_command.arg(format!(
@@ -385,7 +385,7 @@ impl Ffmpeg {
                 std::fs::remove_file(format!(
                     "{}.temp.without.audio.{}",
                     self.saved_filename.as_ref().unwrap(),
-                    self.filename.2.get_active_id().unwrap().to_string()
+                    self.filename.2.active_id().unwrap().to_string()
                 ))
                 .unwrap();
             }
@@ -415,13 +415,13 @@ impl Ffmpeg {
         }
 
         // execute command after finish recording
-        if !(self.command.get_text().trim() == "") {
+        if !(self.command.text().trim() == "") {
             &self.progress_widget.set_progress(
                 "execute custom command after finish".to_string(),
                 5,
                 6,
             );
-            Exec::shell(self.command.get_text().trim()).popen().unwrap();
+            Exec::shell(self.command.text().trim()).popen().unwrap();
         }
 
         &self
@@ -438,8 +438,8 @@ impl Ffmpeg {
         let gnome_screencast_proxy = GnomeScreencastProxy::new(&connection).unwrap();
         // options for gnome screencast
         let mut screencast_options: HashMap<&str, Value> = HashMap::new();
-        screencast_options.insert("framerate", Value::new(self.record_frames.get_value()));
-        screencast_options.insert("draw-cursor", Value::new(self.record_mouse.get_active()));
+        screencast_options.insert("framerate", Value::new(self.record_frames.value()));
+        screencast_options.insert("draw-cursor", Value::new(self.record_mouse.is_active()));
         screencast_options.insert("pipeline", Value::new("vp8enc min_quantizer=10 max_quantizer=50 cq_level=13 cpu-used=5 deadline=1000000 threads=%T ! queue ! webmmux"));
         // make unbound channel for communication with record thread
         let (tx, tr): (Sender<bool>, Receiver<bool>) = mpsc::channel();
