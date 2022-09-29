@@ -73,6 +73,7 @@ pub fn build_ui(application: &Application) {
     let delay_spin: SpinButton = builder.object("delay").unwrap();
     let filename_entry: Entry = builder.object("filename").unwrap();
     let folder_chooser_button: Button = builder.object("folderchooser").unwrap();
+    let folder_chooser_image: Image = builder.object("folderchooserimage").unwrap();
     let folder_chooser_label: Label = builder.object("folderchooserlabel").unwrap();
     let follow_mouse_switch: CheckButton = builder.object("followmouseswitch").unwrap();
     let format_chooser_combobox: ComboBoxText = builder.object("comboboxtext1").unwrap();
@@ -250,14 +251,17 @@ pub fn build_ui(application: &Application) {
     let mut folder_chooser = Some(gio::File::for_uri(&config_management::get("default", "folder"))).unwrap();
     let mut folder_chooser_name = folder_chooser.basename().unwrap();
     folder_chooser_label.set_label(&folder_chooser_name.to_string_lossy());
+    let mut folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
+    folder_chooser_image.set_icon_name(Some(folder_chooser_icon));
     // show file chooser dialog
     folder_chooser_button.connect_clicked(glib::clone!(@strong folder_chooser_native => move |_| {
-            folder_chooser_native.connect_response(glib::clone!(@strong folder_chooser_native, @strong folder_chooser_label => move |_, response| {
+            folder_chooser_native.connect_response(glib::clone!(@strong folder_chooser_native, @strong folder_chooser_label, @strong folder_chooser_image => move |_, response| {
                     if response == gtk::ResponseType::Accept {
                             let folder_chooser = folder_chooser_native.file().unwrap();
                             let folder_chooser_name = folder_chooser.basename().unwrap();
                             folder_chooser_label.set_label(&folder_chooser_name.to_string_lossy());
-                            // TODO: change folder icon
+                            let mut folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
+                            folder_chooser_image.set_icon_name(Some(folder_chooser_icon));
                             };
                     folder_chooser_native.destroy();
             }));

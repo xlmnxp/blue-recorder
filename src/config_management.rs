@@ -1,8 +1,10 @@
 extern crate glib;
 extern crate ini;
+extern crate dirs;
 
 use glib::get_user_data_dir;
 use ini::Ini;
+use dirs::home_dir;
 use std::ops::Add;
 use std::path::{Path, PathBuf};
 
@@ -90,4 +92,25 @@ pub fn set(selection: &str, key: &str, value: &str) -> bool {
 
 pub fn set_bool(selection: &str, key: &str, value: bool) -> bool {
     set(&selection, &key, if value { "1" } else { "0" })
+}
+
+pub fn folder_icon(folder_chooser_name: Option<&str>) -> &str {
+    let home_folder = dirs::home_dir().unwrap();
+    if folder_chooser_name == home_folder.as_path().file_name().unwrap().to_str(){
+        "user-home"
+    }
+    else {
+    match folder_chooser_name {
+    Some("/") => "drive-harddisk",
+    Some("Desktop") => "user-desktop",
+    Some("Documents") => "folder-documents",
+    Some("Downloads") => "folder-download",
+    Some("Music") => "folder-music",
+    Some("Pictures") => "folder-pictures",
+    Some("Public") => "folder-publicshare",
+    Some("Templates") => "folder-templates",
+    Some("Videos") => "folder-videos",
+    _ => "folder",
+    }
+    }
 }
