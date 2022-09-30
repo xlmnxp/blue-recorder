@@ -1,4 +1,9 @@
 #area_chooser_window {
     background-color: rgba(255, 255, 255, 0);
-    border: 1px dashed rgba(255, 255, 255, 0.5);
+    border: 3px dashed rgba(0, 0, 0, 1);
+}
+
+#area_set_button {
+    color: rgba(255, 255, 255, 1);
+    background: rgba(255, 255, 255, 0);
 }
