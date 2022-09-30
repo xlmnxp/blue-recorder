@@ -92,9 +92,7 @@ pub fn build_ui(application: &Application) {
     // Windows
     main_window.set_title(Some(&gettext("Blue Recorder")));
     main_window.set_application(Some(application));
-    // TODO: make area chooser window transparent
-    // NOTICE: it work as snap package
-    area_chooser_window.set_title(Some(&gettext("Area Chooser")));
+    area_chooser_window.set_title(Some(&gettext("Area Chooser"))); //title is hiden
 
     //hide stop & play buttons
     stop_button.hide();

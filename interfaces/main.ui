@@ -32,20 +32,30 @@
 	<object class="GtkWindow" id="area_chooser_window">
 		<property name="name">area_chooser_window</property>
 		<property name="can-focus">True</property>
+		<property name="decorated">False</property>
 		<property name="hexpand">True</property>
 		<property name="vexpand">True</property>
 		<property name="icon-name">blue-recorder</property>
 		<child type="titlebar">
 			<object class="GtkHeaderBar" id="headerbar2">
 				<property name="visible">True</property>
+				<property name="can-focus">False</property>
+				<property name="show-title-buttons">True</property>
+			</object>
+		</child>
+		<child>
+			<object class="GtkWindowHandle">
+				<property name="visible">True</property>
 				<property name="can-focus">True</property>
 				<child>
 					<object class="GtkButton" id="area_set_button">
+						<property name="name">area_set_button</property>
 						<property name="visible">True</property>
 						<property name="can-focus">True</property>
 						<property name="receives-default">True</property>
+						<property name="halign">center</property>
+						<property name="valign">center</property>
 						<child>
-							<!-- n-columns=2 n-rows=1 -->
 							<object class="GtkGrid">
 								<property name="visible">True</property>
 								<property name="can-focus">True</property>
@@ -55,7 +65,7 @@
 									<object class="GtkImage">
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
-										<property name="icon-name">emblem-ok-symbolic</property>
+										<property name="icon-name">object-select-symbolic</property>
 									</object>
 								</child>
 								<child>
@@ -131,7 +141,6 @@
 										<property name="spacing">5</property>
 										<child>
 											<object class="GtkImage" id="folderchooserimage">
-												<property name="icon-name">folder</property>
 												<property name="halign">start</property>
 											</object>
 										</child>
@@ -191,7 +200,6 @@
 					</object>
 				</child>
 				<child>
-					<!-- n-columns=2 n-rows=1 -->
 					<object class="GtkGrid" id="grid1">
 						<property name="visible">True</property>
 						<property name="can-focus">True</property>
@@ -202,7 +210,6 @@
 						<property name="row-homogeneous">True</property>
 						<property name="column-homogeneous">True</property>
 						<child>
-							<!-- n-columns=2 n-rows=2 -->
 							<object class="GtkGrid">
 								<property name="visible">True</property>
 								<property name="can-focus">True</property>
@@ -255,7 +262,6 @@
 							</object>
 						</child>
 						<child>
-							<!-- n-columns=2 n-rows=2 -->
 							<object class="GtkGrid">
 								<property name="visible">True</property>
 								<property name="can-focus">True</property>
@@ -309,7 +315,6 @@
 					</object>
 				</child>
 				<child>
-					<!-- n-columns=2 n-rows=2 -->
 					<object class="GtkGrid">
 						<property name="visible">True</property>
 						<property name="can-focus">True</property>
@@ -387,7 +392,6 @@
 						<property name="can-focus">True</property>
 						<property name="receives-default">True</property>
 						<child>
-							<!-- n-columns=2 n-rows=1 -->
 							<object class="GtkGrid">
 								<property name="visible">True</property>
 								<property name="can-focus">True</property>
@@ -417,7 +421,6 @@
 						<property name="can-focus">True</property>
 						<property name="receives-default">True</property>
 						<child>
-							<!-- n-columns=2 n-rows=1 -->
 							<object class="GtkGrid">
 								<property name="visible">True</property>
 								<property name="can-focus">True</property>
