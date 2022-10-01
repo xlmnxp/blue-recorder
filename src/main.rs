@@ -92,7 +92,7 @@ pub fn build_ui(application: &Application) {
     // Windows
     main_window.set_title(Some(&gettext("Blue Recorder")));
     main_window.set_application(Some(application));
-    area_chooser_window.set_title(Some(&gettext("Area Chooser"))); //title is hiden
+    area_chooser_window.set_title(Some(&gettext("Area Chooser"))); //title is hidden
 
     //hide stop & play buttons
     stop_button.hide();
