@@ -73,7 +73,7 @@ impl Ffmpeg {
         height: u16,
     ) -> (Option<u32>, Option<u32>) {
         if self.video_process_id.is_some() || self.audio_process_id.is_some() {
-            self.stop_record();
+            //self.stop_record();
         }
 
         self.saved_filename = Some(
@@ -88,14 +88,15 @@ impl Ffmpeg {
                     } else {
                         self.filename.1.text().to_string().trim().to_string()
                     },
-                    self.filename.2.active_id().unwrap())))
+                    self.filename.2.active_id().unwrap()
+                )))
                 .as_path()
                 .display()
                 .to_string(),
         );
 
         let is_file_already_exists =
-            std::path::Path::new(self.saved_filename.clone().unwrap().as_str())
+            std::path::Path::new(&self.saved_filename.clone().unwrap())
                 .exists();
 
         if is_file_already_exists {
@@ -122,7 +123,7 @@ impl Ffmpeg {
             ffmpeg_command.arg("-f");
             ffmpeg_command.arg("pulse");
             ffmpeg_command.arg("-i");
-            ffmpeg_command.arg(self.audio_id.active_id().unwrap());
+            ffmpeg_command.arg(&self.audio_id.active_id().unwrap());
             ffmpeg_command.arg("-f");
             ffmpeg_command.arg("ogg");
             ffmpeg_command.arg(format!(
@@ -221,8 +222,7 @@ impl Ffmpeg {
         )
         .exists();
 
-
-        if is_video_record {
+        if is_video_record  {
             let mut move_command = Command::new("mv");
             move_command.arg(format!(
                 "{}{}",
@@ -311,7 +311,7 @@ impl Ffmpeg {
             self.progress_widget.set_progress(
                 "execute custom command after finish".to_string(),
                 5,
-                6
+                6,
             );
             Exec::shell(self.command.text().trim()).popen().unwrap();
         }
@@ -320,7 +320,6 @@ impl Ffmpeg {
             .progress_widget
             .set_progress("Finish".to_string(), 6, 6);
         self.progress_widget.hide();
-
     }
 
     pub fn play_record(self) {
@@ -334,7 +333,7 @@ impl Ffmpeg {
                     .unwrap();
             } else {
                 Command::new("xdg-open")
-                    .arg(self.saved_filename.as_ref().unwrap())
+                    .arg(self.saved_filename.unwrap())
                     .spawn()
                     .unwrap();
             }
@@ -343,5 +342,5 @@ impl Ffmpeg {
 }
 
 fn is_snap() -> bool {
-    std::env::var("SNAP").unwrap_or_default().is_empty()
+    !std::env::var("SNAP").unwrap_or_default().is_empty()
 }

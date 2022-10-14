@@ -111,16 +111,16 @@ pub fn build_ui(application: &Application) {
     command_entry.set_text(&config_management::get("default", "command"));
 
     // CheckBox
-    format_chooser_combobox.append(Some("webm"), &gettext("WEBM (Open Web Media File)"));
+    //format_chooser_combobox.append(Some("webm"), &gettext("WEBM (Open Web Media File)"));
     format_chooser_combobox.append(Some("mp4"), &gettext("MP4 (MPEG-4 Part 14)"));
-    format_chooser_combobox.append(Some("gif"), &gettext("GIF (Graphics Interchange Format)"));
+    //format_chooser_combobox.append(Some("gif"), &gettext("GIF (Graphics Interchange Format)"));
     format_chooser_combobox.append(
         Some("mkv"),
         &gettext("MKV (Matroska multimedia container format)"),
     );
-    format_chooser_combobox.append(Some("avi"), &gettext("AVI (Audio Video Interleaved)"));
-    format_chooser_combobox.append(Some("wmv"), &gettext("WMV (Windows Media Video)"));
-    format_chooser_combobox.append(Some("nut"), &gettext("NUT (NUT Recording Format)"));
+    //format_chooser_combobox.append(Some("avi"), &gettext("AVI (Audio Video Interleaved)"));
+    //format_chooser_combobox.append(Some("wmv"), &gettext("WMV (Windows Media Video)"));
+    //format_chooser_combobox.append(Some("nut"), &gettext("NUT (NUT Recording Format)"));
     format_chooser_combobox.set_active(Some(0));
 
     // get audio sources
@@ -376,7 +376,6 @@ pub fn build_ui(application: &Application) {
     }));
 
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
-    let mut _area_capture = area_capture.clone();
     let _stop_button = stop_button.clone();
     let _record_button = record_button.clone();
     record_button.connect_clicked(move |_| {
@@ -405,9 +404,8 @@ pub fn build_ui(application: &Application) {
     let _stop_button = stop_button.clone();
     let _play_button = play_button.clone();
     stop_button.connect_clicked(move |_| {
-        let _record_button = record_button.clone();
         _ffmpeg_record_interface.borrow_mut().clone().stop_record();
-        _record_button.show();
+        record_button.show();
         _stop_button.hide();
         _play_button.show();
     });
