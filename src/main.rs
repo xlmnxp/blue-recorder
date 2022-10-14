@@ -9,8 +9,7 @@ mod ffmpeg_interface;
 use ffmpeg_interface::{Ffmpeg, ProgressWidget};
 use gettextrs::{bindtextdomain, gettext, LocaleCategory, setlocale, textdomain};
 use gtk::{prelude::*, Application};
-use gtk::{AboutDialog, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry, FileChooserNative, FileChooserAction, Image, Label, SpinButton, Window};
-//use libappindicator::{AppIndicator, AppIndicatorStatus};
+use gtk::{AboutDialog, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry, FileChooserNative, FileChooserAction, Image, Label, MessageDialog, ProgressBar, SpinButton, ToggleButton, Window};
 use std::cell::RefCell;
 use std::ops::Add;
 use std::path::Path;
@@ -31,6 +30,7 @@ pub fn build_ui(application: &Application) {
         println!("Failed to initialize GTK.");
         return;
     }
+    // TODO: add wayland screen record support
 
     let ui_src = include_str!("../interfaces/main.ui").to_string();
     let builder: Builder = Builder::from_string(ui_src.as_str());
@@ -45,7 +45,7 @@ pub fn build_ui(application: &Application) {
 
     if !po_path_abs.exists() {
         po_path_abs = std::fs::canonicalize(Path::new(
-            &std::env::var("PO_DIR").unwrap_or(String::from("po")),
+            &std::env::var("PO_DIR").unwrap_or_else(|_| String::from("po")),
         ))
         .unwrap();
     }
@@ -60,9 +60,10 @@ pub fn build_ui(application: &Application) {
     // get Objects from UI
     let main_window: Window = builder.object("main_window").unwrap();
     let area_chooser_window: Window = builder.object("area_chooser_window").unwrap();
-    let area_grab_button: Button = builder.object("area_grab_button").unwrap();
+    let area_grab_button: ToggleButton = builder.object("area_grab_button").unwrap();
+    let area_grab_icon: Image = builder.object("area_grab_icon").unwrap();
     let area_set_button: Button = builder.object("area_set_button").unwrap();
-    let about_menu_item: Button = builder.object("about_menu_item").unwrap();
+    let about_button: Button = builder.object("aboutbutton").unwrap();
     let about_dialog: AboutDialog = builder.object("about_dialog").unwrap();
     let audio_source_combobox: ComboBoxText = builder.object("audiosource").unwrap();
     let audio_source_label: Label = builder.object("audio_source_label").unwrap();
@@ -72,20 +73,25 @@ pub fn build_ui(application: &Application) {
     let delay_label: Label = builder.object("delay_label").unwrap();
     let delay_spin: SpinButton = builder.object("delay").unwrap();
     let filename_entry: Entry = builder.object("filename").unwrap();
-    let folder_chooser_button: Button = builder.object("folderchooser").unwrap();
-    let folder_chooser_image: Image = builder.object("folderchooserimage").unwrap();
-    let folder_chooser_label: Label = builder.object("folderchooserlabel").unwrap();
+    let folder_chooser_button: Button = builder.object("folder_chooser").unwrap();
+    let folder_chooser_image: Image = builder.object("folder_chooser_image").unwrap();
+    let folder_chooser_label: Label = builder.object("folder_chooser_label").unwrap();
     let follow_mouse_switch: CheckButton = builder.object("followmouseswitch").unwrap();
     let format_chooser_combobox: ComboBoxText = builder.object("comboboxtext1").unwrap();
     let frames_label: Label = builder.object("frames_label").unwrap();
     let frames_spin: SpinButton = builder.object("frames").unwrap();
     let mouse_switch: CheckButton = builder.object("mouseswitch").unwrap();
     let play_button: Button = builder.object("playbutton").unwrap();
+    let progress_button: Button = builder.object("progressbutton").unwrap();
+    let progress_dialog: MessageDialog = builder.object("progress_dialog").unwrap();
+    let progressbar: ProgressBar = builder.object("progressbar").unwrap();
     let record_button: Button = builder.object("recordbutton").unwrap();
+    let screen_grab_button: ToggleButton = builder.object("screen_grab_button").unwrap();
+    let screen_grab_icon: Image = builder.object("screen_grab_icon").unwrap();
     let stop_button: Button = builder.object("stopbutton").unwrap();
     let video_switch: CheckButton = builder.object("videoswitch").unwrap();
-    let window_grab_button: Button = builder.object("window_grab_button").unwrap();
-    // TODO: add recording mode indicator
+    let window_grab_icon: Image = builder.object("window_grab_icon").unwrap();
+    let window_grab_button: ToggleButton = builder.object("window_grab_button").unwrap();
     // TODO: add timer
 
     // --- default properties
@@ -105,17 +111,17 @@ pub fn build_ui(application: &Application) {
     command_entry.set_text(&config_management::get("default", "command"));
 
     // CheckBox
+    format_chooser_combobox.append(Some("webm"), &gettext("WEBM (Open Web Media File)"));
+    format_chooser_combobox.append(Some("mp4"), &gettext("MP4 (MPEG-4 Part 14)"));
+    format_chooser_combobox.append(Some("gif"), &gettext("GIF (Graphics Interchange Format)"));
     format_chooser_combobox.append(
         Some("mkv"),
         &gettext("MKV (Matroska multimedia container format)"),
     );
     format_chooser_combobox.append(Some("avi"), &gettext("AVI (Audio Video Interleaved)"));
-    format_chooser_combobox.append(Some("mp4"), &gettext("MP4 (MPEG-4 Part 14)"));
     format_chooser_combobox.append(Some("wmv"), &gettext("WMV (Windows Media Video)"));
-    format_chooser_combobox.append(Some("gif"), &gettext("GIF (Graphics Interchange Format)"));
     format_chooser_combobox.append(Some("nut"), &gettext("NUT (NUT Recording Format)"));
     format_chooser_combobox.set_active(Some(0));
-    // TODO: add support for webm format
 
     // get audio sources
     let sources_descriptions: Vec<String> = {
@@ -124,7 +130,7 @@ pub fn build_ui(application: &Application) {
         .stdout(Stdio::piped())
         .spawn();
         let sources_descriptions = String::from_utf8(
-            if list_sources_child.is_ok() {
+            if let Ok(..) = list_sources_child {
             Command::new("grep")
                 .args(&["-e", "device.description"])
                 .stdin(
@@ -143,13 +149,13 @@ pub fn build_ui(application: &Application) {
         )
         .unwrap();
         sources_descriptions
-            .split("\n")
+            .split('\n')
             .map(|s| {
                 s.trim()
                     .replace("device.description = ", "")
-                    .replace("\"", "")
+                    .replace('\"', "")
             })
-            .filter(|s| s != "")
+            .filter(|s| !s.is_empty())
             .collect()
     };
 
@@ -160,6 +166,7 @@ pub fn build_ui(application: &Application) {
     audio_source_combobox.set_active(Some(0));
 
     // Switchs
+    let _audio_switch = audio_switch.clone();
     video_switch.set_label(Some(&gettext("Record Video")));
     audio_switch.set_label(Some(&gettext("Record Audio")));
     mouse_switch.set_label(Some(&gettext("Show Mouse")));
@@ -198,8 +205,57 @@ pub fn build_ui(application: &Application) {
     });
 
     // Buttons
-    window_grab_button.set_label(&gettext("Select a Window"));
-    area_grab_button.set_label(&gettext("Select an Area"));
+    let mut area_icon_path = {
+        let mut current_exec_dir = std::env::current_exe().unwrap();
+        current_exec_dir.pop();
+        current_exec_dir
+    }
+    .join(Path::new("data/screenshot-ui-area-symbolic.svg"));
+
+    if !area_icon_path.exists() {
+        area_icon_path = std::fs::canonicalize(Path::new(
+            &std::env::var("DATA_DIR")
+                .unwrap_or_else(|_| String::from("data/"))
+                .add("screenshot-ui-area-symbolic.svg"),
+        ))
+        .unwrap();
+    }
+
+    let mut screen_icon_path = {
+        let mut current_exec_dir = std::env::current_exe().unwrap();
+        current_exec_dir.pop();
+        current_exec_dir
+    }
+    .join(Path::new("data/screenshot-ui-display-symbolic.svg"));
+
+    if !screen_icon_path.exists() {
+        screen_icon_path = std::fs::canonicalize(Path::new(
+            &std::env::var("DATA_DIR")
+                .unwrap_or_else(|_| String::from("data/"))
+                .add("screenshot-ui-display-symbolic.svg"),
+        ))
+        .unwrap();
+    }
+
+    let mut window_icon_path = {
+        let mut current_exec_dir = std::env::current_exe().unwrap();
+        current_exec_dir.pop();
+        current_exec_dir
+    }
+    .join(Path::new("data/screenshot-ui-window-symbolic.svg"));
+
+    if !window_icon_path.exists() {
+        window_icon_path = std::fs::canonicalize(Path::new(
+            &std::env::var("DATA_DIR")
+                .unwrap_or_else(|_| String::from("data/"))
+                .add("screenshot-ui-window-symbolic.svg"),
+        ))
+        .unwrap();
+    }
+
+    area_grab_icon.set_from_file(Some(area_icon_path));
+    screen_grab_icon.set_from_file(Some(screen_icon_path));
+    window_grab_icon.set_from_file(Some(&window_icon_path));
 
     // Labels
     command_label.set_label(&gettext("Run Command After Recording:"));
@@ -208,18 +264,6 @@ pub fn build_ui(application: &Application) {
     audio_source_label.set_label(&gettext("Audio Input Source:"));
 
     // Spin
-    frames_spin.set_value(
-        config_management::get("default", "frame")
-            .to_string()
-            .parse::<f64>()
-            .unwrap(),
-    );
-    delay_spin.set_value(
-        config_management::get("default", "delay")
-            .to_string()
-            .parse::<f64>()
-            .unwrap(),
-    );
     let _frames_spin = frames_spin.to_owned();
     frames_spin.connect_value_changed(move |_| {
         config_management::set(
@@ -246,10 +290,10 @@ pub fn build_ui(application: &Application) {
             Some("Cancel"),
     );
     folder_chooser_native.set_modal(true);
-    let mut folder_chooser = Some(gio::File::for_uri(&config_management::get("default", "folder"))).unwrap();
-    let mut folder_chooser_name = folder_chooser.basename().unwrap();
+    let folder_chooser = Some(gio::File::for_uri(&config_management::get("default", "folder"))).unwrap();
+    let folder_chooser_name = folder_chooser.basename().unwrap();
     folder_chooser_label.set_label(&folder_chooser_name.to_string_lossy());
-    let mut folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
+    let folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
     folder_chooser_image.set_icon_name(Some(folder_chooser_icon));
     // show file chooser dialog
     folder_chooser_button.connect_clicked(glib::clone!(@strong folder_chooser_native => move |_| {
@@ -258,7 +302,7 @@ pub fn build_ui(application: &Application) {
                             let folder_chooser = folder_chooser_native.file().unwrap();
                             let folder_chooser_name = folder_chooser.basename().unwrap();
                             folder_chooser_label.set_label(&folder_chooser_name.to_string_lossy());
-                            let mut folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
+                            let folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
                             folder_chooser_image.set_icon_name(Some(folder_chooser_icon));
                             };
                     folder_chooser_native.destroy();
@@ -269,7 +313,7 @@ pub fn build_ui(application: &Application) {
     // --- connections
     // show dialog window when about button clicked then hide it after close
     let _about_dialog: AboutDialog = about_dialog.to_owned();
-    about_menu_item.connect_clicked(move |_| {
+    about_button.connect_clicked(move |_| {
         _about_dialog.show();
         _about_dialog.set_hide_on_close(true);
     });
@@ -277,10 +321,6 @@ pub fn build_ui(application: &Application) {
     // Buttons
     let area_capture: Rc<RefCell<area_capture::AreaCapture>> =
         Rc::new(RefCell::new(area_capture::AreaCapture::new()));
-    let mut _area_capture = area_capture.clone();
-    window_grab_button.connect_clicked(move |_| {
-        _area_capture.borrow_mut().get_area();
-    });
 
     let _area_chooser_window = area_chooser_window.clone();
     let mut _area_capture = area_capture.clone();
@@ -295,6 +335,26 @@ pub fn build_ui(application: &Application) {
             .borrow_mut()
             .get_window_by_name(&gettext("Area Chooser"));
         _area_chooser_window.hide();
+    });
+
+    let _area_chooser_window = area_chooser_window.clone();
+    let mut _area_capture = area_capture.clone();
+    screen_grab_button.connect_clicked(move |_| {
+        _area_chooser_window.hide();
+        _area_capture.borrow_mut().reset();
+    });
+
+    let _area_chooser_window = area_chooser_window.clone();
+    let mut _area_capture = area_capture.clone();
+    window_grab_button.connect_clicked(move |_| {
+        _area_chooser_window.hide();
+        _area_capture.borrow_mut().get_area();
+    });
+
+    let _progress_button = progress_button.clone();
+    let _progress_dialog = progress_dialog.clone();
+    _progress_button.connect_clicked(move |_| {
+        _progress_dialog.hide();
     });
 
     // init record struct
@@ -312,63 +372,15 @@ pub fn build_ui(application: &Application) {
         audio_process_id: None,
         saved_filename: None,
         unbound: None,
-        progress_widget: ProgressWidget::new(&main_window),
+        progress_widget: ProgressWidget::new(progress_dialog, progressbar, progress_button),
     }));
-
-    // App Indicator
-    let mut indicator_icon_path = {
-        let mut current_exec_dir = std::env::current_exe().unwrap();
-        current_exec_dir.pop();
-        current_exec_dir
-    }
-    .join(Path::new("data/blue-recorder@x96.png"));
-
-    if !indicator_icon_path.exists() {
-        indicator_icon_path = std::fs::canonicalize(Path::new(
-            &std::env::var("DATA_DIR")
-                .unwrap_or(String::from("data/"))
-                .add("blue-recorder@x96.png"),
-        ))
-        .unwrap();
-    }
-
-    //let indicator = Rc::new(RefCell::new(AppIndicator::new(
-        //"Blue Recorder",
-        //indicator_icon_path.to_str().unwrap(),
-    //)));
-    //indicator
-        //.clone()
-        //.borrow_mut()
-        //.set_status(AppIndicatorStatus::Passive);
-    //let mut menu = gtk::Popover::new();
-    //let indicator_stop_recording = Label::new(Some(&gettext("stop recording")));
-    //menu.set_child(Some(&indicator_stop_recording));
-    //menu.show();
-    //indicator.clone().borrow_mut().set_menu(&mut menu); // indicator support GtkMenu from Gtk3
-    // when indictor stop recording button clicked
-    //let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
-    //let mut _indicator = indicator.clone();
-    //let _stop_button = stop_button.clone();
-    //let _play_button = play_button.clone();
-    //let _record_button = record_button.clone();
-    //indicator_stop_recording.connect_activate_current_link(move |_| {
-        //_ffmpeg_record_interface.borrow_mut().clone().stop_record();
-        //_indicator
-            //.borrow_mut()
-            //.set_status(AppIndicatorStatus::Passive);
-
-        //_record_button.show();
-        //_stop_button.hide();
-        //_play_button.show();
-    //});
 
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     let mut _area_capture = area_capture.clone();
-    //let mut _indicator = indicator.clone();
     let _stop_button = stop_button.clone();
     let _record_button = record_button.clone();
     record_button.connect_clicked(move |_| {
-        let _area_capture = _area_capture.borrow_mut().clone();
+        let _area_capture = area_capture.borrow_mut();
         match _ffmpeg_record_interface.borrow_mut().start_record(
             _area_capture.x,
             _area_capture.y,
@@ -376,13 +388,13 @@ pub fn build_ui(application: &Application) {
             _area_capture.height,
         ) {
             (None, None) => {
-                // do nothing if the start_record function return nothing
+                    // do nothing if the start_record function return nothing
+                    if _audio_switch.is_active() {
+                        _record_button.hide();
+                        _stop_button.show();
+                    }
             }
             _ => {
-                //_indicator
-                    //.borrow_mut()
-                    //.set_status(AppIndicatorStatus::Active);
-
                 _record_button.hide();
                 _stop_button.show();
             }
@@ -390,16 +402,11 @@ pub fn build_ui(application: &Application) {
     });
 
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
-    //let mut _indicator = indicator.clone();
     let _stop_button = stop_button.clone();
     let _play_button = play_button.clone();
-    let _record_button = record_button.clone();
     stop_button.connect_clicked(move |_| {
+        let _record_button = record_button.clone();
         _ffmpeg_record_interface.borrow_mut().clone().stop_record();
-        //_indicator
-            //.borrow_mut()
-            //.set_status(AppIndicatorStatus::Passive);
-
         _record_button.show();
         _stop_button.hide();
         _play_button.show();
@@ -411,7 +418,23 @@ pub fn build_ui(application: &Application) {
     });
 
     // About Dialog
-    let logo = Image::from_file(&indicator_icon_path.to_str().unwrap());
+    let mut about_icon_path = {
+        let mut current_exec_dir = std::env::current_exe().unwrap();
+        current_exec_dir.pop();
+        current_exec_dir
+    }
+    .join(Path::new("data/blue-recorder@x96.png"));
+
+    if !about_icon_path.exists() {
+        about_icon_path = std::fs::canonicalize(Path::new(
+            &std::env::var("DATA_DIR")
+                .unwrap_or_else(|_| String::from("data/"))
+                .add("blue-recorder@x96.png"),
+        ))
+        .unwrap();
+    }
+
+    let logo = Image::from_file(&about_icon_path.to_str().unwrap());
     about_dialog.set_transient_for(Some(&main_window));
     about_dialog.set_program_name(Some(&gettext("Blue Recorder")));
     about_dialog.set_version(Some("0.2.0"));
@@ -444,14 +467,10 @@ pub fn build_ui(application: &Application) {
     });
 
    // close the application when main window destroy
-    let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
-    //let mut _indicator = indicator.clone();
     main_window.connect_destroy(move |main_window| {
-         // stop recording before close the application
+        let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
+        // stop recording before close the application
         _ffmpeg_record_interface.borrow_mut().clone().stop_record();
-        //_indicator
-            //.borrow_mut()
-            //.set_status(AppIndicatorStatus::Passive);
         main_window.close();
     });
 

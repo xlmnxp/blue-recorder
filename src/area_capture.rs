@@ -46,6 +46,17 @@ impl AreaCapture {
         self.height = coordinate.3;
         *self
     }
+
+    pub fn reset(&mut self) -> Self {
+        let coordinate = xwininfo_to_coordinate(
+            String::from_utf8(Command::new("xwininfo").arg("-root").output().unwrap().stdout).unwrap()
+        );
+        self.x = coordinate.0;
+        self.y = coordinate.1;
+        self.width = coordinate.2;
+        self.height = coordinate.3;
+        *self
+    }
 }
 
 fn xwininfo_to_coordinate(xwininfo_output: String) -> (u16, u16, u16, u16) {
