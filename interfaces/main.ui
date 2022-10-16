@@ -82,18 +82,20 @@
 		</child>
 	</object>
 	<object class="GtkMessageDialog" id="progress_dialog">
+		<property name="title">Progress</property>
 		<property name="transient-for">main_window</property>
 		<property name="deletable">False</property>
 		<property name="default-width">300</property>
 		<property name="modal">True</property>
 		<property name="message-type">info</property>
-		<child type="titlebar">
+		<child>
+			<object class="GtkBox">
+					<property name="orientation">vertical</property>
+				<child>
 			<object class="GtkProgressBar" id="progressbar">
 				<property name="visible">True</property>
 				<property name="fraction">0.0</property>
 				<property name="show-text">True</property>
-				<property name="hexpand">True</property>
-				<property name="margin-top">10</property>
 				<property name="margin-start">10</property>
 				<property name="margin-end">10</property>
 			</object>
@@ -105,10 +107,11 @@
 				<property name="can-focus">True</property>
 				<property name="receives-default">True</property>
 				<property name="label" translatable="yes">Finish Recording</property>
-				<property name="margin-top">10</property>
-				<property name="hexpand">True</property>
+				<property name="margin-top">15</property>
 			</object>
 		</child>
+	</object>
+	</child>
 	</object>
 	<object class="GtkImage" id="image3">
 		<property name="visible">True</property>
@@ -150,6 +153,15 @@
 								<property name="margin-top">5</property>
 								<property name="margin-bottom">5</property>
 							</object>
+						</child>
+						<child>
+							<object class="GtkCheckButton" id="overwriteswitch">
+								<property name="label" translatable="yes">checkbutton</property>
+								<property name="visible">True</property>
+								<property name="can-focus">True</property>
+								<property name="receives-default">False</property>
+								<property name="active">True</property>
+						</object>
 						</child>
 						<child>
 							<object class="GtkButton" id="folder_chooser">
@@ -204,7 +216,6 @@
 						<child>
 							<object class="GtkToggleButton" id="area_grab_button">
 								<property name="name">area_grab_button</property>
-								<property name="group">area_grab_button</property>
 								<property name="visible">True</property>
 								<property name="can-focus">True</property>
 								<property name="receives-default">True</property>

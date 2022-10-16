@@ -45,6 +45,7 @@ fn default() {
     set("default", "audiocheck", "1");
     set("default", "mousecheck", "1");
     set("default", "followmousecheck", "0");
+    set("default", "overwritecheck", "0");
 }
 
 fn merge_previous_version() -> Option<PathBuf> {
