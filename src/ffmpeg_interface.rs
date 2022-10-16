@@ -62,6 +62,8 @@ pub struct Ffmpeg {
     pub saved_filename: Option<String>,
     pub unbound: Option<Sender<bool>>,
     pub progress_widget: ProgressWidget,
+    pub window: Window,
+    pub overwrite: CheckButton,
 }
 
 impl Ffmpeg {
@@ -72,10 +74,6 @@ impl Ffmpeg {
         width: u16,
         height: u16,
     ) -> (Option<u32>, Option<u32>) {
-        if self.video_process_id.is_some() || self.audio_process_id.is_some() {
-            //self.stop_record();
-        }
-
         self.saved_filename = Some(
             self.filename
                 .0
@@ -99,23 +97,22 @@ impl Ffmpeg {
             std::path::Path::new(&self.saved_filename.clone().unwrap())
                 .exists();
 
-        if is_file_already_exists {
+        if !self.overwrite.is_active() && is_file_already_exists {
             let message_dialog = MessageDialog::new(
-                None::<&Window>,
+                Some(&self.window),
                 DialogFlags::empty(),
                 MessageType::Warning,
-                ButtonsType::OkCancel,
-                &gettext("Would you like to overwrite this file?"),
+                ButtonsType::Ok,
+                &gettext("File already exist."),
             );
-
-            message_dialog.connect_response(glib::clone!(@strong message_dialog => move |_, response| {
             message_dialog.show();
-            if response != ResponseType::Ok {
+            message_dialog.connect_response(glib::clone!(@strong message_dialog => move |_, response| {
+                if response == ResponseType::Ok {
+                    message_dialog.hide();
+                }
                 message_dialog.hide();
-                return;
-            }
-            message_dialog.hide();
             }));
+            return (None, None);
         }
 
         if self.record_audio.is_active() {
@@ -184,21 +181,29 @@ impl Ffmpeg {
     pub fn stop_record(&self) {
         self.progress_widget.show();
         // kill the process to stop recording
+        self
+            .progress_widget
+            .set_progress("".to_string(), 1, 6);
+
         if self.video_process_id.is_some() {
             self
                 .progress_widget
                 .set_progress("Stop Recording Video".to_string(), 1, 6);
-            Command::new("kill")
+           Command::new("kill")
                 .arg(format!("{}", self.video_process_id.unwrap()))
                 .output()
                 .unwrap();
         }
 
+        self
+            .progress_widget
+            .set_progress("".to_string(), 2, 6);
+
         if self.audio_process_id.is_some() {
             self
                 .progress_widget
                 .set_progress("Stop Recording Audio".to_string(), 2, 6);
-            Command::new("kill")
+           Command::new("kill")
                 .arg(format!("{}", self.audio_process_id.unwrap()))
                 .output()
                 .unwrap();
@@ -243,12 +248,15 @@ impl Ffmpeg {
             ));
             move_command.output().unwrap();
 
+            self
+                .progress_widget
+                .set_progress("".to_string(), 4, 6);
+
             // if audio record, then merge video with audio
             if is_audio_record && is_video_record {
                 self
                     .progress_widget
                     .set_progress("Save Audio Recording".to_string(), 4, 6);
-
                 let mut ffmpeg_audio_merge_command = Command::new("ffmpeg");
                 ffmpeg_audio_merge_command.arg("-i");
                 ffmpeg_audio_merge_command.arg(format!(
@@ -305,6 +313,12 @@ impl Ffmpeg {
             ))
             .unwrap();
         }
+
+        self.progress_widget.set_progress(
+            "".to_string(),
+                5,
+                6,
+        );
 
         // execute command after finish recording
         if self.command.text().trim() != "" {

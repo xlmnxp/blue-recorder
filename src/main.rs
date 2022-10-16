@@ -30,7 +30,6 @@ pub fn build_ui(application: &Application) {
         println!("Failed to initialize GTK.");
         return;
     }
-    // TODO: add wayland screen record support
 
     let ui_src = include_str!("../interfaces/main.ui").to_string();
     let builder: Builder = Builder::from_string(ui_src.as_str());
@@ -58,7 +57,6 @@ pub fn build_ui(application: &Application) {
     config_management::initialize();
 
     // get Objects from UI
-    let main_window: Window = builder.object("main_window").unwrap();
     let area_chooser_window: Window = builder.object("area_chooser_window").unwrap();
     let area_grab_button: ToggleButton = builder.object("area_grab_button").unwrap();
     let area_grab_icon: Image = builder.object("area_grab_icon").unwrap();
@@ -80,7 +78,9 @@ pub fn build_ui(application: &Application) {
     let format_chooser_combobox: ComboBoxText = builder.object("comboboxtext1").unwrap();
     let frames_label: Label = builder.object("frames_label").unwrap();
     let frames_spin: SpinButton = builder.object("frames").unwrap();
+    let main_window: Window = builder.object("main_window").unwrap();
     let mouse_switch: CheckButton = builder.object("mouseswitch").unwrap();
+    let overwrite_switch: CheckButton = builder.object("overwriteswitch").unwrap();
     let play_button: Button = builder.object("playbutton").unwrap();
     let progress_button: Button = builder.object("progressbutton").unwrap();
     let progress_dialog: MessageDialog = builder.object("progress_dialog").unwrap();
@@ -92,7 +92,6 @@ pub fn build_ui(application: &Application) {
     let video_switch: CheckButton = builder.object("videoswitch").unwrap();
     let window_grab_icon: Image = builder.object("window_grab_icon").unwrap();
     let window_grab_button: ToggleButton = builder.object("window_grab_button").unwrap();
-    // TODO: add timer
 
     // --- default properties
     // Windows
@@ -166,26 +165,34 @@ pub fn build_ui(application: &Application) {
     audio_source_combobox.set_active(Some(0));
 
     // Switchs
-    let _audio_switch = audio_switch.clone();
     video_switch.set_label(Some(&gettext("Record Video")));
     audio_switch.set_label(Some(&gettext("Record Audio")));
     mouse_switch.set_label(Some(&gettext("Show Mouse")));
     follow_mouse_switch.set_label(Some(&gettext("Follow Mouse")));
+    overwrite_switch.set_label(Some(&gettext("Overwrite")));
     video_switch.set_active(config_management::get_bool("default", "videocheck"));
     audio_switch.set_active(config_management::get_bool("default", "audiocheck"));
     mouse_switch.set_active(config_management::get_bool("default", "mousecheck"));
     follow_mouse_switch.set_active(config_management::get_bool("default", "followmousecheck"));
+    overwrite_switch.set_active(config_management::get_bool("default", "overwritecheck"));
 
+    let _audio_switch = audio_switch.clone();
     let _mouse_switch = mouse_switch.clone();
     let _follow_mouse_switch = follow_mouse_switch.clone();
     video_switch.connect_toggled(move |switch: &CheckButton| {
         config_management::set_bool("default", "videocheck", switch.is_active());
         if switch.is_active() {
+            _audio_switch.set_active(false);
+            _audio_switch.set_sensitive(true);
             _mouse_switch.set_sensitive(true);
-            _follow_mouse_switch.set_sensitive(true);
         } else {
             _mouse_switch.set_sensitive(false);
             _follow_mouse_switch.set_sensitive(false);
+        }
+        if !switch.is_active() {
+            _audio_switch.set_active(false);
+            _audio_switch.set_sensitive(false);
+            _mouse_switch.set_active(false);
         }
     });
     let _follow_mouse_switch = follow_mouse_switch.clone();
@@ -194,6 +201,7 @@ pub fn build_ui(application: &Application) {
         if switch.is_active() {
             _follow_mouse_switch.set_sensitive(true);
         } else {
+            _follow_mouse_switch.set_active(false);
             _follow_mouse_switch.set_sensitive(false);
         }
     });
@@ -373,6 +381,8 @@ pub fn build_ui(application: &Application) {
         saved_filename: None,
         unbound: None,
         progress_widget: ProgressWidget::new(progress_dialog, progressbar, progress_button),
+        window: main_window.clone(),
+        overwrite: overwrite_switch,
     }));
 
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
@@ -388,11 +398,7 @@ pub fn build_ui(application: &Application) {
         ) {
             (None, None) => {
                     // do nothing if the start_record function return nothing
-                    if _audio_switch.is_active() {
-                        _record_button.hide();
-                        _stop_button.show();
                     }
-            }
             _ => {
                 _record_button.hide();
                 _stop_button.show();
