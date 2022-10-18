@@ -36,9 +36,6 @@ impl ProgressWidget {
         let progress_precentage: f64 = value as f64 / max as f64;
         self.progressbar.set_text(Some(&title));
         self.progressbar.set_fraction(progress_precentage);
-        if value == max {
-            self.progress_dialog.hide();
-        }
     }
 
     pub fn show(&self) {
