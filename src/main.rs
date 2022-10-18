@@ -17,14 +17,14 @@ use std::process::{Command, Stdio};
 use std::rc::Rc;
 
 fn main() {
-    //create new application
+    //Create new application
     let application = Application::new(Some("sa.sy.blue-recorder"), Default::default(),);
     application.connect_activate(build_ui);
     application.run();
 }
 
 pub fn build_ui(application: &Application) {
-    // use "GDK_BACKEND=x11" to make xwininfo work in Wayland by using XWayland
+    // Use "GDK_BACKEND=x11" to make xwininfo work in Wayland by using XWayland
     std::env::set_var("GDK_BACKEND", "x11");
     if gtk::init().is_err() {
         println!("Failed to initialize GTK.");
@@ -34,7 +34,7 @@ pub fn build_ui(application: &Application) {
     let ui_src = include_str!("../interfaces/main.ui").to_string();
     let builder: Builder = Builder::from_string(ui_src.as_str());
 
-   // translate
+   // Translate
     let mut po_path_abs = {
         let mut current_exec_dir = std::env::current_exe().unwrap();
         current_exec_dir.pop();
@@ -53,10 +53,10 @@ pub fn build_ui(application: &Application) {
     bindtextdomain("blue-recorder", po_path_abs.to_str().unwrap()).unwrap();
     textdomain("blue-recorder").unwrap();
 
-    // config initialize
+    // Config initialize
     config_management::initialize();
 
-    // get Objects from UI
+    // Get Objects from UI
     let area_chooser_window: Window = builder.object("area_chooser_window").unwrap();
     let area_grab_button: ToggleButton = builder.object("area_grab_button").unwrap();
     let area_grab_icon: Image = builder.object("area_grab_icon").unwrap();
@@ -99,9 +99,14 @@ pub fn build_ui(application: &Application) {
     main_window.set_application(Some(application));
     area_chooser_window.set_title(Some(&gettext("Area Chooser"))); //title is hidden
 
-    //hide stop & play buttons
+    //Hide stop & play buttons
     stop_button.hide();
     play_button.hide();
+
+    //Hide window grab button in Wayland
+    if is_wayland() {
+        window_grab_button.hide();
+    }
 
     // Entries
     filename_entry.set_placeholder_text(Some(&gettext("Default filename:")));
@@ -122,7 +127,7 @@ pub fn build_ui(application: &Application) {
     //format_chooser_combobox.append(Some("nut"), &gettext("NUT (NUT Recording Format)"));
     format_chooser_combobox.set_active(Some(0));
 
-    // get audio sources
+    // Get audio sources
     let sources_descriptions: Vec<String> = {
         let list_sources_child = Command::new("pactl")
         .args(&["list", "sources"])
@@ -303,14 +308,19 @@ pub fn build_ui(application: &Application) {
     folder_chooser_label.set_label(&folder_chooser_name.to_string_lossy());
     let folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
     folder_chooser_image.set_icon_name(Some(folder_chooser_icon));
-    // show file chooser dialog
+    // Show file chooser dialog
     folder_chooser_button.connect_clicked(glib::clone!(@strong folder_chooser_native => move |_| {
             folder_chooser_native.connect_response(glib::clone!(@strong folder_chooser_native, @strong folder_chooser_label, @strong folder_chooser_image => move |_, response| {
                     if response == gtk::ResponseType::Accept {
                             let folder_chooser = folder_chooser_native.file().unwrap();
                             let folder_chooser_name = folder_chooser.basename().unwrap();
                             folder_chooser_label.set_label(&folder_chooser_name.to_string_lossy());
-                            let folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
+
+
+
+
+
+                        let folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
                             folder_chooser_image.set_icon_name(Some(folder_chooser_icon));
                             };
                     folder_chooser_native.destroy();
@@ -319,7 +329,7 @@ pub fn build_ui(application: &Application) {
     }));
 
     // --- connections
-    // show dialog window when about button clicked then hide it after close
+    // Show dialog window when about button clicked then hide it after close
     let _about_dialog: AboutDialog = about_dialog.to_owned();
     about_button.connect_clicked(move |_| {
         _about_dialog.show();
@@ -365,7 +375,7 @@ pub fn build_ui(application: &Application) {
         _progress_dialog.hide();
     });
 
-    // init record struct
+    // Init record struct
     let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
         filename: (folder_chooser, filename_entry, format_chooser_combobox),
         record_video: video_switch,
@@ -397,7 +407,7 @@ pub fn build_ui(application: &Application) {
             _area_capture.height,
         ) {
             (None, None) => {
-                    // do nothing if the start_record function return nothing
+                    // Do nothing if the start_record function return nothing
                     }
             _ => {
                 _record_button.hide();
@@ -463,22 +473,22 @@ pub fn build_ui(application: &Application) {
     about_dialog.set_modal(true);
 
     // Windows
-    // hide area chooser after it deleted.
+    // Hide area chooser after it deleted.
     let _area_chooser_window = area_chooser_window.clone();
     area_chooser_window.connect_close_request (move |_| {
         _area_chooser_window.hide();
         gtk::Inhibit(true)
     });
 
-   // close the application when main window destroy
+   // Close the application when main window destroy
     main_window.connect_destroy(move |main_window| {
         let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
-        // stop recording before close the application
+        // Stop recording before close the application
         _ffmpeg_record_interface.borrow_mut().clone().stop_record();
         main_window.close();
     });
 
-    // apply css
+    // Apply css
     let provider = CssProvider::new();
     provider
         .load_from_data(include_str!("styles/global.css").as_bytes());
@@ -487,6 +497,12 @@ pub fn build_ui(application: &Application) {
         &provider,
         gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
     );
+
+    fn is_wayland() -> bool {
+        std::env::var("XDG_SESSION_TYPE")
+            .unwrap_or_default()
+            .eq_ignore_ascii_case("wayland")
+    }
 
     main_window.show();
 }

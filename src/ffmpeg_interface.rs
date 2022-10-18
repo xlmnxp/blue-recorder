@@ -138,7 +138,7 @@ impl Ffmpeg {
         if self.record_video.is_active() {
             let mut ffmpeg_command: Command = Command::new("ffmpeg");
 
-            // record video with specified width and hight
+            // Record video with specified width and hight
             ffmpeg_command.arg("-video_size");
             ffmpeg_command.arg(format!("{}x{}", width, height));
             ffmpeg_command.arg("-framerate");
@@ -155,7 +155,7 @@ impl Ffmpeg {
                 y
             ));
 
-            // if show mouse switch is enabled, draw the mouse to video
+            // If show mouse switch is enabled, draw the mouse to video
             ffmpeg_command.arg("-draw_mouse");
             if self.record_mouse.is_active() {
                 ffmpeg_command.arg("1");
@@ -163,7 +163,7 @@ impl Ffmpeg {
                 ffmpeg_command.arg("0");
             }
 
-            // if follow mouse switch is enabled, follow the mouse
+            // If follow mouse switch is enabled, follow the mouse
             if self.follow_mouse.is_active() {
                 ffmpeg_command.arg("-follow_mouse");
                 ffmpeg_command.arg("centered");
@@ -172,9 +172,9 @@ impl Ffmpeg {
             ffmpeg_command.arg("1");
             ffmpeg_command.arg(self.saved_filename.as_ref().unwrap());
             ffmpeg_command.arg("-y");
-            // sleep for delay
+            // Sleep for delay
             sleep(Duration::from_secs(self.record_delay.value() as u64));
-            // start recording and return the process id
+            // Start recording and return the process id
             self.video_process_id = Some(ffmpeg_command.spawn().unwrap().id());
             return (self.video_process_id, self.audio_process_id);
         }
@@ -184,7 +184,7 @@ impl Ffmpeg {
 
     pub fn stop_record(&self) {
         self.progress_widget.show();
-        // kill the process to stop recording
+        // Kill the process to stop recording
         self.progress_widget.set_progress("".to_string(), 1, 6);
 
         if self.video_process_id.is_some() {
@@ -246,7 +246,7 @@ impl Ffmpeg {
 
             self.progress_widget.set_progress("".to_string(), 4, 6);
 
-            // if audio record, then merge video with audio
+            // If audio record, then merge video with audio
             if is_audio_record {
                 self.progress_widget
                     .set_progress("Save Audio Recording".to_string(), 4, 6);
@@ -283,7 +283,7 @@ impl Ffmpeg {
                 .unwrap();
             }
         }
-        // if only audio is recording then convert it to chosen format
+        // If only audio is recording then convert it to chosen format
         else if is_audio_record {
             self.progress_widget
                 .set_progress("Convert Audio to choosen format".to_string(), 4, 6);
@@ -308,7 +308,7 @@ impl Ffmpeg {
 
         self.progress_widget.set_progress("".to_string(), 5, 6);
 
-        // execute command after finish recording
+        // Execute command after finish recording
         if self.command.text().trim() != "" {
             self.progress_widget.set_progress(
                 "execute custom command after finish".to_string(),
@@ -326,7 +326,7 @@ impl Ffmpeg {
     pub fn play_record(self) {
         if self.saved_filename.is_some() {
             if is_snap() {
-                // open the video using snapctrl for snap package
+                // Open the video using snapctrl for snap package
                 Command::new("snapctl")
                     .arg("user-open")
                     .arg(self.saved_filename.unwrap())
