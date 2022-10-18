@@ -1,24 +1,24 @@
 #area_chooser_window {
-    background-color: rgba(255, 255, 255, 0);
-    border: 3px dashed rgba(0, 0, 0, 1);
+    background-color: alpha(@theme_selected_bg_color, 0.1);
+    border: 3px dashed @theme_selected_bg_color;
 }
 
 #area_set_button {
-    color: rgba(255, 255, 255, 1);
-    background: rgba(255, 255, 255, 0);
+    color: @theme_selected_fg_color;
+    background: @theme_selected_bg_color;
 }
 
 #area_grab_button:checked{
-    color: rgba(255, 255, 255, 1);
-    background: rgba(32.0, 74.0, 135, 1);
+    color: @theme_selected_fg_color;
+    background: @theme_selected_bg_color;
 }
 
 #screen_grab_button:checked{
-    color: rgba(255, 255, 255, 1);
-    background: rgba(32.0, 74.0, 135, 1);
+    color: @theme_selected_fg_color;
+    background: @theme_selected_bg_color;
 }
 
 #window_grab_button:checked{
-    color: rgba(255, 255, 255, 1);
-    background: rgba(32.0, 74.0, 135, 1);
+    color: @theme_selected_fg_color;
+    background: @theme_selected_bg_color;
 }
