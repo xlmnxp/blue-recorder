@@ -3,9 +3,8 @@ use chrono::prelude::*;
 use gettextrs::gettext;
 use gio::File;
 use gtk::prelude::*;
+use gtk::{Button, CheckButton, ComboBoxText, Entry, ProgressBar, SpinButton, Window};
 use gtk::{ButtonsType, DialogFlags, MessageDialog, MessageType, ResponseType};
-use gtk::{
-    Button, CheckButton, ComboBoxText, Entry, ProgressBar, SpinButton, Window};
 use std::path::PathBuf;
 use std::process::Command;
 use std::sync::mpsc::Sender;
@@ -21,7 +20,11 @@ pub struct ProgressWidget {
 }
 
 impl ProgressWidget {
-    pub fn new(progress_dialog: MessageDialog, progressbar: ProgressBar, progress_button: Button) -> ProgressWidget {
+    pub fn new(
+        progress_dialog: MessageDialog,
+        progressbar: ProgressBar,
+        progress_button: Button,
+    ) -> ProgressWidget {
         ProgressWidget {
             progress_dialog,
             progressbar,
@@ -33,6 +36,9 @@ impl ProgressWidget {
         let progress_precentage: f64 = value as f64 / max as f64;
         self.progressbar.set_text(Some(&title));
         self.progressbar.set_fraction(progress_precentage);
+        if value == max {
+            self.progress_dialog.hide();
+        }
     }
 
     pub fn show(&self) {
@@ -42,8 +48,8 @@ impl ProgressWidget {
 
     pub fn hide(&self) {
         self.progress_button.set_sensitive(true);
+        self.progress_dialog.hide();
     }
-
 }
 
 #[derive(Clone)]
@@ -94,8 +100,7 @@ impl Ffmpeg {
         );
 
         let is_file_already_exists =
-            std::path::Path::new(&self.saved_filename.clone().unwrap())
-                .exists();
+            std::path::Path::new(&self.saved_filename.clone().unwrap()).exists();
 
         if !self.overwrite.is_active() && is_file_already_exists {
             let message_dialog = MessageDialog::new(
@@ -106,12 +111,14 @@ impl Ffmpeg {
                 &gettext("File already exist."),
             );
             message_dialog.show();
-            message_dialog.connect_response(glib::clone!(@strong message_dialog => move |_, response| {
-                if response == ResponseType::Ok {
+            message_dialog.connect_response(
+                glib::clone!(@strong message_dialog => move |_, response| {
+                    if response == ResponseType::Ok {
+                        message_dialog.hide();
+                    }
                     message_dialog.hide();
-                }
-                message_dialog.hide();
-            }));
+                }),
+            );
             return (None, None);
         }
 
@@ -181,29 +188,23 @@ impl Ffmpeg {
     pub fn stop_record(&self) {
         self.progress_widget.show();
         // kill the process to stop recording
-        self
-            .progress_widget
-            .set_progress("".to_string(), 1, 6);
+        self.progress_widget.set_progress("".to_string(), 1, 6);
 
         if self.video_process_id.is_some() {
-            self
-                .progress_widget
+            self.progress_widget
                 .set_progress("Stop Recording Video".to_string(), 1, 6);
-           Command::new("kill")
+            Command::new("kill")
                 .arg(format!("{}", self.video_process_id.unwrap()))
                 .output()
                 .unwrap();
         }
 
-        self
-            .progress_widget
-            .set_progress("".to_string(), 2, 6);
+        self.progress_widget.set_progress("".to_string(), 2, 6);
 
         if self.audio_process_id.is_some() {
-            self
-                .progress_widget
+            self.progress_widget
                 .set_progress("Stop Recording Audio".to_string(), 2, 6);
-           Command::new("kill")
+            Command::new("kill")
                 .arg(format!("{}", self.audio_process_id.unwrap()))
                 .output()
                 .unwrap();
@@ -227,13 +228,11 @@ impl Ffmpeg {
         )
         .exists();
 
-        if is_video_record  {
+        if is_video_record {
             let mut move_command = Command::new("mv");
-            move_command.arg(format!(
-                "{}{}",
-                self.saved_filename.as_ref().unwrap(),
-                { "" }
-            ));
+            move_command.arg(format!("{}{}", self.saved_filename.as_ref().unwrap(), {
+                ""
+            }));
             move_command.arg(format!(
                 "{}{}",
                 self.saved_filename.as_ref().unwrap_or(&String::new()),
@@ -248,14 +247,11 @@ impl Ffmpeg {
             ));
             move_command.output().unwrap();
 
-            self
-                .progress_widget
-                .set_progress("".to_string(), 4, 6);
+            self.progress_widget.set_progress("".to_string(), 4, 6);
 
             // if audio record, then merge video with audio
-            if is_audio_record && is_video_record {
-                self
-                    .progress_widget
+            if is_audio_record {
+                self.progress_widget
                     .set_progress("Save Audio Recording".to_string(), 4, 6);
                 let mut ffmpeg_audio_merge_command = Command::new("ffmpeg");
                 ffmpeg_audio_merge_command.arg("-i");
@@ -290,10 +286,9 @@ impl Ffmpeg {
                 .unwrap();
             }
         }
-        // if only audio is recording then convert it to chosen fromat
-        else if is_audio_record && !is_video_record {
-            self
-                .progress_widget
+        // if only audio is recording then convert it to chosen format
+        else if is_audio_record {
+            self.progress_widget
                 .set_progress("Convert Audio to choosen format".to_string(), 4, 6);
             sleep(Duration::from_secs(1));
             Command::new("ffmpeg")
@@ -314,11 +309,7 @@ impl Ffmpeg {
             .unwrap();
         }
 
-        self.progress_widget.set_progress(
-            "".to_string(),
-                5,
-                6,
-        );
+        self.progress_widget.set_progress("".to_string(), 5, 6);
 
         // execute command after finish recording
         if self.command.text().trim() != "" {
@@ -330,8 +321,7 @@ impl Ffmpeg {
             Exec::shell(self.command.text().trim()).popen().unwrap();
         }
 
-        self
-            .progress_widget
+        self.progress_widget
             .set_progress("Finish".to_string(), 6, 6);
         self.progress_widget.hide();
     }
