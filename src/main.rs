@@ -302,6 +302,7 @@ pub fn build_ui(application: &Application) {
             Some("Select"),
             Some("Cancel"),
     );
+    folder_chooser_native.set_transient_for(Some(&main_window));
     folder_chooser_native.set_modal(true);
     let folder_chooser = Some(gio::File::for_uri(&config_management::get("default", "folder"))).unwrap();
     let folder_chooser_name = folder_chooser.basename().unwrap();
@@ -311,21 +312,16 @@ pub fn build_ui(application: &Application) {
     // Show file chooser dialog
     folder_chooser_button.connect_clicked(glib::clone!(@strong folder_chooser_native => move |_| {
             folder_chooser_native.connect_response(glib::clone!(@strong folder_chooser_native, @strong folder_chooser_label, @strong folder_chooser_image => move |_, response| {
-                    if response == gtk::ResponseType::Accept {
-                            let folder_chooser = folder_chooser_native.file().unwrap();
-                            let folder_chooser_name = folder_chooser.basename().unwrap();
-                            folder_chooser_label.set_label(&folder_chooser_name.to_string_lossy());
-
-
-
-
-
-                        let folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
-                            folder_chooser_image.set_icon_name(Some(folder_chooser_icon));
-                            };
-                    folder_chooser_native.destroy();
+                if response == gtk::ResponseType::Accept {
+                    let folder_chooser = folder_chooser_native.file().unwrap();
+                    let folder_chooser_name = folder_chooser.basename().unwrap();
+                    folder_chooser_label.set_label(&folder_chooser_name.to_string_lossy());
+                    let folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
+                    folder_chooser_image.set_icon_name(Some(folder_chooser_icon));
+                };
+                folder_chooser_native.destroy();
             }));
-            folder_chooser_native.show();
+        folder_chooser_native.show();
     }));
 
     // --- connections
