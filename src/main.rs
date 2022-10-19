@@ -319,7 +319,7 @@ pub fn build_ui(application: &Application) {
                     let folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
                     folder_chooser_image.set_icon_name(Some(folder_chooser_icon));
                 };
-                folder_chooser_native.destroy();
+                folder_chooser_native.hide();
             }));
         folder_chooser_native.show();
     }));
