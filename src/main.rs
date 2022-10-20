@@ -82,7 +82,6 @@ pub fn build_ui(application: &Application) {
     let mouse_switch: CheckButton = builder.object("mouseswitch").unwrap();
     let overwrite_switch: CheckButton = builder.object("overwriteswitch").unwrap();
     let play_button: Button = builder.object("playbutton").unwrap();
-    let progress_button: Button = builder.object("progressbutton").unwrap();
     let progress_dialog: MessageDialog = builder.object("progress_dialog").unwrap();
     let progressbar: ProgressBar = builder.object("progressbar").unwrap();
     let record_button: Button = builder.object("recordbutton").unwrap();
@@ -367,12 +366,6 @@ pub fn build_ui(application: &Application) {
         _area_capture.borrow_mut().get_area();
     });
 
-    let _progress_button = progress_button.clone();
-    let _progress_dialog = progress_dialog.clone();
-    _progress_button.connect_clicked(move |_| {
-        _progress_dialog.hide();
-    });
-
     // Init record struct
     let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
         filename: (folder_chooser_native, filename_entry, format_chooser_combobox),
@@ -388,7 +381,7 @@ pub fn build_ui(application: &Application) {
         audio_process_id: None,
         saved_filename: None,
         unbound: None,
-        progress_widget: ProgressWidget::new(progress_dialog, progressbar, progress_button),
+        progress_widget: ProgressWidget::new(progress_dialog, progressbar),
         window: main_window.clone(),
         overwrite: overwrite_switch,
     }));

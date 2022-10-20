@@ -2,7 +2,7 @@ extern crate subprocess;
 use chrono::prelude::*;
 use gettextrs::gettext;
 use gtk::prelude::*;
-use gtk::{Button, CheckButton, ComboBoxText, Entry, FileChooserNative, ProgressBar, SpinButton, Window};
+use gtk::{CheckButton, ComboBoxText, Entry, FileChooserNative, ProgressBar, SpinButton, Window};
 use gtk::{ButtonsType, DialogFlags, MessageDialog, MessageType, ResponseType};
 use std::path::PathBuf;
 use std::process::Command;
@@ -15,19 +15,16 @@ use subprocess::Exec;
 pub struct ProgressWidget {
     pub progress_dialog: MessageDialog,
     pub progressbar: ProgressBar,
-    pub progress_button: Button,
 }
 
 impl ProgressWidget {
     pub fn new(
         progress_dialog: MessageDialog,
         progressbar: ProgressBar,
-        progress_button: Button,
     ) -> ProgressWidget {
         ProgressWidget {
             progress_dialog,
             progressbar,
-            progress_button,
         }
     }
 
@@ -43,7 +40,6 @@ impl ProgressWidget {
     }
 
     pub fn hide(&self) {
-        self.progress_button.set_sensitive(true);
         self.progress_dialog.hide();
     }
 }
