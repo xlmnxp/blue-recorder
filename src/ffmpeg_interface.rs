@@ -1,9 +1,8 @@
 extern crate subprocess;
 use chrono::prelude::*;
 use gettextrs::gettext;
-use gio::File;
 use gtk::prelude::*;
-use gtk::{Button, CheckButton, ComboBoxText, Entry, ProgressBar, SpinButton, Window};
+use gtk::{Button, CheckButton, ComboBoxText, Entry, FileChooserNative, ProgressBar, SpinButton, Window};
 use gtk::{ButtonsType, DialogFlags, MessageDialog, MessageType, ResponseType};
 use std::path::PathBuf;
 use std::process::Command;
@@ -51,7 +50,7 @@ impl ProgressWidget {
 
 #[derive(Clone)]
 pub struct Ffmpeg {
-    pub filename: (File, Entry, ComboBoxText),
+    pub filename: (FileChooserNative, Entry, ComboBoxText),
     pub record_video: CheckButton,
     pub record_audio: CheckButton,
     pub audio_id: ComboBoxText,
@@ -80,6 +79,8 @@ impl Ffmpeg {
         self.saved_filename = Some(
             self.filename
                 .0
+                .file()
+                .unwrap()
                 .path()
                 .unwrap()
                 .join(PathBuf::from(format!(
