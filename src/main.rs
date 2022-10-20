@@ -304,6 +304,7 @@ pub fn build_ui(application: &Application) {
     );
     folder_chooser_native.set_transient_for(Some(&main_window));
     folder_chooser_native.set_modal(true);
+    folder_chooser_native.set_file(&gio::File::for_uri(&config_management::get("default", "folder"))).unwrap();
     let folder_chooser = Some(gio::File::for_uri(&config_management::get("default", "folder"))).unwrap();
     let folder_chooser_name = folder_chooser.basename().unwrap();
     folder_chooser_label.set_label(&folder_chooser_name.to_string_lossy());
@@ -313,6 +314,7 @@ pub fn build_ui(application: &Application) {
     folder_chooser_button.connect_clicked(glib::clone!(@strong folder_chooser_native => move |_| {
             folder_chooser_native.connect_response(glib::clone!(@strong folder_chooser_native, @strong folder_chooser_label, @strong folder_chooser_image => move |_, response| {
                 if response == gtk::ResponseType::Accept {
+                    folder_chooser_native.file().unwrap();
                     let folder_chooser = folder_chooser_native.file().unwrap();
                     let folder_chooser_name = folder_chooser.basename().unwrap();
                     folder_chooser_label.set_label(&folder_chooser_name.to_string_lossy());
@@ -373,7 +375,7 @@ pub fn build_ui(application: &Application) {
 
     // Init record struct
     let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
-        filename: (folder_chooser, filename_entry, format_chooser_combobox),
+        filename: (folder_chooser_native, filename_entry, format_chooser_combobox),
         record_video: video_switch,
         record_audio: audio_switch,
         audio_id: audio_source_combobox,
