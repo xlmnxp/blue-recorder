@@ -280,28 +280,6 @@ impl Ffmpeg {
                 .unwrap();
             }
         }
-        // If only audio is recording then convert it to chosen format
-        else if is_audio_record {
-            self.progress_widget
-                .set_progress("Convert Audio to choosen format".to_string(), 4, 6);
-            sleep(Duration::from_secs(1));
-            Command::new("ffmpeg")
-                .arg("-f")
-                .arg("ogg")
-                .arg("-i")
-                .arg(format!(
-                    "{}.temp.audio",
-                    self.saved_filename.as_ref().unwrap()
-                ))
-                .arg(self.saved_filename.as_ref().unwrap())
-                .output()
-                .unwrap();
-            std::fs::remove_file(format!(
-                "{}.temp.audio",
-                self.saved_filename.as_ref().unwrap()
-            ))
-            .unwrap();
-        }
 
         self.progress_widget.set_progress("".to_string(), 5, 6);
 
