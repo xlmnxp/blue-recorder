@@ -16,6 +16,7 @@ gtk-sys = "0.15"
 glib = "0.10.3"
 rust-ini = "0.16"
 regex = "1.4.3"
+secfmt = "0.1.1"
 subprocess = "0.2.6"
 
 [dependencies.gio]
