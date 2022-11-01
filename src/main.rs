@@ -5,19 +5,22 @@ extern crate gtk;
 mod area_capture;
 mod config_management;
 mod ffmpeg_interface;
+mod timer;
 
 use ffmpeg_interface::{Ffmpeg, ProgressWidget};
 use gettextrs::{bindtextdomain, gettext, LocaleCategory, setlocale, textdomain};
-use gtk::{prelude::*, Application};
-use gtk::{AboutDialog, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry, FileChooserNative, FileChooserAction, Image, Label, MessageDialog, ProgressBar, SpinButton, ToggleButton, Window};
+use gtk::{AboutDialog, Application, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry, FileChooserNative, FileChooserAction, Image, Label, MessageDialog, ProgressBar, SpinButton, ToggleButton, Window};
+use gtk::prelude::*;
+use gtk::glib;
 use std::cell::RefCell;
 use std::ops::Add;
 use std::path::Path;
 use std::process::{Command, Stdio};
 use std::rc::Rc;
+use timer::{recording_delay};
 
 fn main() {
-    //Create new application
+    // Create new application
     let application = Application::new(Some("sa.sy.blue-recorder"), Default::default(),);
     application.connect_activate(build_ui);
     application.run();
@@ -70,6 +73,9 @@ pub fn build_ui(application: &Application) {
     let command_label: Label = builder.object("command_label").unwrap();
     let delay_label: Label = builder.object("delay_label").unwrap();
     let delay_spin: SpinButton = builder.object("delay").unwrap();
+    let delay_window: Window = builder.object("delay_window").unwrap();
+    let delay_window_label: Label = builder.object("delay_window_label").unwrap();
+    let delay_window_button: Button = builder.object("delay_window_stopbutton").unwrap();
     let filename_entry: Entry = builder.object("filename").unwrap();
     let folder_chooser_button: Button = builder.object("folder_chooser").unwrap();
     let folder_chooser_image: Image = builder.object("folder_chooser_image").unwrap();
@@ -96,13 +102,13 @@ pub fn build_ui(application: &Application) {
     // Windows
     main_window.set_title(Some(&gettext("Blue Recorder")));
     main_window.set_application(Some(application));
-    area_chooser_window.set_title(Some(&gettext("Area Chooser"))); //title is hidden
+    area_chooser_window.set_title(Some(&gettext("Area Chooser"))); // Title is hidden
 
-    //Hide stop & play buttons
+    // Hide stop & play buttons
     stop_button.hide();
     play_button.hide();
 
-    //Hide window grab button in Wayland
+    // Hide window grab button in Wayland
     if is_wayland() {
         window_grab_button.hide();
     }
@@ -276,6 +282,18 @@ pub fn build_ui(application: &Application) {
     audio_source_label.set_label(&gettext("Audio Input Source:"));
 
     // Spin
+    frames_spin.set_value(
+        config_management::get("default", "frame")
+            .parse::<f64>()
+            .unwrap(),
+    );
+
+    delay_spin.set_value(
+        config_management::get("default", "delay")
+            .parse::<f64>()
+            .unwrap(),
+    );
+
     let _frames_spin = frames_spin.to_owned();
     frames_spin.connect_value_changed(move |_| {
         config_management::set(
@@ -375,7 +393,6 @@ pub fn build_ui(application: &Application) {
         record_mouse: mouse_switch,
         follow_mouse: follow_mouse_switch,
         record_frames: frames_spin,
-        record_delay: delay_spin,
         command: command_entry,
         video_process_id: None,
         audio_process_id: None,
@@ -386,30 +403,39 @@ pub fn build_ui(application: &Application) {
         overwrite: overwrite_switch,
     }));
 
+    let _delay_window = delay_window.clone();
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
-    let _stop_button = stop_button.clone();
     let _record_button = record_button.clone();
+    let _stop_button = stop_button.clone();
     record_button.connect_clicked(move |_| {
-        let _area_capture = area_capture.borrow_mut();
-        match _ffmpeg_record_interface.borrow_mut().start_record(
-            _area_capture.x,
-            _area_capture.y,
-            _area_capture.width,
-            _area_capture.height,
-        ) {
-            (None, None) => {
+        if delay_spin.value()as u64 > 0 {
+            recording_delay(delay_spin.clone(), delay_spin.value()as u64, delay_window.clone(), delay_window_label.clone(), _record_button.clone());
+       }
+        if delay_spin.value()as u64 == 0 {
+            let _area_capture = area_capture.borrow_mut();
+            match _ffmpeg_record_interface.borrow_mut().start_record(
+                _area_capture.x,
+                _area_capture.y,
+                _area_capture.width,
+                _area_capture.height,
+            ) {
+                (None, None) => {
                     // Do nothing if the start_record function return nothing
                     }
-            _ => {
-                _record_button.hide();
-                _stop_button.show();
+                _ => {
+                    _record_button.hide();
+                    _stop_button.show();
+                }
             }
         }
     });
 
+    delay_window_button.connect_clicked(move |_| {
+    });
+
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
-    let _stop_button = stop_button.clone();
     let _play_button = play_button.clone();
+    let _stop_button = stop_button.clone();
     stop_button.connect_clicked(move |_| {
         _ffmpeg_record_interface.borrow_mut().clone().stop_record();
         record_button.show();

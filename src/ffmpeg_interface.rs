@@ -1,4 +1,5 @@
 extern crate subprocess;
+
 use chrono::prelude::*;
 use gettextrs::gettext;
 use gtk::prelude::*;
@@ -53,7 +54,6 @@ pub struct Ffmpeg {
     pub record_mouse: CheckButton,
     pub follow_mouse: CheckButton,
     pub record_frames: SpinButton,
-    pub record_delay: SpinButton,
     pub command: Entry,
     pub video_process_id: Option<u32>,
     pub audio_process_id: Option<u32>,
@@ -169,8 +169,6 @@ impl Ffmpeg {
             ffmpeg_command.arg("1");
             ffmpeg_command.arg(self.saved_filename.as_ref().unwrap());
             ffmpeg_command.arg("-y");
-            // Sleep for delay
-            sleep(Duration::from_secs(self.record_delay.value() as u64));
             // Start recording and return the process id
             self.video_process_id = Some(ffmpeg_command.spawn().unwrap().id());
             return (self.video_process_id, self.audio_process_id);

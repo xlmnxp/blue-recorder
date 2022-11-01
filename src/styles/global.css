@@ -22,3 +22,13 @@
     color: @theme_selected_fg_color;
     background: @theme_selected_bg_color;
 }
+
+#delay_window_label{
+    font-size: 350%;
+    font-weight: 250;
+}
+
+#delay_window_title{
+    font-size: 120%;
+    font-weight: 50;
+}
