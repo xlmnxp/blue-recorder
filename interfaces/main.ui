@@ -37,7 +37,6 @@
 		<property name="decorated">False</property>
 		<property name="hexpand">True</property>
 		<property name="vexpand">True</property>
-		<property name="icon-name">blue-recorder</property>
 		<child type="titlebar">
 			<object class="GtkHeaderBar" id="headerbar2">
 				<property name="visible">True</property>
@@ -104,6 +103,7 @@
 		</child>
 	</object>
 	<object class="GtkWindow" id="delay_window">
+		<property name="name">delay_window</property>
 		<property name="can-focus">True</property>
 		<property name="transient-for">main_window</property>
 		<property name="resizable">False</property>
@@ -132,7 +132,7 @@
 					</object>
 				</child>
 				<child type="bottom">
-					<object class="GtkButton" id="delay_window_stopbutton">
+					<object class="GtkToggleButton" id="delay_window_stopbutton">
 						<property name="visible">True</property>
 						<property name="can-focus">True</property>
 						<property name="receives-default">True</property>
@@ -592,6 +592,12 @@
 								</child>
 							</object>
 						</child>
+					</object>
+				</child>
+				<child>
+					<object class="GtkLabel" id="record_time_label">
+						<property name="visible">False</property>
+						<property name="can-focus">True</property>
 					</object>
 				</child>
 				<child>

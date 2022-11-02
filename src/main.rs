@@ -17,7 +17,7 @@ use std::ops::Add;
 use std::path::Path;
 use std::process::{Command, Stdio};
 use std::rc::Rc;
-use timer::{recording_delay};
+use timer::{recording_delay, start_timer, stop_timer};
 
 fn main() {
     // Create new application
@@ -75,7 +75,7 @@ pub fn build_ui(application: &Application) {
     let delay_spin: SpinButton = builder.object("delay").unwrap();
     let delay_window: Window = builder.object("delay_window").unwrap();
     let delay_window_label: Label = builder.object("delay_window_label").unwrap();
-    let delay_window_button: Button = builder.object("delay_window_stopbutton").unwrap();
+    let delay_window_button: ToggleButton = builder.object("delay_window_stopbutton").unwrap();
     let filename_entry: Entry = builder.object("filename").unwrap();
     let folder_chooser_button: Button = builder.object("folder_chooser").unwrap();
     let folder_chooser_image: Image = builder.object("folder_chooser_image").unwrap();
@@ -91,6 +91,7 @@ pub fn build_ui(application: &Application) {
     let progress_dialog: MessageDialog = builder.object("progress_dialog").unwrap();
     let progressbar: ProgressBar = builder.object("progressbar").unwrap();
     let record_button: Button = builder.object("recordbutton").unwrap();
+    let record_time_label: Label = builder.object("record_time_label").unwrap();
     let screen_grab_button: ToggleButton = builder.object("screen_grab_button").unwrap();
     let screen_grab_icon: Image = builder.object("screen_grab_icon").unwrap();
     let stop_button: Button = builder.object("stopbutton").unwrap();
@@ -404,12 +405,16 @@ pub fn build_ui(application: &Application) {
     }));
 
     let _delay_window = delay_window.clone();
+    let _delay_window_button = delay_window_button.clone();
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
+    let _play_button = play_button.clone();
     let _record_button = record_button.clone();
+    let _record_time_label = record_time_label.clone();
     let _stop_button = stop_button.clone();
     record_button.connect_clicked(move |_| {
+        _delay_window_button.set_active(false);
         if delay_spin.value()as u64 > 0 {
-            recording_delay(delay_spin.clone(), delay_spin.value()as u64, delay_window.clone(), delay_window_label.clone(), _record_button.clone());
+            recording_delay(delay_spin.clone(), delay_spin.value()as u64, delay_window.clone(), _delay_window_button.clone(), delay_window_label.clone(), _record_button.clone());
        }
         if delay_spin.value()as u64 == 0 {
             let _area_capture = area_capture.borrow_mut();
@@ -423,6 +428,9 @@ pub fn build_ui(application: &Application) {
                     // Do nothing if the start_record function return nothing
                     }
                 _ => {
+                    start_timer(record_time_label.clone());
+                    record_time_label.set_visible(true);
+                    _play_button.hide();
                     _record_button.hide();
                     _stop_button.show();
                 }
@@ -430,6 +438,7 @@ pub fn build_ui(application: &Application) {
         }
     });
 
+    let _delay_window_button = delay_window_button.clone();
     delay_window_button.connect_clicked(move |_| {
     });
 
@@ -437,6 +446,8 @@ pub fn build_ui(application: &Application) {
     let _play_button = play_button.clone();
     let _stop_button = stop_button.clone();
     stop_button.connect_clicked(move |_| {
+        _record_time_label.set_visible(false);
+        stop_timer(_record_time_label.clone());
         _ffmpeg_record_interface.borrow_mut().clone().stop_record();
         record_button.show();
         _stop_button.hide();
