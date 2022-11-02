@@ -11,7 +11,7 @@ pub fn recording_delay(delay_spin: SpinButton, mut delay_time: u64, delay_window
         // Show delay window if delay time is not zero
         delay_window.show();
         if delay_time  > 0 {
-            delay_window_label.set_text(&current_time(delay_time));
+            delay_window_label.set_text(&current_delay_time(delay_time));
             delay_time -= 1;
             if delay_window_button.is_active() {
                 delay_window.hide();
@@ -37,7 +37,7 @@ pub fn start_timer(record_time_label: Label) {
     let mut start_time = 0;
     let capture_record_label = move || {
         if record_time_label.is_visible() {
-            record_time_label.set_text(&current_time(start_time));
+            record_time_label.set_text(&current_record_time(start_time));
             start_time += 1;
             glib::source::Continue(true)
         } else {
@@ -50,11 +50,16 @@ pub fn start_timer(record_time_label: Label) {
 
 pub fn stop_timer(record_time_label: Label) {
     let stop_time = 0;
-    record_time_label.set_text(&current_time(stop_time));
+    record_time_label.set_text(&current_record_time(stop_time));
 }
 
 
-fn current_time(delay_time: u64) -> String {
+fn current_delay_time(delay_time: u64) -> String {
     let delay = secfmt::from(delay_time);
     format!("{:02}:{:02}", delay.minutes, delay.seconds)
+}
+
+fn current_record_time(start_time: u64) -> String {
+    let start = secfmt::from(start_time);
+    format!("{:02}:{:02}:{:02}", start.hours, start.minutes, start.seconds)
 }
