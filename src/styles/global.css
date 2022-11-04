@@ -1,6 +1,7 @@
 #area_chooser_window {
     background-color: alpha(@theme_selected_bg_color, 0.1);
     border: 3px dashed @theme_selected_bg_color;
+    border-radius: 0px;
 }
 
 #area_set_button {
@@ -8,17 +9,17 @@
     background: @theme_selected_bg_color;
 }
 
-#area_grab_button:checked{
+#area_grab_button:checked {
     color: @theme_selected_fg_color;
     background: @theme_selected_bg_color;
 }
 
-#screen_grab_button:checked{
+#screen_grab_button:checked {
     color: @theme_selected_fg_color;
     background: @theme_selected_bg_color;
 }
 
-#window_grab_button:checked{
+#window_grab_button:checked {
     color: @theme_selected_fg_color;
     background: @theme_selected_bg_color;
 }
@@ -26,12 +27,12 @@
 #delay_window {
     border: 3px solid @theme_selected_bg_color;
 }
-#delay_window_label{
+#delay_window_label {
     font-size: 350%;
     font-weight: 250;
 }
 
-#delay_window_title{
+#delay_window_title {
     font-size: 120%;
     font-weight: 50;
 }
