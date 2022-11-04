@@ -44,7 +44,7 @@ pub fn start_timer(record_time_label: Label) {
             glib::source::Continue(false)
         }
     };
-    // Execute capture_label every 1sec
+    // Execute capture_record_label every 1sec
     glib::source::timeout_add_seconds_local(1, capture_record_label);
 }
 
