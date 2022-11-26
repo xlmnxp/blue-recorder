@@ -34,7 +34,7 @@ pub fn recording_delay(delay_spin: SpinButton, mut delay_time: u64, delay_window
 }
 
 pub fn start_timer(record_time_label: Label) {
-    let mut start_time = 0;
+    let mut start_time = 1;
     let capture_record_label = move || {
         if record_time_label.is_visible() {
             record_time_label.set_text(&current_record_time(start_time));
