@@ -18,6 +18,7 @@ rust-ini = "0.16"
 regex = "1.4.3"
 secfmt = "0.1.1"
 subprocess = "0.2.6"
+ksni = "0.2.0"
 
 [dependencies.gio]
 version = "0.15.0"

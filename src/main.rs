@@ -121,16 +121,16 @@ pub fn build_ui(application: &Application) {
     command_entry.set_text(&config_management::get("default", "command"));
 
     // CheckBox
-    //format_chooser_combobox.append(Some("webm"), &gettext("WEBM (Open Web Media File)"));
-    format_chooser_combobox.append(Some("mp4"), &gettext("MP4 (MPEG-4 Part 14)"));
-    //format_chooser_combobox.append(Some("gif"), &gettext("GIF (Graphics Interchange Format)"));
     format_chooser_combobox.append(
         Some("mkv"),
         &gettext("MKV (Matroska multimedia container format)"),
     );
-    //format_chooser_combobox.append(Some("avi"), &gettext("AVI (Audio Video Interleaved)"));
-    //format_chooser_combobox.append(Some("wmv"), &gettext("WMV (Windows Media Video)"));
-    //format_chooser_combobox.append(Some("nut"), &gettext("NUT (NUT Recording Format)"));
+    format_chooser_combobox.append(Some("mp4"), &gettext("MP4 (MPEG-4 Part 14)"));
+    format_chooser_combobox.append(Some("webm"), &gettext("WEBM (Open Web Media File)"));
+    format_chooser_combobox.append(Some("gif"), &gettext("GIF (Graphics Interchange Format)"));
+    format_chooser_combobox.append(Some("avi"), &gettext("AVI (Audio Video Interleaved)"));
+    format_chooser_combobox.append(Some("wmv"), &gettext("WMV (Windows Media Video)"));
+    format_chooser_combobox.append(Some("nut"), &gettext("NUT (NUT Recording Format)"));
     format_chooser_combobox.set_active(Some(0));
 
     // Get audio sources
@@ -404,6 +404,7 @@ pub fn build_ui(application: &Application) {
         overwrite: overwrite_switch,
     }));
 
+    // Record Button
     let _delay_window = delay_window.clone();
     let _delay_window_button = delay_window_button.clone();
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
@@ -438,10 +439,7 @@ pub fn build_ui(application: &Application) {
         }
     });
 
-    let _delay_window_button = delay_window_button.clone();
-    delay_window_button.connect_clicked(move |_| {
-    });
-
+    // Stop Record Button
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     let _play_button = play_button.clone();
     let _stop_button = stop_button.clone();
@@ -454,6 +452,12 @@ pub fn build_ui(application: &Application) {
         _play_button.show();
     });
 
+    // Delay Window Button
+    let _delay_window_button = delay_window_button.clone();
+    delay_window_button.connect_clicked(move |_| {
+    });
+
+    // Play Button
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     play_button.connect_clicked(move |_| {
         _ffmpeg_record_interface.borrow_mut().clone().play_record();
@@ -516,7 +520,7 @@ pub fn build_ui(application: &Application) {
         main_window.close();
     });
 
-    // Apply css
+    // Apply CSS
     let provider = CssProvider::new();
     provider
         .load_from_data(include_str!("styles/global.css").as_bytes());
