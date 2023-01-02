@@ -1,12 +1,12 @@
 # Italian translation for Blue Recorder
 # Copyright (C) 2017, FOSS Project
 # This file is distributed under the same license as the Blue Recorder package.
-# Albano Battistella <albano_battistella@hotmail.com>, 2021.
+# Albano Battistella <albano_battistella@hotmail.com>, 2021,2022,2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "POT-Creation-Date: 2017-08-08 10:53+0300\n"
-"PO-Revision-Date: 2021-06-26 16:35+0200\n"
+"PO-Revision-Date: 2023-01-01 16:35+0100\n"
 "Last-Translator: Albano Battistella <albano_battistella@hotmail.com>\n"
 "Language-Team: ITALIAN <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -54,22 +54,22 @@ msgid "Enter your command here.."
 msgstr "Inserisci qui il tuo comando.."
 
 msgid "MKV (Matroska multimedia container format)"
-msgstr ""
+msgstr "MKV (Formato contenitore multimediale Matroska)"
 
 msgid "AVI (Audio Video Interleaved)"
-msgstr ""
+msgstr "AVI (Audio Video Interleaved)"
 
 msgid "MP4 (MPEG-4 Part 14)"
-msgstr ""
+msgstr "MP4 (MPEG-4 Part 14)"
 
 msgid "WMV (Windows Media Video)"
-msgstr ""
+msgstr "WMV (Windows Media Video)"
 
 msgid "GIF (Graphics Interchange Format)"
-msgstr ""
+msgstr "GIF (Graphics Interchange Format)"
 
 msgid "NUT (NUT Recording Format)"
-msgstr ""
+msgstr "NUT (Formato di registrazione NUT)"
 
 msgid "Record Video"
 msgstr "Registra Video"
@@ -93,7 +93,7 @@ msgid "Select an Area"
 msgstr "Seleziona un'Area"
 
 msgid "Frames:"
-msgstr ""
+msgstr "Frame:"
 
 msgid "Delay:"
 msgstr "Ritardo:"
