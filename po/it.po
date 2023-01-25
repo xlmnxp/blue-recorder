@@ -15,7 +15,7 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 msgid "There seems to be a problem in recording. Try running 'blue-recorder' from the command line to see the issue."
-msgstr "Sembra esserci un problema nella registrazione. Prova a eseguire "blue-recorder" dalla riga di comando per vedere il problema."
+msgstr "Sembra esserci un problema nella registrazione. Prova a eseguire 'blue-recorder' dalla riga di comando per vedere il problema."
 
 msgid "Stop Recording"
 msgstr "Interrompi la registrazione"
