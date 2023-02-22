@@ -2,7 +2,7 @@ extern crate regex;
 use regex::Regex;
 use std::process::Command;
 
-// this struct use "xwininfo" to get area x, y, width and height
+// This struct use "xwininfo" to get area x, y, width and height
 #[derive(Debug, Copy, Clone)]
 pub struct AreaCapture {
     pub x: u16,
