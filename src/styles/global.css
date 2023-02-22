@@ -27,6 +27,7 @@
 #delay_window {
     border: 3px solid @theme_selected_bg_color;
 }
+
 #delay_window_label {
     font-size: 350%;
     font-weight: 250;
