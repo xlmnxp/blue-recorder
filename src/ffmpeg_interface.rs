@@ -2,12 +2,10 @@ extern crate subprocess;
 use chrono::prelude::*;
 use gettextrs::gettext;
 use gtk::prelude::*;
-use gtk::{
-    CheckButton, ComboBoxText, Entry, FileChooserNative, ProgressBar, SpinButton, Window,
-};
 use gtk::{ButtonsType, DialogFlags, MessageDialog, MessageType};
+use gtk::{CheckButton, ComboBoxText, Entry, FileChooserNative, ProgressBar, SpinButton, Window};
 use std::path::PathBuf;
-use std::process::Command;
+use std::process::{Command, Child};
 use std::sync::mpsc::Sender;
 use std::thread::sleep;
 use std::time::Duration;
@@ -54,13 +52,23 @@ pub struct Ffmpeg {
     pub record_frames: SpinButton,
     pub record_delay: SpinButton,
     pub command: Entry,
-    pub video_process_id: Option<u32>,
-    pub audio_process_id: Option<u32>,
+
+    // TODO: fix Clone derive for process childs
+    pub video_process: Option<Child>,
+    pub audio_process: Option<Child>,
     pub saved_filename: Option<String>,
     pub unbound: Option<Sender<bool>>,
     pub progress_widget: ProgressWidget,
     pub window: Window,
     pub overwrite: CheckButton,
+}
+
+impl std::ops::Deref for Ffmpeg {
+    type Target = Option<Child>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.video_process
+    }
 }
 
 impl Ffmpeg {
@@ -104,9 +112,8 @@ impl Ffmpeg {
                 &gettext("File already exist. Do you want to overwrite it?"),
             );
 
-            message_dialog.connect_response(|message_dialog: &MessageDialog, _| {
-                message_dialog.hide()
-            });
+            message_dialog
+                .connect_response(|message_dialog: &MessageDialog, _| message_dialog.hide());
 
             message_dialog.show();
 
@@ -126,7 +133,7 @@ impl Ffmpeg {
                 self.saved_filename.as_ref().unwrap()
             ));
             ffmpeg_command.arg("-y");
-            self.audio_process_id = Some(ffmpeg_command.spawn().unwrap().id());
+            self.video_process = Some(ffmpeg_command.spawn().unwrap());
         }
 
         if self.record_video.is_active() {
@@ -169,8 +176,8 @@ impl Ffmpeg {
             // sleep for delay
             sleep(Duration::from_secs(self.record_delay.value() as u64));
             // start recording and return the process id
-            self.video_process_id = Some(ffmpeg_command.spawn().unwrap().id());
-            return (self.video_process_id, self.audio_process_id);
+            self.video_process = Some(ffmpeg_command.spawn().unwrap());
+            return (Some(self.video_process.unwrap().id()), Some(self.audio_process.unwrap().id()));
         }
 
         (None, None)
@@ -181,24 +188,18 @@ impl Ffmpeg {
         // kill the process to stop recording
         self.progress_widget.set_progress("".to_string(), 1, 6);
 
-        if self.video_process_id.is_some() {
+        if self.video_process.is_some() {
             self.progress_widget
                 .set_progress("Stop Recording Video".to_string(), 1, 6);
-            Command::new("kill")
-                .arg(format!("{}", self.video_process_id.unwrap()))
-                .output()
-                .unwrap();
+            self.video_process.unwrap().kill().unwrap();
         }
 
         self.progress_widget.set_progress("".to_string(), 2, 6);
 
-        if self.audio_process_id.is_some() {
+        if self.audio_process.is_some() {
             self.progress_widget
                 .set_progress("Stop Recording Audio".to_string(), 2, 6);
-            Command::new("kill")
-                .arg(format!("{}", self.audio_process_id.unwrap()))
-                .output()
-                .unwrap();
+            self.audio_process.unwrap().kill().unwrap();
         }
 
         let is_video_record = std::path::Path::new(
@@ -254,7 +255,7 @@ impl Ffmpeg {
                 let audio_filename =
                     format!("{}.temp.audio", self.saved_filename.as_ref().unwrap());
 
-                Command::new("ffmpeg")
+                let output = Command::new("ffmpeg")
                     .args([
                         "-i",
                         video_filename.as_str(),
@@ -268,9 +269,11 @@ impl Ffmpeg {
                         "-y",
                     ])
                     .output()
-                    .unwrap();
+                    .expect("failed to execute ffmpeg");
 
-                sleep(Duration::from_secs(1));
+                println!("stat!: {:?}", output.status);
+                println!("out!: {:?}", String::from_utf8(output.stdout));
+                println!("err!: {:?}", String::from_utf8(output.stderr));
 
                 // std::fs::remove_file(format!(
                 //     "{}.temp.audio",
@@ -285,7 +288,6 @@ impl Ffmpeg {
                 // .unwrap();
             }
         }
-        
         // if only audio is recording then convert it to chosen format
         else if is_audio_record {
             self.progress_widget
