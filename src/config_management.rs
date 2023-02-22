@@ -12,7 +12,7 @@ pub fn initialize() -> PathBuf {
         .join("blue-recorder")
         .join("config.ini");
 
-    // fatch and make the config file
+    // Fatch and make the config file
     if !&config_path.exists() {
         let config_directories = &mut config_path.to_owned();
         config_directories.pop();
@@ -53,7 +53,7 @@ fn merge_previous_version() -> Option<PathBuf> {
         .join("blue-recorder")
         .join("config.ini");
 
-    // return none if config.ini not exists
+    // Return none if config.ini not exists
     if !&config_path.exists() {
         return None;
     }
