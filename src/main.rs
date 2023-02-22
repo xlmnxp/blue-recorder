@@ -1,6 +1,6 @@
-extern crate gio;
 extern crate gdk;
 extern crate gettextrs;
+extern crate gio;
 extern crate gtk;
 mod area_capture;
 mod config_management;
@@ -8,10 +8,14 @@ mod ffmpeg_interface;
 mod timer;
 
 use ffmpeg_interface::{Ffmpeg, ProgressWidget};
-use gettextrs::{bindtextdomain, gettext, LocaleCategory, setlocale, textdomain};
-use gtk::{AboutDialog, Application, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry, FileChooserNative, FileChooserAction, Image, Label, MessageDialog, ProgressBar, SpinButton, ToggleButton, Window};
-use gtk::prelude::*;
+use gettextrs::{bindtextdomain, gettext, setlocale, textdomain, LocaleCategory};
 use gtk::glib;
+use gtk::prelude::*;
+use gtk::{
+    AboutDialog, Application, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry,
+    FileChooserAction, FileChooserNative, Image, Label, MessageDialog, ProgressBar, SpinButton,
+    ToggleButton, Window,
+};
 use std::cell::RefCell;
 use std::ops::Add;
 use std::path::Path;
@@ -21,7 +25,7 @@ use timer::{recording_delay, start_timer, stop_timer};
 
 fn main() {
     // Create new application
-    let application = Application::new(Some("sa.sy.blue-recorder"), Default::default(),);
+    let application = Application::new(Some("sa.sy.blue-recorder"), Default::default());
     application.connect_activate(build_ui);
     application.run();
 }
@@ -37,7 +41,7 @@ pub fn build_ui(application: &Application) {
     let ui_src = include_str!("../interfaces/main.ui").to_string();
     let builder: Builder = Builder::from_string(ui_src.as_str());
 
-   // Translate
+    // Translate
     let mut po_path_abs = {
         let mut current_exec_dir = std::env::current_exe().unwrap();
         current_exec_dir.pop();
@@ -136,27 +140,19 @@ pub fn build_ui(application: &Application) {
     // Get audio sources
     let sources_descriptions: Vec<String> = {
         let list_sources_child = Command::new("pactl")
-        .args(&["list", "sources"])
-        .stdout(Stdio::piped())
-        .spawn();
-        let sources_descriptions = String::from_utf8(
-            if let Ok(..) = list_sources_child {
+            .args(&["list", "sources"])
+            .stdout(Stdio::piped())
+            .spawn();
+        let sources_descriptions = String::from_utf8(if let Ok(..) = list_sources_child {
             Command::new("grep")
                 .args(&["-e", "device.description"])
-                .stdin(
-                    list_sources_child
-                    .unwrap()
-                    .stdout
-                    .take()
-                    .unwrap(),
-                )
+                .stdin(list_sources_child.unwrap().stdout.take().unwrap())
                 .output()
                 .unwrap()
                 .stdout
-            } else {
-                Vec::new()
-            }
-        )
+        } else {
+            Vec::new()
+        })
         .unwrap();
         sources_descriptions
             .split('\n')
@@ -187,22 +183,19 @@ pub fn build_ui(application: &Application) {
     follow_mouse_switch.set_active(config_management::get_bool("default", "followmousecheck"));
     overwrite_switch.set_active(config_management::get_bool("default", "overwritecheck"));
 
+    let _video_switch = video_switch.clone();
     let _audio_switch = audio_switch.clone();
     let _mouse_switch = mouse_switch.clone();
     let _follow_mouse_switch = follow_mouse_switch.clone();
     video_switch.connect_toggled(move |switch: &CheckButton| {
         config_management::set_bool("default", "videocheck", switch.is_active());
         if switch.is_active() {
-            _audio_switch.set_active(false);
-            _audio_switch.set_sensitive(true);
             _mouse_switch.set_sensitive(true);
         } else {
             _mouse_switch.set_sensitive(false);
             _follow_mouse_switch.set_sensitive(false);
-        }
-        if !switch.is_active() {
-            _audio_switch.set_active(false);
-            _audio_switch.set_sensitive(false);
+            _audio_switch.set_active(true);
+            _audio_switch.set_sensitive(true);
             _mouse_switch.set_active(false);
         }
     });
@@ -216,8 +209,13 @@ pub fn build_ui(application: &Application) {
             _follow_mouse_switch.set_sensitive(false);
         }
     });
-    audio_switch.connect_toggled(|switch: &CheckButton| {
+    let _mouse_switch = mouse_switch.clone();
+    audio_switch.connect_toggled(move |switch: &CheckButton| {
         config_management::set_bool("default", "audiocheck", switch.is_active());
+        if !switch.is_active() && !_video_switch.is_active() {
+            _video_switch.set_active(true);
+            _mouse_switch.set_sensitive(true);
+        }
     });
     follow_mouse_switch.connect_toggled(|switch: &CheckButton| {
         config_management::set_bool("default", "followmousecheck", switch.is_active());
@@ -305,25 +303,28 @@ pub fn build_ui(application: &Application) {
     });
     let _delay_spin = delay_spin.to_owned();
     delay_spin.connect_value_changed(move |_| {
-        config_management::set(
-            "default",
-            "delay",
-            _delay_spin.value().to_string().as_str(),
-        );
+        config_management::set("default", "delay", _delay_spin.value().to_string().as_str());
     });
 
     // FileChooser
     let folder_chooser_native = FileChooserNative::new(
-            Some("Select Folder"),
-            Some(&main_window),
-            FileChooserAction::SelectFolder,
-            Some("Select"),
-            Some("Cancel"),
+        Some("Select Folder"),
+        Some(&main_window),
+        FileChooserAction::SelectFolder,
+        Some("Select"),
+        Some("Cancel"),
     );
     folder_chooser_native.set_transient_for(Some(&main_window));
     folder_chooser_native.set_modal(true);
-    folder_chooser_native.set_file(&gio::File::for_uri(&config_management::get("default", "folder"))).unwrap();
-    let folder_chooser = Some(gio::File::for_uri(&config_management::get("default", "folder"))).unwrap();
+    folder_chooser_native
+        .set_file(&gio::File::for_uri(&config_management::get(
+            "default", "folder",
+        )))
+        .unwrap();
+    let folder_chooser = Some(gio::File::for_uri(&config_management::get(
+        "default", "folder",
+    )))
+    .unwrap();
     let folder_chooser_name = folder_chooser.basename().unwrap();
     folder_chooser_label.set_label(&folder_chooser_name.to_string_lossy());
     let folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
@@ -385,9 +386,15 @@ pub fn build_ui(application: &Application) {
         _area_capture.borrow_mut().get_area();
     });
 
+    let _delay_spin = delay_spin.clone();
+
     // Init record struct
     let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
-        filename: (folder_chooser_native, filename_entry, format_chooser_combobox),
+        filename: (
+            folder_chooser_native,
+            filename_entry,
+            format_chooser_combobox,
+        ),
         record_video: video_switch,
         record_audio: audio_switch,
         audio_id: audio_source_combobox,
@@ -402,6 +409,7 @@ pub fn build_ui(application: &Application) {
         progress_widget: ProgressWidget::new(progress_dialog, progressbar),
         window: main_window.clone(),
         overwrite: overwrite_switch,
+        record_delay: delay_spin,
     }));
 
     // Record Button
@@ -412,12 +420,19 @@ pub fn build_ui(application: &Application) {
     let _record_button = record_button.clone();
     let _record_time_label = record_time_label.clone();
     let _stop_button = stop_button.clone();
+
     record_button.connect_clicked(move |_| {
         _delay_window_button.set_active(false);
-        if delay_spin.value()as u64 > 0 {
-            recording_delay(delay_spin.clone(), delay_spin.value()as u64, delay_window.clone(), _delay_window_button.clone(), delay_window_label.clone(), _record_button.clone());
-       }
-        if delay_spin.value()as u64 == 0 {
+        if _delay_spin.value() as u64 > 0 {
+            recording_delay(
+                _delay_spin.clone(),
+                _delay_spin.value() as u64,
+                delay_window.clone(),
+                _delay_window_button.clone(),
+                delay_window_label.clone(),
+                _record_button.clone(),
+            );
+        } else if _delay_spin.value() as u64 == 0 {
             let _area_capture = area_capture.borrow_mut();
             match _ffmpeg_record_interface.borrow_mut().start_record(
                 _area_capture.x,
@@ -427,7 +442,7 @@ pub fn build_ui(application: &Application) {
             ) {
                 (None, None) => {
                     // Do nothing if the start_record function return nothing
-                    }
+                }
                 _ => {
                     start_timer(record_time_label.clone());
                     record_time_label.set_visible(true);
@@ -454,8 +469,7 @@ pub fn build_ui(application: &Application) {
 
     // Delay Window Button
     let _delay_window_button = delay_window_button.clone();
-    delay_window_button.connect_clicked(move |_| {
-    });
+    delay_window_button.connect_clicked(move |_| {});
 
     // Play Button
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
@@ -498,7 +512,10 @@ pub fn build_ui(application: &Application) {
         "O.Chibani <11yzyv86j@relay.firefox.com>",
         "Patreon Supporters: Ahmad Gharib, Medium,\nWilliam Grunow, Alex Benishek.",
     ]);
-    about_dialog.set_artists(&["Mustapha Assabar", "Abdullah Al-Baroty <albaroty@gmail.com>"]);
+    about_dialog.set_artists(&[
+        "Mustapha Assabar",
+        "Abdullah Al-Baroty <albaroty@gmail.com>",
+    ]);
     about_dialog.set_website(Some("https://github.com/xlmnxp/blue-recorder/"));
     about_dialog.set_logo_icon_name(Some("blue-recorder"));
     about_dialog.set_logo(logo.paintable().as_ref());
@@ -507,12 +524,12 @@ pub fn build_ui(application: &Application) {
     // Windows
     // Hide area chooser after it deleted.
     let _area_chooser_window = area_chooser_window.clone();
-    area_chooser_window.connect_close_request (move |_| {
+    area_chooser_window.connect_close_request(move |_| {
         _area_chooser_window.hide();
         gtk::Inhibit(true)
     });
 
-   // Close the application when main window destroy
+    // Close the application when main window destroy
     main_window.connect_destroy(move |main_window| {
         let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
         // Stop recording before close the application
@@ -522,8 +539,7 @@ pub fn build_ui(application: &Application) {
 
     // Apply CSS
     let provider = CssProvider::new();
-    provider
-        .load_from_data(include_str!("styles/global.css").as_bytes());
+    provider.load_from_data(include_str!("styles/global.css").as_bytes());
     gtk::StyleContext::add_provider_for_display(
         &area_chooser_window.display(),
         &provider,
