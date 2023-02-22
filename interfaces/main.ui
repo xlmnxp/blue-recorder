@@ -398,9 +398,9 @@
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
 										<property name="max-width-chars">2</property>
-										<property name="text" translatable="yes">30</property>
+										<property name="text" translatable="yes">60</property>
 										<property name="adjustment">adjustment2</property>
-										<property name="value">30</property>
+										<property name="value">60</property>
 									</object>
 								</child>
 								<child>
