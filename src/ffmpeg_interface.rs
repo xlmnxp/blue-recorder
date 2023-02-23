@@ -5,7 +5,7 @@ use gtk::prelude::*;
 use gtk::{ButtonsType, DialogFlags, MessageDialog, MessageType};
 use gtk::{CheckButton, ComboBoxText, Entry, FileChooserNative, ProgressBar, SpinButton, Window};
 use std::path::PathBuf;
-use std::process::{Command, Child};
+use std::process::{Child, Command};
 use std::sync::mpsc::Sender;
 use std::thread::sleep;
 use std::time::Duration;
@@ -53,7 +53,7 @@ pub struct Ffmpeg {
     pub record_delay: SpinButton,
     pub command: Entry,
 
-    // TODO: fix Clone derive for process childs
+    // TODO: fix Clone derive for process
     pub video_process: Option<Child>,
     pub audio_process: Option<Child>,
     pub saved_filename: Option<String>,
@@ -140,21 +140,14 @@ impl Ffmpeg {
             let mut ffmpeg_command: Command = Command::new("ffmpeg");
 
             // record video with specified width and hight
-            ffmpeg_command.arg("-video_size");
-            ffmpeg_command.arg(format!("{}x{}", width, height));
-            ffmpeg_command.arg("-framerate");
-            ffmpeg_command.arg(format!("{}", self.record_frames.value()));
-            ffmpeg_command.arg("-f");
-            ffmpeg_command.arg("x11grab");
-            ffmpeg_command.arg("-i");
-            ffmpeg_command.arg(format!(
+            ffmpeg_command.args(["-video_size", format!("{}x{}", width, height).as_str(), "-framerate", self.record_frames.value().to_string().as_str(), "-f", "x11grab", "-i", format!(
                 "{}+{},{}",
                 std::env::var("DISPLAY")
                     .unwrap_or_else(|_| ":0".to_string())
                     .as_str(),
                 x,
                 y
-            ));
+            ).as_str()]);
 
             // if show mouse switch is enabled, draw the mouse to video
             ffmpeg_command.arg("-draw_mouse");
@@ -166,18 +159,20 @@ impl Ffmpeg {
 
             // if follow mouse switch is enabled, follow the mouse
             if self.follow_mouse.is_active() {
-                ffmpeg_command.arg("-follow_mouse");
-                ffmpeg_command.arg("centered");
+                ffmpeg_command.args(["-follow_mouse", "centered"]);
             }
-            ffmpeg_command.arg("-crf");
-            ffmpeg_command.arg("1");
-            ffmpeg_command.arg(self.saved_filename.as_ref().unwrap());
-            ffmpeg_command.arg("-y");
+
+            ffmpeg_command.args(["-crf", "1", self.saved_filename.as_ref().unwrap(), "-y"]);
+
             // sleep for delay
             sleep(Duration::from_secs(self.record_delay.value() as u64));
+
             // start recording and return the process id
             self.video_process = Some(ffmpeg_command.spawn().unwrap());
-            return (Some(self.video_process.unwrap().id()), Some(self.audio_process.unwrap().id()));
+            return (
+                Some(self.video_process.unwrap().id()),
+                Some(self.audio_process.unwrap().id()),
+            );
         }
 
         (None, None)
@@ -202,41 +197,27 @@ impl Ffmpeg {
             self.audio_process.unwrap().kill().unwrap();
         }
 
-        let is_video_record = std::path::Path::new(
-            format!(
-                "{}{}",
-                self.saved_filename.as_ref().unwrap_or(&String::from("")),
-                { "" }
-            )
-            .as_str(),
-        )
-        .exists();
-        let is_audio_record = std::path::Path::new(
-            format!(
-                "{}.temp.audio",
-                self.saved_filename.as_ref().unwrap_or(&String::from(""))
-            )
-            .as_str(),
-        )
-        .exists();
+        let video_filename = format!(
+            "{}.temp.without.audio.{}",
+            self.saved_filename.as_ref().unwrap(),
+            self.filename.2.active_id().unwrap()
+        );
+
+        let audio_filename = format!("{}.temp.audio", self.saved_filename.as_ref().unwrap());
+
+        let is_video_record = std::path::Path::new(video_filename.as_str()).exists();
+        let is_audio_record = std::path::Path::new(audio_filename.as_str()).exists();
 
         if is_video_record {
             let mut move_command = Command::new("mv");
-            move_command.arg(format!("{}{}", self.saved_filename.as_ref().unwrap(), {
-                ""
-            }));
-            move_command.arg(format!(
-                "{}{}",
-                self.saved_filename.as_ref().unwrap_or(&String::new()),
+            move_command.args([
+                self.saved_filename.as_ref().unwrap().as_str(),
                 if is_audio_record {
-                    format!(
-                        ".temp.without.audio.{}",
-                        self.filename.2.active_id().unwrap()
-                    )
+                    video_filename.as_str()
                 } else {
-                    "".to_string()
-                }
-            ));
+                    self.saved_filename.unwrap().as_str()
+                },
+            ]);
             move_command.output().unwrap();
 
             self.progress_widget.set_progress("".to_string(), 4, 6);
@@ -246,16 +227,7 @@ impl Ffmpeg {
                 self.progress_widget
                     .set_progress("Save Audio Recording".to_string(), 4, 6);
 
-                let video_filename = format!(
-                    "{}.temp.without.audio.{}",
-                    self.saved_filename.as_ref().unwrap(),
-                    self.filename.2.active_id().unwrap()
-                );
-
-                let audio_filename =
-                    format!("{}.temp.audio", self.saved_filename.as_ref().unwrap());
-
-                let output = Command::new("ffmpeg")
+                Command::new("ffmpeg")
                     .args([
                         "-i",
                         video_filename.as_str(),
@@ -269,46 +241,29 @@ impl Ffmpeg {
                         "-y",
                     ])
                     .output()
-                    .expect("failed to execute ffmpeg");
+                    .expect("failed to merge video with audio");
 
-                println!("stat!: {:?}", output.status);
-                println!("out!: {:?}", String::from_utf8(output.stdout));
-                println!("err!: {:?}", String::from_utf8(output.stderr));
-
-                // std::fs::remove_file(format!(
-                //     "{}.temp.audio",
-                //     self.saved_filename.as_ref().unwrap()
-                // ))
-                // .unwrap();
-                // std::fs::remove_file(format!(
-                //     "{}.temp.without.audio.{}",
-                //     self.saved_filename.as_ref().unwrap(),
-                //     self.filename.2.active_id().unwrap()
-                // ))
-                // .unwrap();
+                std::fs::remove_file(video_filename).unwrap();
+                std::fs::remove_file(audio_filename).unwrap();
             }
         }
         // if only audio is recording then convert it to chosen format
         else if is_audio_record {
             self.progress_widget
                 .set_progress("Convert Audio to choosen format".to_string(), 4, 6);
-            sleep(Duration::from_secs(1));
+
             Command::new("ffmpeg")
-                .arg("-f")
-                .arg("ogg")
-                .arg("-i")
-                .arg(format!(
-                    "{}.temp.audio",
-                    self.saved_filename.as_ref().unwrap()
-                ))
-                .arg(self.saved_filename.as_ref().unwrap())
+                .args([
+                    "-f",
+                    "ogg",
+                    "-i",
+                    audio_filename.as_str(),
+                    self.saved_filename.as_ref().unwrap(),
+                ])
                 .output()
-                .unwrap();
-            std::fs::remove_file(format!(
-                "{}.temp.audio",
-                self.saved_filename.as_ref().unwrap()
-            ))
-            .unwrap();
+                .expect("failed convert audio to video");
+
+            std::fs::remove_file(audio_filename).unwrap();
         }
 
         self.progress_widget.set_progress("".to_string(), 5, 6);
