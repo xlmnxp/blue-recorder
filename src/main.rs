@@ -125,11 +125,8 @@ pub fn build_ui(application: &Application) {
     command_entry.set_text(&config_management::get("default", "command"));
 
     // CheckBox
-    format_chooser_combobox.append(
-        Some("mkv"),
-        &gettext("MKV (Matroska multimedia container format)"),
-    );
     format_chooser_combobox.append(Some("mp4"), &gettext("MP4 (MPEG-4 Part 14)"));
+    format_chooser_combobox.append(Some("mkv"), &gettext("MKV (Matroska multimedia container format)"));
     format_chooser_combobox.append(Some("webm"), &gettext("WEBM (Open Web Media File)"));
     format_chooser_combobox.append(Some("gif"), &gettext("GIF (Graphics Interchange Format)"));
     format_chooser_combobox.append(Some("avi"), &gettext("AVI (Audio Video Interleaved)"));
@@ -440,7 +437,7 @@ pub fn build_ui(application: &Application) {
                 _area_capture.width,
                 _area_capture.height,
             ) {
-                (None, None) => {
+                None => {
                     // Do nothing if the start_record function return nothing
                 }
                 _ => {

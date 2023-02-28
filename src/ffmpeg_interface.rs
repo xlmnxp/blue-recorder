@@ -4,8 +4,10 @@ use gettextrs::gettext;
 use gtk::prelude::*;
 use gtk::{ButtonsType, DialogFlags, MessageDialog, MessageType};
 use gtk::{CheckButton, ComboBoxText, Entry, FileChooserNative, ProgressBar, SpinButton, Window};
+use std::cell::RefCell;
 use std::path::PathBuf;
 use std::process::{Child, Command};
+use std::rc::Rc;
 use std::sync::mpsc::Sender;
 use std::thread::sleep;
 use std::time::Duration;
@@ -54,8 +56,8 @@ pub struct Ffmpeg {
     pub command: Entry,
 
     // TODO: fix Clone derive for process
-    pub video_process: Option<Child>,
-    pub audio_process: Option<Child>,
+    pub video_process: Option<Rc<RefCell<Child>>>,
+    pub audio_process: Option<Rc<RefCell<Child>>>,
     pub saved_filename: Option<String>,
     pub unbound: Option<Sender<bool>>,
     pub progress_widget: ProgressWidget,
@@ -63,22 +65,8 @@ pub struct Ffmpeg {
     pub overwrite: CheckButton,
 }
 
-impl std::ops::Deref for Ffmpeg {
-    type Target = Option<Child>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.video_process
-    }
-}
-
 impl Ffmpeg {
-    pub fn start_record(
-        &mut self,
-        x: u16,
-        y: u16,
-        width: u16,
-        height: u16,
-    ) -> (Option<u32>, Option<u32>) {
+    pub fn start_record(&mut self, x: u16, y: u16, width: u16, height: u16) -> Option<()> {
         self.saved_filename = Some(
             self.filename
                 .0
@@ -117,7 +105,7 @@ impl Ffmpeg {
 
             message_dialog.show();
 
-            return (None, None);
+            return None;
         }
 
         if self.record_audio.is_active() {
@@ -133,21 +121,31 @@ impl Ffmpeg {
                 self.saved_filename.as_ref().unwrap()
             ));
             ffmpeg_command.arg("-y");
-            self.video_process = Some(ffmpeg_command.spawn().unwrap());
+            self.audio_process = Some(Rc::new(RefCell::new(ffmpeg_command.spawn().unwrap())));
         }
 
         if self.record_video.is_active() {
             let mut ffmpeg_command: Command = Command::new("ffmpeg");
 
             // record video with specified width and hight
-            ffmpeg_command.args(["-video_size", format!("{}x{}", width, height).as_str(), "-framerate", self.record_frames.value().to_string().as_str(), "-f", "x11grab", "-i", format!(
-                "{}+{},{}",
-                std::env::var("DISPLAY")
-                    .unwrap_or_else(|_| ":0".to_string())
-                    .as_str(),
-                x,
-                y
-            ).as_str()]);
+            ffmpeg_command.args([
+                "-video_size",
+                format!("{}x{}", width, height).as_str(),
+                "-framerate",
+                self.record_frames.value().to_string().as_str(),
+                "-f",
+                "x11grab",
+                "-i",
+                format!(
+                    "{}+{},{}",
+                    std::env::var("DISPLAY")
+                        .unwrap_or_else(|_| ":0".to_string())
+                        .as_str(),
+                    x,
+                    y
+                )
+                .as_str(),
+            ]);
 
             // if show mouse switch is enabled, draw the mouse to video
             ffmpeg_command.arg("-draw_mouse");
@@ -162,20 +160,33 @@ impl Ffmpeg {
                 ffmpeg_command.args(["-follow_mouse", "centered"]);
             }
 
-            ffmpeg_command.args(["-crf", "1", self.saved_filename.as_ref().unwrap(), "-y"]);
+            let video_filename = format!(
+                "{}.temp.without.audio.{}",
+                self.saved_filename.as_ref().unwrap(),
+                self.filename.2.active_id().unwrap()
+            );
+
+            ffmpeg_command.args([
+                "-crf",
+                "1",
+                {
+                    if self.record_audio.is_active() {
+                        video_filename.as_str()
+                    } else {
+                        self.saved_filename.as_ref().unwrap()
+                    }
+                },
+                "-y",
+            ]);
 
             // sleep for delay
             sleep(Duration::from_secs(self.record_delay.value() as u64));
 
             // start recording and return the process id
-            self.video_process = Some(ffmpeg_command.spawn().unwrap());
-            return (
-                Some(self.video_process.unwrap().id()),
-                Some(self.audio_process.unwrap().id()),
-            );
+            self.video_process = Some(Rc::new(RefCell::new(ffmpeg_command.spawn().unwrap())));
         }
 
-        (None, None)
+        Some(())
     }
 
     pub fn stop_record(&self) {
@@ -186,7 +197,23 @@ impl Ffmpeg {
         if self.video_process.is_some() {
             self.progress_widget
                 .set_progress("Stop Recording Video".to_string(), 1, 6);
-            self.video_process.unwrap().kill().unwrap();
+
+            Command::new("kill")
+                .arg(format!(
+                    "{}",
+                    self.video_process.clone().unwrap().borrow_mut().id()
+                ))
+                .output()
+                .unwrap();
+
+            self.video_process
+                .clone()
+                .unwrap()
+                .borrow_mut()
+                .wait()
+                .unwrap();
+
+            println!("video killed");
         }
 
         self.progress_widget.set_progress("".to_string(), 2, 6);
@@ -194,7 +221,22 @@ impl Ffmpeg {
         if self.audio_process.is_some() {
             self.progress_widget
                 .set_progress("Stop Recording Audio".to_string(), 2, 6);
-            self.audio_process.unwrap().kill().unwrap();
+
+            Command::new("kill")
+                .arg(format!(
+                    "{}",
+                    self.audio_process.clone().unwrap().borrow_mut().id()
+                ))
+                .output()
+                .unwrap();
+
+            self.audio_process
+                .clone()
+                .unwrap()
+                .borrow_mut()
+                .wait()
+                .unwrap();
+            println!("audio killed");
         }
 
         let video_filename = format!(
@@ -215,7 +257,7 @@ impl Ffmpeg {
                 if is_audio_record {
                     video_filename.as_str()
                 } else {
-                    self.saved_filename.unwrap().as_str()
+                    self.saved_filename.as_ref().unwrap()
                 },
             ]);
             move_command.output().unwrap();
@@ -231,6 +273,8 @@ impl Ffmpeg {
                     .args([
                         "-i",
                         video_filename.as_str(),
+                        "-f",
+                        "ogg",
                         "-i",
                         audio_filename.as_str(),
                         "-c:v",
