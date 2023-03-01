@@ -1,0 +1,143 @@
+# Turkish translation for Blue Recorder.
+# Copyright (C) 2022 Blue Recorder's COPYRIGHT HOLDER
+# This file is distributed under the same license as the Blue Recorder package.
+#
+# Sabri Ünal <libreajans@gmail.com>, 2022.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2017-08-08 10:53+0300\n"
+"PO-Revision-Date: 2022-08-27 02:15+0300\n"
+"Last-Translator: Sabri Ünal <libreajans@gmail.com>\n"
+"Language-Team: Turkish <gnometurk@gnome.org>\n"
+"Language: tr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Generated-By: pygettext.py 1.5\n"
+"X-Generator: Poedit 3.1.1\n"
+
+msgid ""
+"There seems to be a problem in recording. Try running 'blue-recorder' from "
+"the command line to see the issue."
+msgstr ""
+"Kayıtta bir sorun var gibi görünüyor. Sorunu görmek için 'blue-recorder' "
+"uygulamasını komut satırından çalıştırmayı deneyin."
+
+msgid "Stop Recording"
+msgstr "Kaydetmeyi Durdur"
+
+msgid "Recording has started!"
+msgstr "Kayıt başlatıldı!"
+
+msgid "Recording has stopped!"
+msgstr "Kayıt durduruldu!"
+
+msgid ""
+"Your GIF image is currently being processed, this may take a while according "
+"to your PC's resources."
+msgstr ""
+"GIF resminiz şu anda işleniyor. Bilgisayarınızın kaynaklarına göre bu işlem "
+"biraz sürebilir."
+
+msgid "File already exists!"
+msgstr "Dosya zaten var!"
+
+msgid "Would you like to overwrite this file?"
+msgstr "Bu dosyanın üzerine yazmak ister misiniz?"
+
+msgid "Sorry Jim, looks like you are using something we don't support"
+msgstr "Üzgünüm. Desteklemediğimiz bir şey kullanıyor gibisiniz"
+
+msgid "About"
+msgstr "Hakkında"
+
+msgid "Blue Recorder"
+msgstr "Blue Recorder"
+
+msgid "AreaChooser"
+msgstr "Alan Seçici"
+
+msgid "File Name.."
+msgstr "Dosya Adı.."
+
+msgid "Enter your command here.."
+msgstr "Komutu buraya girin.."
+
+msgid "MKV (Matroska multimedia container format)"
+msgstr "MKV"
+
+msgid "AVI (Audio Video Interleaved)"
+msgstr "AVI"
+
+msgid "MP4 (MPEG-4 Part 14)"
+msgstr "MP4"
+
+msgid "WMV (Windows Media Video)"
+msgstr "WMV (Windows Media Videosu)"
+
+msgid "GIF (Graphics Interchange Format)"
+msgstr "GIF"
+
+msgid "NUT (NUT Recording Format)"
+msgstr "NUT (NUT Kayıt Biçimi)"
+
+msgid "Record Video"
+msgstr "Video Kaydet"
+
+msgid "Record Audio"
+msgstr "Ses Kaydet"
+
+msgid "Show Mouse"
+msgstr "Fareyi Göster"
+
+msgid "Follow Mouse"
+msgstr "Fareyi Takip Et"
+
+msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
+msgstr ""
+"Linux masaüstü için basit bir ekran kaydedici. Wayland ve Xorg'u destekler."
+
+msgid "Select a Window"
+msgstr "Pencere Seç"
+
+msgid "Select an Area"
+msgstr "Alan Seç"
+
+msgid "Frames:"
+msgstr "Kare:"
+
+msgid "Delay:"
+msgstr "Gecikme:"
+
+msgid "Run Command After Recording:"
+msgstr "Kayıttan Sonra Komut Çalıştır:"
+
+msgid "Audio Input Source:"
+msgstr "Ses Girdi Kaynağı:"
+
+msgid "Default PulseAudio Input Source"
+msgstr "Öntanımlı PulseAudio Girdi Kaynağı"
+
+msgid ""
+"You didn't run the program using the application icon (desktop file). This "
+"will cause the program not to work. Run it using the icon from the menus "
+"only. (Need to export GDK_BACKEND=x11 first)"
+msgstr ""
+"Programı uygulama simgesini (desktop dosyası) kullanarak çalıştırmadınız. "
+"Bu, programın çalışmamasına neden olacaktır. Yalnızca menülerdeki simgeyi "
+"kullanarak çalıştırın. (Önce GDK_BACKEND=x11'i dışa aktarmanız gerekir)"
+
+msgid "Your window position has been saved!"
+msgstr "Pencere konumunuz kaydedildi!"
+
+msgid "Area Chooser"
+msgstr "Alan Seçici"
+
+msgid "Your area position has been saved!"
+msgstr "Alan konumunuz kaydedildi!"
+
+msgid "stop recording"
+msgstr "kaydı durdur"
