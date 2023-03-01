@@ -126,7 +126,10 @@ pub fn build_ui(application: &Application) {
 
     // CheckBox
     format_chooser_combobox.append(Some("mp4"), &gettext("MP4 (MPEG-4 Part 14)"));
-    format_chooser_combobox.append(Some("mkv"), &gettext("MKV (Matroska multimedia container format)"));
+    format_chooser_combobox.append(
+        Some("mkv"),
+        &gettext("MKV (Matroska multimedia container format)"),
+    );
     format_chooser_combobox.append(Some("webm"), &gettext("WEBM (Open Web Media File)"));
     format_chooser_combobox.append(Some("gif"), &gettext("GIF (Graphics Interchange Format)"));
     format_chooser_combobox.append(Some("avi"), &gettext("AVI (Audio Video Interleaved)"));
@@ -218,59 +221,118 @@ pub fn build_ui(application: &Application) {
         config_management::set_bool("default", "followmousecheck", switch.is_active());
     });
 
-    // Buttons
-    let mut area_icon_path = {
-        let mut current_exec_dir = std::env::current_exe().unwrap();
-        current_exec_dir.pop();
-        current_exec_dir
+    match dark_light::detect() {
+        // Dark mode
+        dark_light::Mode::Dark => {
+            // Buttons
+            let mut area_icon_path = {
+                let mut current_exec_dir = std::env::current_exe().unwrap();
+                current_exec_dir.pop();
+                current_exec_dir
+            }
+            .join(Path::new("data/screenshot-ui-area-symbolic-white.svg"));
+
+            if !area_icon_path.exists() {
+                area_icon_path = std::fs::canonicalize(Path::new(
+                    &std::env::var("DATA_DIR")
+                        .unwrap_or_else(|_| String::from("data/"))
+                        .add("screenshot-ui-area-symbolic-white.svg"),
+                ))
+                .unwrap();
+            }
+
+            let mut screen_icon_path = {
+                let mut current_exec_dir = std::env::current_exe().unwrap();
+                current_exec_dir.pop();
+                current_exec_dir
+            }
+            .join(Path::new("data/screenshot-ui-display-symbolic-white.svg"));
+
+            if !screen_icon_path.exists() {
+                screen_icon_path = std::fs::canonicalize(Path::new(
+                    &std::env::var("DATA_DIR")
+                        .unwrap_or_else(|_| String::from("data/"))
+                        .add("screenshot-ui-display-symbolic-white.svg"),
+                ))
+                .unwrap();
+            }
+
+            let mut window_icon_path = {
+                let mut current_exec_dir = std::env::current_exe().unwrap();
+                current_exec_dir.pop();
+                current_exec_dir
+            }
+            .join(Path::new("data/screenshot-ui-window-symbolic-white.svg"));
+
+            if !window_icon_path.exists() {
+                window_icon_path = std::fs::canonicalize(Path::new(
+                    &std::env::var("DATA_DIR")
+                        .unwrap_or_else(|_| String::from("data/"))
+                        .add("screenshot-ui-window-symbolic-white.svg"),
+                ))
+                .unwrap();
+            }
+
+            area_grab_icon.set_from_file(Some(area_icon_path));
+            screen_grab_icon.set_from_file(Some(screen_icon_path));
+            window_grab_icon.set_from_file(Some(&window_icon_path));        
+        }
+        // any theme
+        _ => {
+            // Buttons
+            let mut area_icon_path = {
+                let mut current_exec_dir = std::env::current_exe().unwrap();
+                current_exec_dir.pop();
+                current_exec_dir
+            }
+            .join(Path::new("data/screenshot-ui-area-symbolic.svg"));
+
+            if !area_icon_path.exists() {
+                area_icon_path = std::fs::canonicalize(Path::new(
+                    &std::env::var("DATA_DIR")
+                        .unwrap_or_else(|_| String::from("data/"))
+                        .add("screenshot-ui-area-symbolic.svg"),
+                ))
+                .unwrap();
+            }
+
+            let mut screen_icon_path = {
+                let mut current_exec_dir = std::env::current_exe().unwrap();
+                current_exec_dir.pop();
+                current_exec_dir
+            }
+            .join(Path::new("data/screenshot-ui-display-symbolic.svg"));
+
+            if !screen_icon_path.exists() {
+                screen_icon_path = std::fs::canonicalize(Path::new(
+                    &std::env::var("DATA_DIR")
+                        .unwrap_or_else(|_| String::from("data/"))
+                        .add("screenshot-ui-display-symbolic.svg"),
+                ))
+                .unwrap();
+            }
+
+            let mut window_icon_path = {
+                let mut current_exec_dir = std::env::current_exe().unwrap();
+                current_exec_dir.pop();
+                current_exec_dir
+            }
+            .join(Path::new("data/screenshot-ui-window-symbolic.svg"));
+
+            if !window_icon_path.exists() {
+                window_icon_path = std::fs::canonicalize(Path::new(
+                    &std::env::var("DATA_DIR")
+                        .unwrap_or_else(|_| String::from("data/"))
+                        .add("screenshot-ui-window-symbolic.svg"),
+                ))
+                .unwrap();
+            }
+
+            area_grab_icon.set_from_file(Some(area_icon_path));
+            screen_grab_icon.set_from_file(Some(screen_icon_path));
+            window_grab_icon.set_from_file(Some(&window_icon_path));        
+        }
     }
-    .join(Path::new("data/screenshot-ui-area-symbolic.svg"));
-
-    if !area_icon_path.exists() {
-        area_icon_path = std::fs::canonicalize(Path::new(
-            &std::env::var("DATA_DIR")
-                .unwrap_or_else(|_| String::from("data/"))
-                .add("screenshot-ui-area-symbolic.svg"),
-        ))
-        .unwrap();
-    }
-
-    let mut screen_icon_path = {
-        let mut current_exec_dir = std::env::current_exe().unwrap();
-        current_exec_dir.pop();
-        current_exec_dir
-    }
-    .join(Path::new("data/screenshot-ui-display-symbolic.svg"));
-
-    if !screen_icon_path.exists() {
-        screen_icon_path = std::fs::canonicalize(Path::new(
-            &std::env::var("DATA_DIR")
-                .unwrap_or_else(|_| String::from("data/"))
-                .add("screenshot-ui-display-symbolic.svg"),
-        ))
-        .unwrap();
-    }
-
-    let mut window_icon_path = {
-        let mut current_exec_dir = std::env::current_exe().unwrap();
-        current_exec_dir.pop();
-        current_exec_dir
-    }
-    .join(Path::new("data/screenshot-ui-window-symbolic.svg"));
-
-    if !window_icon_path.exists() {
-        window_icon_path = std::fs::canonicalize(Path::new(
-            &std::env::var("DATA_DIR")
-                .unwrap_or_else(|_| String::from("data/"))
-                .add("screenshot-ui-window-symbolic.svg"),
-        ))
-        .unwrap();
-    }
-
-    area_grab_icon.set_from_file(Some(area_icon_path));
-    screen_grab_icon.set_from_file(Some(screen_icon_path));
-    window_grab_icon.set_from_file(Some(&window_icon_path));
-
     // Labels
     command_label.set_label(&gettext("Run Command After Recording:"));
     frames_label.set_label(&gettext("Frames:"));
