@@ -54,8 +54,6 @@ pub struct Ffmpeg {
     pub record_frames: SpinButton,
     pub record_delay: SpinButton,
     pub command: Entry,
-
-    // TODO: fix Clone derive for process
     pub video_process: Option<Rc<RefCell<Child>>>,
     pub audio_process: Option<Rc<RefCell<Child>>>,
     pub saved_filename: Option<String>,
