@@ -188,15 +188,6 @@
 							</object>
 						</child>
 						<child>
-							<object class="GtkCheckButton" id="overwriteswitch">
-								<property name="label" translatable="yes">checkbutton</property>
-								<property name="visible">True</property>
-								<property name="can-focus">True</property>
-								<property name="receives-default">False</property>
-								<property name="active">True</property>
-						</object>
-						</child>
-						<child>
 							<object class="GtkButton" id="folder_chooser">
 								<property name="visible">True</property>
 								<property name="can-focus">True</property>

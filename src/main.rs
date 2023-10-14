@@ -24,7 +24,6 @@ use std::process::{Command, Stdio};
 use std::rc::Rc;
 use timer::{recording_delay, start_timer, stop_timer};
 use wayland_record::WaylandRecorder;
-use futures::executor;
 
 
 #[async_std::main]
@@ -95,7 +94,6 @@ pub fn build_ui(application: &Application) {
     let frames_spin: SpinButton = builder.object("frames").unwrap();
     let main_window: Window = builder.object("main_window").unwrap();
     let mouse_switch: CheckButton = builder.object("mouseswitch").unwrap();
-    let overwrite_switch: CheckButton = builder.object("overwriteswitch").unwrap();
     let play_button: Button = builder.object("playbutton").unwrap();
     let progress_dialog: MessageDialog = builder.object("progress_dialog").unwrap();
     let progressbar: ProgressBar = builder.object("progressbar").unwrap();
@@ -120,8 +118,10 @@ pub fn build_ui(application: &Application) {
 
     // Hide window grab button in Wayland
     if is_wayland() {
+        area_grab_button.set_can_focus(false);
         area_grab_button.set_can_target(false);
-        area_grab_button.add_css_class("disabled")
+        area_grab_button.add_css_class("disabled");
+        area_grab_button.set_tooltip_text(Some(&gettext("Not supported in Wayland")));
     }
 
     // Entries
@@ -182,12 +182,10 @@ pub fn build_ui(application: &Application) {
     audio_switch.set_label(Some(&gettext("Record Audio")));
     mouse_switch.set_label(Some(&gettext("Show Mouse")));
     follow_mouse_switch.set_label(Some(&gettext("Follow Mouse")));
-    overwrite_switch.set_label(Some(&gettext("Overwrite")));
     video_switch.set_active(config_management::get_bool("default", "videocheck"));
     audio_switch.set_active(config_management::get_bool("default", "audiocheck"));
     mouse_switch.set_active(config_management::get_bool("default", "mousecheck"));
     follow_mouse_switch.set_active(config_management::get_bool("default", "followmousecheck"));
-    overwrite_switch.set_active(config_management::get_bool("default", "overwritecheck"));
 
     let _video_switch = video_switch.clone();
     let _audio_switch = audio_switch.clone();
@@ -473,9 +471,8 @@ pub fn build_ui(application: &Application) {
         unbound: None,
         progress_widget: ProgressWidget::new(progress_dialog, progressbar),
         window: main_window.clone(),
-        overwrite: overwrite_switch,
         record_delay: delay_spin,
-        record_wayland: executor::block_on(WaylandRecorder::new())
+        record_wayland: glib::MainContext::default().block_on(WaylandRecorder::new())
     }));
 
     // Record Button
