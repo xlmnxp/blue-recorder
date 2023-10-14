@@ -6,6 +6,7 @@ mod area_capture;
 mod config_management;
 mod ffmpeg_interface;
 mod timer;
+mod wayland_record;
 
 use ffmpeg_interface::{Ffmpeg, ProgressWidget};
 use gettextrs::{bindtextdomain, gettext, setlocale, textdomain, LocaleCategory};
@@ -22,8 +23,12 @@ use std::path::Path;
 use std::process::{Command, Stdio};
 use std::rc::Rc;
 use timer::{recording_delay, start_timer, stop_timer};
+use wayland_record::WaylandRecorder;
+use futures::executor;
 
-fn main() {
+
+#[async_std::main]
+async fn main() {
     // Create new application
     let application = Application::new(Some("sa.sy.blue-recorder"), Default::default());
     application.connect_activate(build_ui);
@@ -115,7 +120,8 @@ pub fn build_ui(application: &Application) {
 
     // Hide window grab button in Wayland
     if is_wayland() {
-        window_grab_button.hide();
+        area_grab_button.set_can_target(false);
+        area_grab_button.add_css_class("disabled")
     }
 
     // Entries
@@ -469,6 +475,7 @@ pub fn build_ui(application: &Application) {
         window: main_window.clone(),
         overwrite: overwrite_switch,
         record_delay: delay_spin,
+        record_wayland: executor::block_on(WaylandRecorder::new())
     }));
 
     // Record Button
