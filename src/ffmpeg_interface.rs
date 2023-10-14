@@ -1,7 +1,7 @@
 extern crate subprocess;
 use chrono::prelude::*;
 use gettextrs::gettext;
-use gtk::prelude::*;
+use gtk::{prelude::*, ResponseType};
 use gtk::{ButtonsType, DialogFlags, MessageDialog, MessageType};
 use gtk::{CheckButton, ComboBoxText, Entry, FileChooserNative, ProgressBar, SpinButton, Window};
 use std::cell::RefCell;
@@ -12,6 +12,7 @@ use std::sync::mpsc::Sender;
 use std::thread::sleep;
 use std::time::Duration;
 use subprocess::Exec;
+use crate::wayland_record::WaylandRecorder;
 
 #[derive(Clone)]
 pub struct ProgressWidget {
@@ -60,7 +61,7 @@ pub struct Ffmpeg {
     pub unbound: Option<Sender<bool>>,
     pub progress_widget: ProgressWidget,
     pub window: Window,
-    pub overwrite: CheckButton,
+    pub record_wayland: WaylandRecorder
 }
 
 impl Ffmpeg {
@@ -89,21 +90,21 @@ impl Ffmpeg {
         let is_file_already_exists =
             std::path::Path::new(&self.saved_filename.clone().unwrap()).exists();
 
-        if !self.overwrite.is_active() && is_file_already_exists {
+        if is_file_already_exists {
             let message_dialog = MessageDialog::new(
                 Some(&self.window),
-                DialogFlags::empty(),
-                MessageType::Question,
+                DialogFlags::all(),
+                MessageType::Warning,
                 ButtonsType::YesNo,
                 &gettext("File already exist. Do you want to overwrite it?"),
             );
 
-            message_dialog
-                .connect_response(|message_dialog: &MessageDialog, _| message_dialog.hide());
+            let answer = glib::MainContext::default().block_on(message_dialog.run_future());
+            message_dialog.close();
 
-            message_dialog.show();
-
-            return None;
+            if answer != ResponseType::Yes {
+                return None;
+            }
         }
 
         if self.record_audio.is_active() {
