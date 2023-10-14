@@ -9,19 +9,10 @@
     background: @theme_selected_bg_color;
 }
 
-#area_grab_button:checked {
+#area_grab_button:checked, #screen_grab_button:checked, #window_grab_button:checked {
     color: @theme_selected_fg_color;
-    background: @theme_selected_bg_color;
-}
-
-#screen_grab_button:checked {
-    color: @theme_selected_fg_color;
-    background: @theme_selected_bg_color;
-}
-
-#window_grab_button:checked {
-    color: @theme_selected_fg_color;
-    background: @theme_selected_bg_color;
+    background: alpha(@theme_selected_bg_color, 0.5);
+    border: 1px solid @theme_selected_bg_color;
 }
 
 #delay_window {
@@ -36,4 +27,8 @@
 #delay_window_title {
     font-size: 120%;
     font-weight: 50;
+}
+
+.disabled {
+    opacity: 0.5;
 }
