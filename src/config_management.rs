@@ -1,6 +1,6 @@
+extern crate dirs;
 extern crate glib;
 extern crate ini;
-extern crate dirs;
 
 use glib::get_user_data_dir;
 use ini::Ini;
@@ -29,11 +29,19 @@ pub fn initialize() -> PathBuf {
 fn default() {
     set("default", "frame", "60");
     set("default", "delay", "0");
-    set("default", "folder",
+    set(
+        "default",
+        "folder",
         String::from("file://")
             .add(
                 glib::get_user_special_dir(glib::UserDirectory::Videos)
-                    .unwrap_or_else(|| PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "/".to_string()).as_str()))
+                    .unwrap_or_else(|| {
+                        PathBuf::from(
+                            std::env::var("HOME")
+                                .unwrap_or_else(|_| "/".to_string())
+                                .as_str(),
+                        )
+                    })
                     .to_str()
                     .unwrap(),
             )
@@ -58,8 +66,12 @@ fn merge_previous_version() -> Option<PathBuf> {
         return None;
     }
 
-    let mut config_string: String = String::from_utf8(std::fs::read(&config_path).unwrap()).unwrap();
-    config_string = config_string.replace("Options", "default").replace("True", "1").replace("False", "0");
+    let mut config_string: String =
+        String::from_utf8(std::fs::read(&config_path).unwrap()).unwrap();
+    config_string = config_string
+        .replace("Options", "default")
+        .replace("True", "1")
+        .replace("False", "0");
     std::fs::write(&config_path, config_string).unwrap();
     Some(config_path)
 }
@@ -96,21 +108,20 @@ pub fn set_bool(selection: &str, key: &str, value: bool) -> bool {
 
 pub fn folder_icon(folder_chooser_name: Option<&str>) -> &str {
     let home_folder = dirs::home_dir().unwrap();
-    if folder_chooser_name == home_folder.as_path().file_name().unwrap().to_str(){
+    if folder_chooser_name == home_folder.as_path().file_name().unwrap().to_str() {
         "user-home"
-    }
-    else {
-    match folder_chooser_name {
-    Some("/") => "drive-harddisk",
-    Some("Desktop") => "user-desktop",
-    Some("Documents") => "folder-documents",
-    Some("Downloads") => "folder-download",
-    Some("Music") => "folder-music",
-    Some("Pictures") => "folder-pictures",
-    Some("Public") => "folder-publicshare",
-    Some("Templates") => "folder-templates",
-    Some("Videos") => "folder-videos",
-    _ => "folder",
-    }
+    } else {
+        match folder_chooser_name {
+            Some("/") => "drive-harddisk",
+            Some("Desktop") => "user-desktop",
+            Some("Documents") => "folder-documents",
+            Some("Downloads") => "folder-download",
+            Some("Music") => "folder-music",
+            Some("Pictures") => "folder-pictures",
+            Some("Public") => "folder-publicshare",
+            Some("Templates") => "folder-templates",
+            Some("Videos") => "folder-videos",
+            _ => "folder",
+        }
     }
 }
