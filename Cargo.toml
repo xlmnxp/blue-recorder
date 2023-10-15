@@ -12,6 +12,7 @@ gdk = { git = "https://github.com/gtk-rs/gtk4-rs.git", package = "gdk4"}
 gdk-pixbuf = "0.9.0"
 gettext-rs = "0.7.0"
 gtk = { version = "0.4.8", package = "gtk4", features = ["v4_8"] }
+gio = { version = "0.15.0" }
 gtk-sys = "0.15"
 glib = "0.10.3"
 rust-ini = "0.16"
@@ -22,6 +23,3 @@ dark-light = "1.0.0"
 async-std = {version = "1.12.0", features = ["attributes"]}
 gstreamer = "0.20.5"
 zbus = "3.12.0"
-
-[dependencies.gio]
-version = "0.15.0"

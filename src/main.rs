@@ -7,6 +7,7 @@ mod config_management;
 mod ffmpeg_interface;
 mod timer;
 mod wayland_record;
+mod utils;
 
 use ffmpeg_interface::{Ffmpeg, ProgressWidget};
 use gettextrs::{bindtextdomain, gettext, setlocale, textdomain, LocaleCategory};
@@ -17,6 +18,7 @@ use gtk::{
     FileChooserAction, FileChooserNative, Image, Label, MessageDialog, ProgressBar, SpinButton,
     ToggleButton, Window,
 };
+use utils::is_wayland;
 use std::cell::RefCell;
 use std::ops::Add;
 use std::path::Path;
@@ -35,12 +37,7 @@ async fn main() {
 }
 
 pub fn build_ui(application: &Application) {
-    // Use "GDK_BACKEND=x11" to make xwininfo work in Wayland by using XWayland
-    std::env::set_var("GDK_BACKEND", "x11");
-    if gtk::init().is_err() {
-        println!("Failed to initialize GTK.");
-        return;
-    }
+    gtk::init().expect("Failed to initialize GTK.");
 
     let ui_src = include_str!("../interfaces/main.ui").to_string();
     let builder: Builder = Builder::from_string(ui_src.as_str());
@@ -608,12 +605,6 @@ pub fn build_ui(application: &Application) {
         &provider,
         gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
     );
-
-    fn is_wayland() -> bool {
-        std::env::var("XDG_SESSION_TYPE")
-            .unwrap_or_default()
-            .eq_ignore_ascii_case("wayland")
-    }
 
     main_window.show();
 }
