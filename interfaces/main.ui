@@ -134,6 +134,7 @@
 				</child>
 				<child type="bottom">
 					<object class="GtkToggleButton" id="delay_window_stopbutton">
+						<property name="name">delay_window_stop_button</property>
 						<property name="visible">True</property>
 						<property name="can-focus">True</property>
 						<property name="receives-default">True</property>
@@ -497,6 +498,7 @@
 							<object class="GtkLabel" id="audio_source_label">
 								<property name="visible">True</property>
 								<property name="can-focus">True</property>
+								<property name="halign">start</property>
 								<property name="margin-top">5</property>
 								<property name="margin-bottom">5</property>
 								<property name="label" translatable="yes">label</property>
@@ -530,6 +532,7 @@
 				<property name="can-focus">True</property>
 				<child>
 					<object class="GtkButton" id="recordbutton">
+						<property name="name">record_button</property>
 						<property name="visible">True</property>
 						<property name="can-focus">True</property>
 						<property name="receives-default">True</property>
@@ -559,6 +562,7 @@
 				</child>
 				<child>
 					<object class="GtkButton" id="stopbutton">
+						<property name="name">stop_button</property>
 						<property name="visible">True</property>
 						<property name="can-focus">True</property>
 						<property name="receives-default">True</property>
@@ -588,6 +592,7 @@
 				</child>
 				<child>
 					<object class="GtkLabel" id="record_time_label">
+						<property name="name">record_time_label</property>
 						<property name="visible">False</property>
 						<property name="can-focus">True</property>
 					</object>
