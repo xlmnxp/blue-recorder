@@ -591,6 +591,12 @@
 					</object>
 				</child>
 				<child>
+					<object class="GtkSeparator" id="record_button_separator">
+						<property name="visible">True</property>
+						<property name="opacity">0.0</property>
+					</object>
+				</child>
+				<child>
 					<object class="GtkLabel" id="record_time_label">
 						<property name="name">record_time_label</property>
 						<property name="visible">False</property>
