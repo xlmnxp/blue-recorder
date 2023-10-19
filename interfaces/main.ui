@@ -432,6 +432,7 @@
 									<object class="GtkLabel" id="delay_label">
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
+										<property name="margin-end">13</property>
 										<property name="label" translatable="yes">label</property>
 										<layout>
 											<property name="column">0</property>

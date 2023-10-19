@@ -476,6 +476,7 @@ pub fn build_ui(application: &Application) {
     let _delay_window = delay_window.clone();
     let _delay_window_button = delay_window_button.clone();
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
+    let _main_window = main_window.clone();
     let _play_button = play_button.clone();
     let _record_button = record_button.clone();
     let _record_time_label = record_time_label.clone();
@@ -506,6 +507,7 @@ pub fn build_ui(application: &Application) {
                 _ => {
                     start_timer(record_time_label.clone());
                     record_time_label.set_visible(true);
+                    _main_window.minimize();
                     _play_button.hide();
                     _record_button.hide();
                     _stop_button.show();
