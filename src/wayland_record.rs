@@ -5,7 +5,7 @@ use zbus::{
     dbus_proxy,
     export::futures_util::TryStreamExt,
     zvariant::{ObjectPath, OwnedObjectPath, Structure, Value},
-    Connection, MessageStream, MessageType, Result,
+    Connection, MessageStream, MessageType, Result
 };
 
 #[derive(Clone, Copy)]
@@ -13,6 +13,7 @@ pub enum RecordTypes {
     Default,
     Monitor,
     Window,
+    MonitorOrWindow,
 }
 
 #[derive(Clone, Copy)]
@@ -46,6 +47,7 @@ trait ScreenCast {
 pub struct WaylandRecorder {
     connection: Connection,
     screen_cast_proxy: ScreenCastProxy<'static>,
+    session_path: String,
     pipeline: Option<gst::Pipeline>,
     filename: String,
 }
@@ -53,32 +55,43 @@ pub struct WaylandRecorder {
 impl WaylandRecorder {
     pub async fn new() -> Self {
         let connection = Connection::session().await.expect("failed to connect to session bus");
-        let screen_cast_proxy = ScreenCastProxy::new(&connection).await.expect("failed to create dbus proxy");
+        let screen_cast_proxy = ScreenCastProxy::new(&connection).await.expect("failed to create dbus proxy for screen-cast");
         gst::init().expect("failed to initialize gstreamer");
 
         WaylandRecorder {
             connection,
             screen_cast_proxy,
+            session_path: String::new(),
             filename: String::from("blue_recorder.webm"),
             pipeline: None,
         }
     }
 
-    pub async fn start(&mut self, record_type: RecordTypes, cursor_mode_type: CursorModeTypes) -> Result<()> {
+    pub async fn start(&mut self, filename: String, record_type: RecordTypes, cursor_mode_type: CursorModeTypes) -> bool {
         self.screen_cast_proxy.create_session(HashMap::from([
-                ("handle_token", Value::from("blue_recorder_1")),
-                ("session_handle_token", Value::from("blue_recorder_1")),
-            ]))
-            .await?;
+            ("handle_token", Value::from("blue_recorder_1")),
+            ("session_handle_token", Value::from("blue_recorder_1")),
+        ]))
+        .await.expect("failed to create session");
 
         let mut message_stream = MessageStream::from(self.connection.clone());
+        
+        self.filename = filename.clone();
 
-        while let Some(msg) = message_stream.try_next().await? {
+        let mut first_empty_signal_called = false;
+
+        while let Some(msg) = message_stream.try_next().await.expect("failed to get message") {
             match msg.message_type() {
                 MessageType::Signal => {
-                    let (_, response) = msg.body::<(u32, HashMap<&str, Value>)>()?;
+                    let (_, response) = msg.body::<(u32, HashMap<&str, Value>)>().expect("failed to get body");
+                    
                     if response.len() == 0 {
-                        continue;
+                        if first_empty_signal_called {
+                            return false;
+                        } else {
+                            first_empty_signal_called = true;
+                            continue;
+                        }
                     }
 
                     if response.contains_key("session_handle") {
@@ -88,18 +101,14 @@ impl WaylandRecorder {
                             record_type,
                             cursor_mode_type
                         )
-                        .await?;
+                        .await.expect("failed to handle session");
                         continue;
                     }
 
                     if response.contains_key("streams") {
-                        // TODO: start recording on separate thread
-                        self.record_screen_cast(response.clone()).await?;
+                        self.record_screen_cast(response.clone()).await.expect("failed to record screen cast");
                         break;
                     }
-                }
-                MessageType::MethodReturn => {
-                    println!("\n\nMethodReturn message: {:?}", msg);
                 }
                 _ => {
                     println!("\n\nUnkown message: {:?}", msg);
@@ -107,16 +116,23 @@ impl WaylandRecorder {
             }
         }
 
-        Ok(())
+        true
     }
 
-    pub fn stop(self) {
-        if let Some(pipeline) = self.pipeline {
+    pub async fn stop(&mut self) {
+        if let Some(pipeline) = self.pipeline.clone() {
             pipeline
                 .set_state(gst::State::Null)
                 .expect("failed to stop pipeline");
         }
+
+        if self.session_path.len() > 0 {
+            println!("Closing session...: {:?}", self.session_path.replace("request", "session"));
+            self.connection.clone().call_method(Some("org.freedesktop.portal.Desktop"), self.session_path.clone().replace("request", "session"), Some("org.freedesktop.portal.Session"), "Close", &()).await.expect("failed to close session");
+            self.session_path = String::new();
+        }
     }
+
     async fn handle_session(
         &mut self,
         screen_cast_proxy: ScreenCastProxy<'_>,
@@ -131,6 +147,8 @@ impl WaylandRecorder {
             .downcast::<String>()
             .expect("cannot down cast session_handle");
 
+        self.session_path = response_session_handle.clone();
+
         screen_cast_proxy
             .select_sources(
                 ObjectPath::try_from(response_session_handle.clone())?,
@@ -141,6 +159,7 @@ impl WaylandRecorder {
                         Value::from(match record_type {
                             RecordTypes::Monitor => 1u32,
                             RecordTypes::Window => 2u32,
+                            RecordTypes::MonitorOrWindow => 3u32,
                             _ => 0u32,
                         }),
                     ),

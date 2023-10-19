@@ -448,6 +448,8 @@ pub fn build_ui(application: &Application) {
 
     let _delay_spin = delay_spin.clone();
 
+    let main_context = glib::MainContext::default();
+    let wayland_record = main_context.block_on(WaylandRecorder::new());
     // Init record struct
     let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
         filename: (
@@ -469,7 +471,8 @@ pub fn build_ui(application: &Application) {
         progress_widget: ProgressWidget::new(progress_dialog, progress_bar),
         window: main_window.clone(),
         record_delay: delay_spin,
-        record_wayland: glib::MainContext::default().block_on(WaylandRecorder::new())
+        record_wayland: wayland_record,
+        main_context: main_context,
     }));
 
     // Record Button

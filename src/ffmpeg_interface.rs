@@ -1,4 +1,6 @@
 extern crate subprocess;
+use crate::utils::{is_snap, is_wayland};
+use crate::wayland_record::{CursorModeTypes, RecordTypes, WaylandRecorder};
 use chrono::prelude::*;
 use gettextrs::gettext;
 use gtk::{prelude::*, ResponseType};
@@ -12,7 +14,6 @@ use std::sync::mpsc::Sender;
 use std::thread::sleep;
 use std::time::Duration;
 use subprocess::Exec;
-use crate::wayland_record::WaylandRecorder;
 
 #[derive(Clone)]
 pub struct ProgressWidget {
@@ -61,7 +62,8 @@ pub struct Ffmpeg {
     pub unbound: Option<Sender<bool>>,
     pub progress_widget: ProgressWidget,
     pub window: Window,
-    pub record_wayland: WaylandRecorder
+    pub record_wayland: WaylandRecorder,
+    pub main_context: gtk::glib::MainContext,
 }
 
 impl Ffmpeg {
@@ -99,7 +101,7 @@ impl Ffmpeg {
                 &gettext("File already exist. Do you want to overwrite it?"),
             );
 
-            let answer = glib::MainContext::default().block_on(message_dialog.run_future());
+            let answer = self.main_context.block_on(message_dialog.run_future());
             message_dialog.close();
 
             if answer != ResponseType::Yes {
@@ -107,23 +109,7 @@ impl Ffmpeg {
             }
         }
 
-        if self.record_audio.is_active() {
-            let mut ffmpeg_command = Command::new("ffmpeg");
-            ffmpeg_command.arg("-f");
-            ffmpeg_command.arg("pulse");
-            ffmpeg_command.arg("-i");
-            ffmpeg_command.arg(&self.audio_id.active_id().unwrap());
-            ffmpeg_command.arg("-f");
-            ffmpeg_command.arg("ogg");
-            ffmpeg_command.arg(format!(
-                "{}.temp.audio",
-                self.saved_filename.as_ref().unwrap()
-            ));
-            ffmpeg_command.arg("-y");
-            self.audio_process = Some(Rc::new(RefCell::new(ffmpeg_command.spawn().unwrap())));
-        }
-
-        if self.record_video.is_active() {
+        if self.record_video.is_active() && !is_wayland() {
             let mut ffmpeg_command: Command = Command::new("ffmpeg");
 
             // record video with specified width and hight
@@ -183,19 +169,57 @@ impl Ffmpeg {
 
             // start recording and return the process id
             self.video_process = Some(Rc::new(RefCell::new(ffmpeg_command.spawn().unwrap())));
+        } else if self.record_video.is_active() && is_wayland() {
+            sleep(Duration::from_secs(self.record_delay.value() as u64));
+            if !self
+                .main_context
+                .block_on(self.record_wayland.start(
+                    format!(
+                        "{}.temp.without.audio.webm",
+                        self.saved_filename.as_ref().unwrap()
+                    ),
+                    RecordTypes::Monitor,
+                    {
+                        if self.record_mouse.is_active() {
+                            CursorModeTypes::Show
+                        } else {
+                            CursorModeTypes::Hidden
+                        }
+                    },
+                ))
+            {
+                println!("failed to start recording");
+                return None;
+            }
+        }
+
+        if self.record_audio.is_active() {
+            let mut ffmpeg_command = Command::new("ffmpeg");
+            ffmpeg_command.arg("-f");
+            ffmpeg_command.arg("pulse");
+            ffmpeg_command.arg("-i");
+            ffmpeg_command.arg(&self.audio_id.active_id().unwrap());
+            ffmpeg_command.arg("-f");
+            ffmpeg_command.arg("ogg");
+            ffmpeg_command.arg(format!(
+                "{}.temp.audio",
+                self.saved_filename.as_ref().unwrap()
+            ));
+            ffmpeg_command.arg("-y");
+            self.audio_process = Some(Rc::new(RefCell::new(ffmpeg_command.spawn().unwrap())));
         }
 
         Some(())
     }
 
-    pub fn stop_record(&self) {
+    pub fn stop_record(&mut self) {
         self.progress_widget.show();
-        // kill the process to stop recording
-        self.progress_widget.set_progress("".to_string(), 1, 6);
+        self.progress_widget.set_progress("".to_string(), 1, 7);
 
+        // kill the process to stop recording
         if self.video_process.is_some() {
             self.progress_widget
-                .set_progress("Stop Recording Video".to_string(), 1, 6);
+                .set_progress("Stop Recording Video".to_string(), 1, 7);
 
             Command::new("kill")
                 .arg(format!(
@@ -213,13 +237,16 @@ impl Ffmpeg {
                 .unwrap();
 
             println!("video killed");
+        } else if is_wayland() {
+            self.main_context
+                .block_on(self.record_wayland.stop());
         }
 
-        self.progress_widget.set_progress("".to_string(), 2, 6);
+        self.progress_widget.set_progress("".to_string(), 2, 7);
 
         if self.audio_process.is_some() {
             self.progress_widget
-                .set_progress("Stop Recording Audio".to_string(), 2, 6);
+                .set_progress("Stop Recording Audio".to_string(), 2, 7);
 
             Command::new("kill")
                 .arg(format!(
@@ -238,35 +265,83 @@ impl Ffmpeg {
             println!("audio killed");
         }
 
-        let video_filename = format!(
-            "{}.temp.without.audio.{}",
-            self.saved_filename.as_ref().unwrap(),
-            self.filename.2.active_id().unwrap()
-        );
+        let video_filename = {
+            if is_wayland() {
+                format!(
+                    "{}.temp.without.audio.webm",
+                    self.saved_filename.as_ref().unwrap()
+                )
+            } else {
+                format!(
+                    "{}.temp.without.audio.{}",
+                    self.saved_filename.as_ref().unwrap(),
+                    self.filename.2.active_id().unwrap()
+                )
+            }
+        };
 
         let audio_filename = format!("{}.temp.audio", self.saved_filename.as_ref().unwrap());
 
-        let is_video_record = std::path::Path::new(video_filename.as_str()).exists();
+        let is_video_record = {
+            if is_wayland() {
+                std::path::Path::new(&format!(
+                    "{}.temp.without.audio.webm",
+                    self.saved_filename.as_ref().unwrap()
+                ))
+                .exists()
+            } else {
+                std::path::Path::new(video_filename.as_str()).exists()
+            }
+        };
         let is_audio_record = std::path::Path::new(audio_filename.as_str()).exists();
 
         if is_video_record {
-            let mut move_command = Command::new("mv");
-            move_command.args([
-                self.saved_filename.as_ref().unwrap().as_str(),
-                if is_audio_record {
-                    video_filename.as_str()
-                } else {
-                    self.saved_filename.as_ref().unwrap()
-                },
-            ]);
-            move_command.output().unwrap();
+            if !is_wayland() {
+                let mut move_command = Command::new("mv");
+                move_command.args([
+                    self.saved_filename.as_ref().unwrap().as_str(),
+                    if is_audio_record {
+                        video_filename.as_str()
+                    } else {
+                        self.saved_filename.as_ref().unwrap()
+                    },
+                ]);
+                move_command.output().unwrap();
+            } else {
+                println!("convert webm to specified format");
 
-            self.progress_widget.set_progress("".to_string(), 4, 6);
+                // convert webm to specified format
+                self.progress_widget.set_progress(
+                    "Convert screen-cast to specified format".to_string(),
+                    4,
+                    7,
+                );
+
+                Command::new("ffmpeg")
+                    .args([
+                        "-i",
+                        format!(
+                            "{}.temp.without.audio.webm",
+                            self.saved_filename.as_ref().unwrap()
+                        )
+                        .as_str(),
+                        "-crf",
+                        "23", // default quality
+                        "-c:a",
+                        self.filename.2.active_id().unwrap().as_str(),
+                        self.saved_filename.as_ref().unwrap(),
+                        "-y",
+                    ])
+                    .output()
+                    .unwrap();
+            }
+
+            self.progress_widget.set_progress("".to_string(), 5, 7);
 
             // if audio record, then merge video with audio
             if is_audio_record {
                 self.progress_widget
-                    .set_progress("Save Audio Recording".to_string(), 4, 6);
+                    .set_progress("Save Audio Recording".to_string(), 5, 7);
 
                 Command::new("ffmpeg")
                     .args([
@@ -276,15 +351,17 @@ impl Ffmpeg {
                         "ogg",
                         "-i",
                         audio_filename.as_str(),
-                        "-c:v",
-                        "copy",
+                        "-crf",
+                        "23", // default quality
                         "-c:a",
                         "aac",
                         self.saved_filename.as_ref().unwrap(),
                         "-y",
                     ])
-                    .output()
-                    .expect("failed to merge video with audio");
+                    .spawn()
+                    .expect("failed to merge video with audio")
+                    .wait()
+                    .unwrap();
 
                 std::fs::remove_file(video_filename).unwrap();
                 std::fs::remove_file(audio_filename).unwrap();
@@ -293,7 +370,7 @@ impl Ffmpeg {
         // if only audio is recording then convert it to chosen format
         else if is_audio_record {
             self.progress_widget
-                .set_progress("Convert Audio to choosen format".to_string(), 4, 6);
+                .set_progress("Convert Audio to choosen format".to_string(), 5, 7);
 
             Command::new("ffmpeg")
                 .args([
@@ -309,7 +386,7 @@ impl Ffmpeg {
             std::fs::remove_file(audio_filename).unwrap();
         }
 
-        self.progress_widget.set_progress("".to_string(), 5, 6);
+        self.progress_widget.set_progress("".to_string(), 6, 7);
 
         // execute command after finish recording
         if self.command.text().trim() != "" {
@@ -322,7 +399,7 @@ impl Ffmpeg {
         }
 
         self.progress_widget
-            .set_progress("Finish".to_string(), 6, 6);
+            .set_progress("Finish".to_string(), 7, 7);
         self.progress_widget.hide();
     }
 
@@ -343,8 +420,4 @@ impl Ffmpeg {
             }
         }
     }
-}
-
-fn is_snap() -> bool {
-    !std::env::var("SNAP").unwrap_or_default().is_empty()
 }
