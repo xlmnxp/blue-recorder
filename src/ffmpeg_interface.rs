@@ -18,25 +18,26 @@ use subprocess::Exec;
 #[derive(Clone)]
 pub struct ProgressWidget {
     pub progress_dialog: MessageDialog,
-    pub progressbar: ProgressBar,
+    pub progress_bar: ProgressBar,
 }
 
 impl ProgressWidget {
-    pub fn new(progress_dialog: MessageDialog, progressbar: ProgressBar) -> ProgressWidget {
+    pub fn new(progress_dialog: MessageDialog, progress_bar: ProgressBar) -> ProgressWidget {
         ProgressWidget {
             progress_dialog,
-            progressbar,
+            progress_bar,
         }
     }
 
     pub fn set_progress(&self, title: String, value: i32, max: i32) {
-        let progress_precentage: f64 = value as f64 / max as f64;
-        self.progressbar.set_text(Some(&title));
-        self.progressbar.set_fraction(progress_precentage);
+        glib::MainContext::default().block_on(async {
+            let progress_percentage: f64 = value as f64 / max as f64;
+            self.progress_bar.set_text(Some(&title));
+            self.progress_bar.set_fraction(progress_percentage);
+        });
     }
 
     pub fn show(&self) {
-        self.progressbar.set_fraction(0.0);
         self.progress_dialog.show();
     }
 
@@ -171,23 +172,20 @@ impl Ffmpeg {
             self.video_process = Some(Rc::new(RefCell::new(ffmpeg_command.spawn().unwrap())));
         } else if self.record_video.is_active() && is_wayland() {
             sleep(Duration::from_secs(self.record_delay.value() as u64));
-            if !self
-                .main_context
-                .block_on(self.record_wayland.start(
-                    format!(
-                        "{}.temp.without.audio.webm",
-                        self.saved_filename.as_ref().unwrap()
-                    ),
-                    RecordTypes::Monitor,
-                    {
-                        if self.record_mouse.is_active() {
-                            CursorModeTypes::Show
-                        } else {
-                            CursorModeTypes::Hidden
-                        }
-                    },
-                ))
-            {
+            if !self.main_context.block_on(self.record_wayland.start(
+                format!(
+                    "{}.temp.without.audio.webm",
+                    self.saved_filename.as_ref().unwrap()
+                ),
+                RecordTypes::Monitor,
+                {
+                    if self.record_mouse.is_active() {
+                        CursorModeTypes::Show
+                    } else {
+                        CursorModeTypes::Hidden
+                    }
+                },
+            )) {
                 println!("failed to start recording");
                 return None;
             }
@@ -213,7 +211,9 @@ impl Ffmpeg {
     }
 
     pub fn stop_record(&mut self) {
-        self.progress_widget.show();
+        glib::MainContext::default().block_on(async {
+            self.progress_widget.show();
+        });
         self.progress_widget.set_progress("".to_string(), 1, 7);
 
         // kill the process to stop recording
@@ -238,8 +238,7 @@ impl Ffmpeg {
 
             println!("video killed");
         } else if is_wayland() {
-            self.main_context
-                .block_on(self.record_wayland.stop());
+            self.main_context.block_on(self.record_wayland.stop());
         }
 
         self.progress_widget.set_progress("".to_string(), 2, 7);

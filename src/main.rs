@@ -65,6 +65,7 @@ pub fn build_ui(application: &Application) {
     config_management::initialize();
 
     // Get Objects from UI
+    let main_window: Window = builder.object("main_window").unwrap();
     let area_chooser_window: Window = builder.object("area_chooser_window").unwrap();
     let area_grab_button: ToggleButton = builder.object("area_grab_button").unwrap();
     let area_grab_icon: Image = builder.object("area_grab_icon").unwrap();
@@ -89,7 +90,6 @@ pub fn build_ui(application: &Application) {
     let format_chooser_combobox: ComboBoxText = builder.object("comboboxtext1").unwrap();
     let frames_label: Label = builder.object("frames_label").unwrap();
     let frames_spin: SpinButton = builder.object("frames").unwrap();
-    let main_window: Window = builder.object("main_window").unwrap();
     let mouse_switch: CheckButton = builder.object("mouseswitch").unwrap();
     let play_button: Button = builder.object("playbutton").unwrap();
     let progress_dialog: MessageDialog = builder.object("progress_dialog").unwrap();
@@ -108,6 +108,10 @@ pub fn build_ui(application: &Application) {
     main_window.set_title(Some(&gettext("Blue Recorder")));
     main_window.set_application(Some(application));
     area_chooser_window.set_title(Some(&gettext("Area Chooser"))); // Title is hidden
+    
+    // disable interaction with main window
+    // main_window.set_can_focus(false);
+    // main_window.set_can_target(false);
 
     // Hide stop & play buttons
     stop_button.hide();
