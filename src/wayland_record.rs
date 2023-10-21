@@ -78,20 +78,17 @@ impl WaylandRecorder {
         
         self.filename = filename.clone();
 
-        let mut first_empty_signal_called = false;
-
         while let Some(msg) = message_stream.try_next().await.expect("failed to get message") {
             match msg.message_type() {
                 MessageType::Signal => {
-                    let (_, response) = msg.body::<(u32, HashMap<&str, Value>)>().expect("failed to get body");
+                    let (response_num, response) = msg.body::<(u32, HashMap<&str, Value>)>().expect("failed to get body");
                     
+                    if response_num > 0 {
+                        return  false;
+                    }
+
                     if response.len() == 0 {
-                        if first_empty_signal_called {
-                            return false;
-                        } else {
-                            first_empty_signal_called = true;
-                            continue;
-                        }
+                        continue;
                     }
 
                     if response.contains_key("session_handle") {
