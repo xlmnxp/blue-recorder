@@ -256,17 +256,6 @@ impl Ffmpeg {
 
         if is_video_record {
             if !is_wayland() {
-                let mut move_command = Command::new("mv");
-                move_command.args([
-                    self.saved_filename.as_ref().unwrap().as_str(),
-                    if is_audio_record {
-                        video_filename.as_str()
-                    } else {
-                        self.saved_filename.as_ref().unwrap()
-                    },
-                ]);
-                move_command.output().unwrap();
-            } else {
                 // convert webm to specified format
                 Command::new("ffmpeg")
                     .args([
@@ -285,8 +274,19 @@ impl Ffmpeg {
                     ])
                     .output()
                     .unwrap();
+            } else {
+                let mut move_command = Command::new("mv");
+                move_command.args([
+                    self.saved_filename.as_ref().unwrap().as_str(),
+                    if is_audio_record {
+                        video_filename.as_str()
+                    } else {
+                        self.saved_filename.as_ref().unwrap()
+                    },
+                ]);
+                move_command.output().unwrap();
             }
-            // if audio record, then merge video with audio
+            // if audio record, then merge video and audio
             if is_audio_record {
                 Command::new("ffmpeg")
                     .args([
@@ -303,14 +303,13 @@ impl Ffmpeg {
                         self.saved_filename.as_ref().unwrap(),
                         "-y",
                     ])
-                    .spawn()
-                    .expect("failed to merge video with audio")
-                    .wait()
-                    .unwrap();
+                    .output()
+                    .expect("failed to merge video and audio");
 
-                std::fs::remove_file(video_filename).unwrap();
                 std::fs::remove_file(audio_filename).unwrap();
             }
+
+            std::fs::remove_file(video_filename).unwrap();
         }
         // if only audio is recording then convert it to chosen format
         else if is_audio_record {
