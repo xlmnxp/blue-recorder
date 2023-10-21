@@ -5,7 +5,7 @@ use chrono::prelude::*;
 use gettextrs::gettext;
 use gtk::{prelude::*, ResponseType};
 use gtk::{ButtonsType, DialogFlags, MessageDialog, MessageType};
-use gtk::{CheckButton, ComboBoxText, Entry, FileChooserNative, ProgressBar, SpinButton, Window};
+use gtk::{CheckButton, ComboBoxText, Entry, FileChooserNative, SpinButton, Window};
 use std::cell::RefCell;
 use std::path::PathBuf;
 use std::process::{Child, Command};
@@ -14,37 +14,6 @@ use std::sync::mpsc::Sender;
 use std::thread::sleep;
 use std::time::Duration;
 use subprocess::Exec;
-
-#[derive(Clone)]
-pub struct ProgressWidget {
-    pub progress_dialog: MessageDialog,
-    pub progress_bar: ProgressBar,
-}
-
-impl ProgressWidget {
-    pub fn new(progress_dialog: MessageDialog, progress_bar: ProgressBar) -> ProgressWidget {
-        ProgressWidget {
-            progress_dialog,
-            progress_bar,
-        }
-    }
-
-    pub fn set_progress(&self, title: String, value: i32, max: i32) {
-        glib::MainContext::default().block_on(async {
-            let progress_percentage: f64 = value as f64 / max as f64;
-            self.progress_bar.set_text(Some(&title));
-            self.progress_bar.set_fraction(progress_percentage);
-        });
-    }
-
-    pub fn show(&self) {
-        self.progress_dialog.show();
-    }
-
-    pub fn hide(&self) {
-        self.progress_dialog.hide();
-    }
-}
 
 #[derive(Clone)]
 pub struct Ffmpeg {
@@ -61,7 +30,6 @@ pub struct Ffmpeg {
     pub audio_process: Option<Rc<RefCell<Child>>>,
     pub saved_filename: Option<String>,
     pub unbound: Option<Sender<bool>>,
-    pub progress_widget: ProgressWidget,
     pub window: Window,
     pub record_wayland: WaylandRecorder,
     pub main_context: gtk::glib::MainContext,
@@ -211,16 +179,8 @@ impl Ffmpeg {
     }
 
     pub fn stop_record(&mut self) {
-        glib::MainContext::default().block_on(async {
-            self.progress_widget.show();
-        });
-        self.progress_widget.set_progress("".to_string(), 1, 7);
-
         // kill the process to stop recording
         if self.video_process.is_some() {
-            self.progress_widget
-                .set_progress("Stop Recording Video".to_string(), 1, 7);
-
             Command::new("kill")
                 .arg(format!(
                     "{}",
@@ -241,12 +201,7 @@ impl Ffmpeg {
             self.main_context.block_on(self.record_wayland.stop());
         }
 
-        self.progress_widget.set_progress("".to_string(), 2, 7);
-
         if self.audio_process.is_some() {
-            self.progress_widget
-                .set_progress("Stop Recording Audio".to_string(), 2, 7);
-
             Command::new("kill")
                 .arg(format!(
                     "{}",
@@ -307,15 +262,7 @@ impl Ffmpeg {
                 ]);
                 move_command.output().unwrap();
             } else {
-                println!("convert webm to specified format");
-
                 // convert webm to specified format
-                self.progress_widget.set_progress(
-                    "Convert screen-cast to specified format".to_string(),
-                    4,
-                    7,
-                );
-
                 Command::new("ffmpeg")
                     .args([
                         "-i",
@@ -334,14 +281,8 @@ impl Ffmpeg {
                     .output()
                     .unwrap();
             }
-
-            self.progress_widget.set_progress("".to_string(), 5, 7);
-
             // if audio record, then merge video with audio
             if is_audio_record {
-                self.progress_widget
-                    .set_progress("Save Audio Recording".to_string(), 5, 7);
-
                 Command::new("ffmpeg")
                     .args([
                         "-i",
@@ -368,9 +309,6 @@ impl Ffmpeg {
         }
         // if only audio is recording then convert it to chosen format
         else if is_audio_record {
-            self.progress_widget
-                .set_progress("Convert Audio to choosen format".to_string(), 5, 7);
-
             Command::new("ffmpeg")
                 .args([
                     "-f",
@@ -385,21 +323,10 @@ impl Ffmpeg {
             std::fs::remove_file(audio_filename).unwrap();
         }
 
-        self.progress_widget.set_progress("".to_string(), 6, 7);
-
         // execute command after finish recording
         if self.command.text().trim() != "" {
-            self.progress_widget.set_progress(
-                "execute custom command after finish".to_string(),
-                5,
-                6,
-            );
             Exec::shell(self.command.text().trim()).popen().unwrap();
         }
-
-        self.progress_widget
-            .set_progress("Finish".to_string(), 7, 7);
-        self.progress_widget.hide();
     }
 
     pub fn play_record(self) {
