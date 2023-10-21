@@ -224,16 +224,3 @@ impl WaylandRecorder {
         Ok(())
     }
 }
-
-// #[async_std::main]
-// async fn main() -> Result<()> {
-//     let mut recorder = WaylandRecorder::new().await;
-//     recorder.start(RecordTypes::Monitor, CursorModeTypes::Show).await?;
-
-//     // wait for user input to stop recording
-//     let mut input = String::new();
-//     std::io::stdin().read_line(&mut input).unwrap();
-
-//     recorder.stop();
-//     Ok(())
-// }

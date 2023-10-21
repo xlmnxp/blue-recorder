@@ -436,16 +436,25 @@ pub fn build_ui(application: &Application) {
 
     let _area_chooser_window = area_chooser_window.clone();
     let mut _area_capture = area_capture.clone();
+    let record_window: Rc<RefCell<bool>> = Rc::new(RefCell::new(false));
+    let _record_window: Rc<RefCell<bool>> = record_window.clone();
+    let __record_window: Rc<RefCell<bool>> = record_window.clone();
+
     screen_grab_button.connect_clicked(move |_| {
+        __record_window.swap(&RefCell::new(false));
         _area_chooser_window.hide();
         _area_capture.borrow_mut().reset();
     });
 
-    let _area_chooser_window = area_chooser_window.clone();
-    let mut _area_capture = area_capture.clone();
+    let _area_chooser_window: Window = area_chooser_window.clone();
+    let mut _area_capture: Rc<RefCell<area_capture::AreaCapture>> = area_capture.clone();
     window_grab_button.connect_clicked(move |_| {
         _area_chooser_window.hide();
-        _area_capture.borrow_mut().get_area();
+        if is_wayland() {
+            record_window.swap(&RefCell::new(true));
+        } else {
+            _area_capture.borrow_mut().get_area();
+        }
     });
 
     let _delay_spin = delay_spin.clone();
@@ -473,7 +482,8 @@ pub fn build_ui(application: &Application) {
         window: main_window.clone(),
         record_delay: delay_spin,
         record_wayland: wayland_record,
-        main_context: main_context,
+        record_window: _record_window,
+        main_context,
     }));
 
     // Record Button

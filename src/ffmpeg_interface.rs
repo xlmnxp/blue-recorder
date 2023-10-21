@@ -32,6 +32,7 @@ pub struct Ffmpeg {
     pub unbound: Option<Sender<bool>>,
     pub window: Window,
     pub record_wayland: WaylandRecorder,
+    pub record_window: Rc<RefCell<bool>>,
     pub main_context: gtk::glib::MainContext,
 }
 
@@ -145,7 +146,11 @@ impl Ffmpeg {
                     "{}.temp.without.audio.webm",
                     self.saved_filename.as_ref().unwrap()
                 ),
-                RecordTypes::Monitor,
+                if self.record_window.take() {
+                    RecordTypes::Window
+                } else {
+                    RecordTypes::Monitor
+                },
                 {
                     if self.record_mouse.is_active() {
                         CursorModeTypes::Show
