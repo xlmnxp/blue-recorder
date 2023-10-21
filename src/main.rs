@@ -9,13 +9,13 @@ mod timer;
 mod wayland_record;
 mod utils;
 
-use ffmpeg_interface::{Ffmpeg, ProgressWidget};
+use ffmpeg_interface::Ffmpeg;
 use gettextrs::{bindtextdomain, gettext, setlocale, textdomain, LocaleCategory};
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::{
     AboutDialog, Application, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry,
-    FileChooserAction, FileChooserNative, Image, Label, MessageDialog, ProgressBar, SpinButton,
+    FileChooserAction, FileChooserNative, Image, Label, SpinButton,
     ToggleButton, Window,
 };
 use utils::is_wayland;
@@ -92,8 +92,6 @@ pub fn build_ui(application: &Application) {
     let frames_spin: SpinButton = builder.object("frames").unwrap();
     let mouse_switch: CheckButton = builder.object("mouseswitch").unwrap();
     let play_button: Button = builder.object("playbutton").unwrap();
-    let progress_dialog: MessageDialog = builder.object("progress_dialog").unwrap();
-    let progress_bar: ProgressBar = builder.object("progress_bar").unwrap();
     let record_button: Button = builder.object("recordbutton").unwrap();
     let record_time_label: Label = builder.object("record_time_label").unwrap();
     let screen_grab_button: ToggleButton = builder.object("screen_grab_button").unwrap();
@@ -472,7 +470,6 @@ pub fn build_ui(application: &Application) {
         audio_process: None,
         saved_filename: None,
         unbound: None,
-        progress_widget: ProgressWidget::new(progress_dialog, progress_bar),
         window: main_window.clone(),
         record_delay: delay_spin,
         record_wayland: wayland_record,
