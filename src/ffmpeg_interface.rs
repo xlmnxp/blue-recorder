@@ -255,7 +255,7 @@ impl Ffmpeg {
         let is_audio_record = std::path::Path::new(audio_filename.as_str()).exists();
 
         if is_video_record {
-            if !is_wayland() {
+            if is_wayland() {
                 // convert webm to specified format
                 Command::new("ffmpeg")
                     .args([
@@ -286,6 +286,7 @@ impl Ffmpeg {
                 ]);
                 move_command.output().unwrap();
             }
+
             // if audio record, then merge video and audio
             if is_audio_record {
                 Command::new("ffmpeg")
