@@ -437,11 +437,11 @@ pub fn build_ui(application: &Application) {
     let _area_chooser_window = area_chooser_window.clone();
     let mut _area_capture = area_capture.clone();
     let record_window: Rc<RefCell<bool>> = Rc::new(RefCell::new(false));
-    let _record_window: Rc<RefCell<bool>> = record_window.clone();
-    let __record_window: Rc<RefCell<bool>> = record_window.clone();
+    let window_grab_button_record_window: Rc<RefCell<bool>> = record_window.clone();
+    let screen_grab_button_record_window: Rc<RefCell<bool>> = record_window.clone();
 
     screen_grab_button.connect_clicked(move |_| {
-        __record_window.swap(&RefCell::new(false));
+        screen_grab_button_record_window.replace(false);
         _area_chooser_window.hide();
         _area_capture.borrow_mut().reset();
     });
@@ -451,7 +451,7 @@ pub fn build_ui(application: &Application) {
     window_grab_button.connect_clicked(move |_| {
         _area_chooser_window.hide();
         if is_wayland() {
-            record_window.swap(&RefCell::new(true));
+            window_grab_button_record_window.replace(true);
         } else {
             _area_capture.borrow_mut().get_area();
         }
@@ -482,14 +482,14 @@ pub fn build_ui(application: &Application) {
         window: main_window.clone(),
         record_delay: delay_spin,
         record_wayland: wayland_record,
-        record_window: _record_window,
+        record_window,
         main_context,
     }));
 
     // Record Button
     let _delay_window = delay_window.clone();
     let _delay_window_button = delay_window_button.clone();
-    let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
+    let _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     let _main_window = main_window.clone();
     let _play_button = play_button.clone();
     let _record_button = record_button.clone();

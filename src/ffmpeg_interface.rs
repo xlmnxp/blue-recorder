@@ -141,12 +141,16 @@ impl Ffmpeg {
             self.video_process = Some(Rc::new(RefCell::new(ffmpeg_command.spawn().unwrap())));
         } else if self.record_video.is_active() && is_wayland() {
             sleep(Duration::from_secs(self.record_delay.value() as u64));
+
+            let record_window = self.record_window.take();
+            self.record_window.replace(record_window);
+
             if !self.main_context.block_on(self.record_wayland.start(
                 format!(
                     "{}.temp.without.audio.webm",
                     self.saved_filename.as_ref().unwrap()
                 ),
-                if self.record_window.take() {
+                if record_window {
                     RecordTypes::Window
                 } else {
                     RecordTypes::Monitor
