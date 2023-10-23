@@ -90,6 +90,7 @@ pub fn build_ui(application: &Application) {
     let format_chooser_combobox: ComboBoxText = builder.object("comboboxtext1").unwrap();
     let frames_label: Label = builder.object("frames_label").unwrap();
     let frames_spin: SpinButton = builder.object("frames").unwrap();
+    let hide_switch: CheckButton = builder.object("hideswitch").unwrap();
     let mouse_switch: CheckButton = builder.object("mouseswitch").unwrap();
     let play_button: Button = builder.object("playbutton").unwrap();
     let record_button: Button = builder.object("recordbutton").unwrap();
@@ -181,10 +182,12 @@ pub fn build_ui(application: &Application) {
     audio_switch.set_label(Some(&gettext("Record Audio")));
     mouse_switch.set_label(Some(&gettext("Show Mouse")));
     follow_mouse_switch.set_label(Some(&gettext("Follow Mouse")));
+    hide_switch.set_label(Some(&gettext("Auto Hide")));
     video_switch.set_active(config_management::get_bool("default", "videocheck"));
     audio_switch.set_active(config_management::get_bool("default", "audiocheck"));
     mouse_switch.set_active(config_management::get_bool("default", "mousecheck"));
     follow_mouse_switch.set_active(config_management::get_bool("default", "followmousecheck"));
+    hide_switch.set_active(config_management::get_bool("default", "hidecheck"));
 
     let _video_switch = video_switch.clone();
     let _audio_switch = audio_switch.clone();
@@ -222,6 +225,9 @@ pub fn build_ui(application: &Application) {
     });
     follow_mouse_switch.connect_toggled(|switch: &CheckButton| {
         config_management::set_bool("default", "followmousecheck", switch.is_active());
+    });
+    hide_switch.connect_toggled(|switch: &CheckButton| {
+        config_management::set_bool("default", "hidecheck", switch.is_active());
     });
 
     match dark_light::detect() {
@@ -521,7 +527,9 @@ pub fn build_ui(application: &Application) {
                 _ => {
                     start_timer(record_time_label.clone());
                     record_time_label.set_visible(true);
-                    _main_window.minimize();
+                    if hide_switch.is_active() {
+                        _main_window.minimize();
+                    }
                     _play_button.hide();
                     _record_button.hide();
                     _stop_button.show();

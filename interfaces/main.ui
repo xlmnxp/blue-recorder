@@ -380,6 +380,29 @@
 										</layout>
 									</object>
 								</child>
+								<child>
+									<object class="GtkCheckButton" id="hideswitch">
+										<property name="label" translatable="yes">checkbutton</property>
+										<property name="visible">True</property>
+										<property name="can-focus">True</property>
+										<property name="receives-default">False</property>
+										<property name="active">False</property>
+										<layout>
+											<property name="column">0</property>
+											<property name="row">2</property>
+										</layout>
+									</object>
+								</child>
+								<child>
+									<object class="GtkSeparator" id="followmouse-separator">
+										<property name="visible">True</property>
+										<property name="opacity">0.0</property>
+										<layout>
+											<property name="column">1</property>
+											<property name="row">2</property>
+										</layout>
+									</object>
+								</child>
 							</object>
 						</child>
 						<child>
@@ -429,6 +452,16 @@
 										<layout>
 											<property name="column">1</property>
 											<property name="row">1</property>
+										</layout>
+									</object>
+								</child>
+								<child>
+									<object class="GtkSeparator" id="delay-separator">
+										<property name="visible">True</property>
+										<property name="opacity">0.0</property>
+										<layout>
+											<property name="column">1</property>
+											<property name="row">2</property>
 										</layout>
 									</object>
 								</child>
