@@ -31,7 +31,7 @@ use wayland_record::WaylandRecorder;
 #[async_std::main]
 async fn main() {
     // Create new application
-    let application = Application::new(Some("sa.sy.blue-recorder"), Default::default());
+    let application = Application::new(None, Default::default());
     application.connect_activate(build_ui);
     application.run();
 }
