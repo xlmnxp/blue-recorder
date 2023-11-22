@@ -2,7 +2,7 @@ extern crate regex;
 use regex::Regex;
 use std::process::Command;
 
-// this struct use "xwininfo" to get area x, y, width and height
+// This struct use "xwininfo" to get area x, y, width and height
 #[derive(Debug, Copy, Clone)]
 pub struct AreaCapture {
     pub x: u16,
@@ -39,6 +39,17 @@ impl AreaCapture {
     pub fn get_window_by_name(&mut self, name: &str) -> Self {
         let coordinate = xwininfo_to_coordinate(
             String::from_utf8(Command::new("xwininfo").arg("-name").arg(name).output().unwrap().stdout).unwrap(),
+        );
+        self.x = coordinate.0;
+        self.y = coordinate.1;
+        self.width = coordinate.2;
+        self.height = coordinate.3;
+        *self
+    }
+
+    pub fn reset(&mut self) -> Self {
+        let coordinate = xwininfo_to_coordinate(
+            String::from_utf8(Command::new("xwininfo").arg("-root").output().unwrap().stdout).unwrap()
         );
         self.x = coordinate.0;
         self.y = coordinate.1;
