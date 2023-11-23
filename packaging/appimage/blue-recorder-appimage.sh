@@ -1,38 +1,49 @@
 #!/bin/bash
 
-#dist=bionic change line 40+62.
-pkg2appimageVersion="1806"
-#AppImageKitVersion="12"
 libnslversion="2.27"
 debpkg="libjack-jackd2-0_1.9.12~dfsg-2_amd64.deb"
-debpkg2="libc6_2.27-3ubuntu1.2_amd64.deb"
+debpkg2="libc6_2.27-3ubuntu1.6_amd64.deb"
 
 #Download building tools.
-if [[ -f /usr/bin/wget ]]
+if [[ -f /usr/bin/curl ]]
 then
-   if [[ -f pkg2appimage-1806-x86_64.AppImage ]]
+   if [[ -f pkg2appimage-x86_64.AppImage ]]
    then
-      echo "pkg2appimage-$pkg2appimageVersion-x86_64.AppImage found"
+      echo "pkg2appimage-x86_64.AppImage found."
    else
-      wget "https://github.com/AppImage/pkg2appimage/releases/download/continuous/pkg2appimage-$pkg2appimageVersion-x86_64.AppImage"
+      curl --tlsv1.3 --output "$PWD/pkg2appimage-x86_64.AppImage" --url "https://github.com/AppImage/pkg2appimage/releases/download/continuous/pkg2appimage-x86_64.AppImage"
+      #Make sure pkg2appimage is available.
+      if [[ -f pkg2appimage-x86_64.AppImage ]]
+      then
+         echo "pkg2appimage-x86_64.AppImage found."
+      else
+         echo "failed to download pkg2appimage-x86_64.AppImage" && exit 1
+      fi
    fi
 else
-   echo "please install wget" && exit
+   echo "please install curl." && exit 1
 fi
 
 if [[ -f appimagetool-x86_64.AppImage ]]
 then 
-   echo "appimagetool-x86_64.AppImage found"
+   echo "appimagetool-x86_64.AppImage found."
 else
-   #wget "https://github.com/AppImage/AppImageKit/releases/download/$AppImageKitVersion/appimagetool-x86_64.AppImage"
-   wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+   curl --tlsv1.3 --output "$PWD/appimagetool-x86_64.AppImage" --url "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+   #Make sure appimagetool is available.
+   if [[ -f appimagetool-x86_64.AppImage ]]
+   then
+      echo "appimagetool-x86_64.AppImage found."
+   else
+      echo "failed to download appimagetool-x86_64.AppImage" && exit 1
+   fi
 fi
 
 #Make exec.
-chmod +x "pkg2appimage-$pkg2appimageVersion-x86_64.AppImage"
+chmod +x pkg2appimage-x86_64.AppImage
 chmod +x appimagetool-x86_64.AppImage
 
 #Create BlueRecorder.yml file.
+echo "create BlueRecorder.yml"
 cat > BlueRecorder.yml <<EOF
 app: BlueRecorder
 
@@ -40,7 +51,6 @@ ingredients:
   dist: bionic
   packages:
     - ffmpeg
-    - libappindicator3-1
     - x11-utils
     - pulseaudio
 
@@ -74,20 +84,28 @@ script:
 EOF
 
 #Building AppImage using pkg2appimage.
-"$PWD/pkg2appimage-$pkg2appimageVersion-x86_64.AppImage" BlueRecorder.yml
+echo "Building appimage directory..."
+"$PWD/pkg2appimage-x86_64.AppImage" BlueRecorder.yml
 rm -rf "$PWD/out"
 
 #Installing libjack to AppDir.
 if [[ -f $debpkg ]]
 then
-   echo "$debpkg was found"
+   echo "$debpkg found."
 else
-   wget "http://mirrors.kernel.org/ubuntu/pool/main/j/jackd2/$debpkg"
-   dpkg-deb -x "$debpkg" "$PWD"
+   apt download libjack-jackd2-0
+   if [[ -f $debpkg ]]
+   then
+      echo "$debpkg found."
+   else
+      echo "failed to download $debpkg" && exit 1
+   fi
 fi
+
+dpkg-deb -x "$debpkg" "$PWD"
 mkdir -p "BlueRecorder/BlueRecorder.AppDir/usr/lib/x86_64-linux-gnu/"
 cp "usr/lib/x86_64-linux-gnu/libjack.so.0" "BlueRecorder/BlueRecorder.AppDir/usr/lib/x86_64-linux-gnu/libjack.so.0"
-cp "usr/lib/x86_64-linux-gnu/libjack.so.0.1.0" "BlueRecorder/BlueRecorder.AppDirusr/lib/x86_64-linux-gnu/libjack.so.0.1.0"
+#cp "usr/lib/x86_64-linux-gnu/libjack.so.0.1.0" "BlueRecorder/BlueRecorder.AppDirusr/lib/x86_64-linux-gnu/libjack.so.0.1.0"
 cp "usr/lib/x86_64-linux-gnu/libjacknet.so.0" "BlueRecorder/BlueRecorder.AppDir/usr/lib/x86_64-linux-gnu/libjacknet.so.0"
 cp "usr/lib/x86_64-linux-gnu/libjacknet.so.0.1.0" "BlueRecorder/BlueRecorder.AppDir/usr/lib/x86_64-linux-gnu/libjacknet.so.0.1.0"
 cp "usr/lib/x86_64-linux-gnu/libjackserver.so.0" "BlueRecorder/BlueRecorder.AppDir/usr/lib/x86_64-linux-gnu/libjackserver.so.0"
@@ -96,17 +114,25 @@ cp "usr/lib/x86_64-linux-gnu/libjackserver.so.0.1.0" "BlueRecorder/BlueRecorder.
 #Installing libnsl to AppDir.
 if [[ -f $debpkg2 ]]
 then
-   echo "$debpkg2 found"
+   echo "$debpkg2 found."
 else
-   wget "http://security.ubuntu.com/ubuntu/pool/main/g/glibc/$debpkg2"
-   dpkg-deb -x "$debpkg2" "$PWD"
+   apt download libc6
+   if [[ -f $debpkg2 ]]
+   then
+      echo "$debpkg2 found."
+   else
+      echo "failed to download $debpkg2" && exit 1
+   fi
 fi
+
+dpkg-deb -x "$debpkg2" "$PWD"
 mkdir -p "BlueRecorder/BlueRecorder.AppDir/lib/x86_64-linux-gnu/"
 cp "lib/x86_64-linux-gnu/libnsl.so.1" "BlueRecorder/BlueRecorder.AppDir/lib/x86_64-linux-gnu/libnsl.so.1"
 cp "lib/x86_64-linux-gnu/libnsl-$libnslversion.so" "BlueRecorder/BlueRecorder.AppDir/lib/x86_64-linux-gnu/libnsl-$libnslversion.so"
 
 #Building AppImage using appimagetool.
+echo "Building appimage..."
 "$PWD/appimagetool-x86_64.AppImage" "BlueRecorder/BlueRecorder.AppDir"
 rm -rf "$PWD/BlueRecorder/blue-recorder"
 
-
+echo "Finish building."
