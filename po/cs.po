@@ -1,143 +1,139 @@
-# Turkish translation for Blue Recorder.
-# Copyright (C) 2022 Blue Recorder's COPYRIGHT HOLDER
+# Czech translation for Blue Recorder
+# Copyright (C) 2017, FOSS Project
 # This file is distributed under the same license as the Blue Recorder package.
-#
-# Sabri Ünal <libreajans@gmail.com>, 2022.
-#
+# Amerey.eu <info@amerey.eu>, 2023
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2017-08-08 10:53+0300\n"
-"PO-Revision-Date: 2022-08-27 02:15+0300\n"
-"Last-Translator: Sabri Ünal <libreajans@gmail.com>\n"
-"Language-Team: Turkish <gnometurk@gnome.org>\n"
-"Language: tr\n"
+"PO-Revision-Date: 2023-06-16 09:53+0200\n"
+"Last-Translator: Amerey.eu <info@amerey.eu>\n"
+"Language-Team: \n"
+"Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: pygettext.py 1.5\n"
-"X-Generator: Poedit 3.1.1\n"
+"X-Generator: Poedit 3.3.1\n"
 
 msgid ""
 "There seems to be a problem in recording. Try running 'blue-recorder' from "
 "the command line to see the issue."
 msgstr ""
-"Kayıtta bir sorun var gibi görünüyor. Sorunu görmek için 'blue-recorder' "
-"uygulamasını komut satırından çalıştırmayı deneyin."
+"Zdá se, že nastal problém s nahráváním. Zkuste spustit „blue-recorder“ z "
+"příkazového řádku, abyste viděli problém."
 
 msgid "Stop Recording"
-msgstr "Kaydetmeyi Durdur"
+msgstr "Zastavit nahrávání"
 
 msgid "Recording has started!"
-msgstr "Kayıt başlatıldı!"
+msgstr "Nahrávání začalo!"
 
 msgid "Recording has stopped!"
-msgstr "Kayıt durduruldu!"
+msgstr "Nahrávání bylo zastaveno!"
 
 msgid ""
 "Your GIF image is currently being processed, this may take a while according "
 "to your PC's resources."
 msgstr ""
-"GIF resminiz şu anda işleniyor. Bilgisayarınızın kaynaklarına göre bu işlem "
-"biraz sürebilir."
+"Váš obrázek GIF se právě zpracovává, v závislosti na možnostech vašeho "
+"počítače to může chvíli trvat."
 
 msgid "File already exists!"
-msgstr "Dosya zaten var!"
+msgstr "Soubor již existuje!"
 
 msgid "Would you like to overwrite this file?"
-msgstr "Bu dosyanın üzerine yazmak ister misiniz?"
+msgstr "Chcete tento soubor přepsat?"
 
 msgid "Sorry Jim, looks like you are using something we don't support"
-msgstr "Üzgünüm. Desteklemediğimiz bir şey kullanıyor gibisiniz"
+msgstr "Omlouváme se, vypadá to, že používáte něco, co nepodporujeme"
 
 msgid "About"
-msgstr "Hakkında"
+msgstr "O aplikaci"
 
 msgid "Blue Recorder"
 msgstr "Blue Recorder"
 
 msgid "AreaChooser"
-msgstr "Alan Seçici"
+msgstr "Výběr oblasti"
 
 msgid "File Name.."
-msgstr "Dosya Adı.."
+msgstr "Název souboru.."
 
 msgid "Enter your command here.."
-msgstr "Komutu buraya girin.."
+msgstr "Zde zadejte svůj příkaz.."
 
 msgid "MKV (Matroska multimedia container format)"
-msgstr "MKV"
+msgstr "MKV (Matroska multimedia container format)"
 
 msgid "AVI (Audio Video Interleaved)"
-msgstr "AVI"
+msgstr "AVI (Audio Video Interleaved)"
 
 msgid "MP4 (MPEG-4 Part 14)"
-msgstr "MP4"
+msgstr "MP4 (MPEG-4 Part 14)"
 
 msgid "WMV (Windows Media Video)"
-msgstr "WMV (Windows Media Videosu)"
+msgstr "WMV (Windows Media Video)"
 
 msgid "GIF (Graphics Interchange Format)"
-msgstr "GIF"
+msgstr "GIF (Graphics Interchange Format)"
 
 msgid "NUT (NUT Recording Format)"
-msgstr "NUT (NUT Kayıt Biçimi)"
+msgstr "NUT (NUT Recording Format)"
 
 msgid "Record Video"
-msgstr "Video Kaydet"
+msgstr "Nahrát video"
 
 msgid "Record Audio"
-msgstr "Ses Kaydet"
+msgstr "Nahrát audio"
 
 msgid "Show Mouse"
-msgstr "Fareyi Göster"
+msgstr "Zobrazit myš"
 
 msgid "Follow Mouse"
-msgstr "Fareyi Takip Et"
+msgstr "Sledovat myš"
 
 msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
-msgstr ""
-"Linux masaüstü için basit bir ekran kaydedici. Wayland ve Xorg'u destekler."
+msgstr "Jednoduchý záznam obrazovky pro Linux. Podporuje Wayland a Xorg."
 
 msgid "Select a Window"
-msgstr "Pencere Seç"
+msgstr "Vybrat okno"
 
 msgid "Select an Area"
-msgstr "Alan Seç"
+msgstr "Vybrat oblast"
 
 msgid "Frames:"
-msgstr "Kare:"
+msgstr "Snímky:"
 
 msgid "Delay:"
-msgstr "Gecikme:"
+msgstr "Prodleva:"
 
 msgid "Run Command After Recording:"
-msgstr "Kayıttan Sonra Komut Çalıştır:"
+msgstr "Po nahrávání spustit příkaz:"
 
 msgid "Audio Input Source:"
-msgstr "Ses Girdi Kaynağı:"
+msgstr "Zdroj audio vstupu:"
 
 msgid "Default PulseAudio Input Source"
-msgstr "Öntanımlı PulseAudio Girdi Kaynağı"
+msgstr "Výchozí zdroj vstupu PulseAudio"
 
 msgid ""
 "You didn't run the program using the application icon (desktop file). This "
 "will cause the program not to work. Run it using the icon from the menus "
 "only. (Need to export GDK_BACKEND=x11 first)"
 msgstr ""
-"Programı uygulama simgesini (desktop dosyası) kullanarak çalıştırmadınız. "
-"Bu, programın çalışmamasına neden olacaktır. Yalnızca menülerdeki simgeyi "
-"kullanarak çalıştırın. (Önce GDK_BACKEND=x11'i dışa aktarmanız gerekir)"
+"Program jste nespustili pomocí ikony aplikace (soubor na ploše). To způsobí, "
+"že program nebude fungovat. Spusťte jej pouze pomocí ikony z nabídek. "
+"(Nejprve je potřeba exportovat GDK_BACKEND=x11)"
 
 msgid "Your window position has been saved!"
-msgstr "Pencere konumunuz kaydedildi!"
+msgstr "Poloha vašeho okna byla uložena!"
 
 msgid "Area Chooser"
-msgstr "Alan Seçici"
+msgstr "Výběr oblasti"
 
 msgid "Your area position has been saved!"
-msgstr "Alan konumunuz kaydedildi!"
+msgstr "Poloha vaší oblasti byla uložena!"
 
 msgid "stop recording"
-msgstr "kaydı durdur"
+msgstr "zastavit nahrávání"
