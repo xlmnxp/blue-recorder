@@ -11,7 +11,7 @@ then
    then
       echo "pkg2appimage-x86_64.AppImage found."
    else
-      curl --tlsv1.3 --output "$PWD/pkg2appimage-x86_64.AppImage" --url "https://github.com/AppImage/pkg2appimage/releases/download/continuous/pkg2appimage-x86_64.AppImage"
+      wget "https://github.com/AppImage/pkg2appimage/releases/download/continuous/pkg2appimage-x86_64.AppImage"
       #Make sure pkg2appimage is available.
       if [[ -f pkg2appimage-x86_64.AppImage ]]
       then
@@ -28,7 +28,7 @@ if [[ -f appimagetool-x86_64.AppImage ]]
 then 
    echo "appimagetool-x86_64.AppImage found."
 else
-   curl --tlsv1.3 --output "$PWD/appimagetool-x86_64.AppImage" --url "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+   wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
    #Make sure appimagetool is available.
    if [[ -f appimagetool-x86_64.AppImage ]]
    then
