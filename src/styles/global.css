@@ -1,4 +1,97 @@
 #area_chooser_window {
-    background-color: rgba(255, 255, 255, 0);
-    border: 1px dashed rgba(255, 255, 255, 0.5);
+    background-color: alpha(@theme_selected_bg_color, 0.1);
+    border: 3px dashed @theme_selected_bg_color;
+    border-radius: 0px;
+}
+
+#area_set_button {
+    color: @theme_selected_fg_color;
+    background: @theme_selected_bg_color;
+}
+
+#area_grab_button:checked, #screen_grab_button:checked, #window_grab_button:checked {
+    color: @theme_selected_fg_color;
+    background: alpha(@theme_selected_bg_color, 0.5);
+    border: 1px solid @theme_selected_bg_color;
+}
+
+#delay_window {
+    border: 3px solid @theme_selected_bg_color;
+}
+
+#delay_window_label {
+    font-size: 350%;
+    font-weight: 250;
+    color: @theme_selected_bg_color;
+}
+
+#delay_window_title {
+    font-size: 120%;
+    font-weight: 50;
+    font-weight: bold;
+}
+
+#delay_window_stop_button {
+    background: rgb(237, 51, 59);
+    border: 1px solid rgb(237, 51, 59);
+    color: rgb(246, 245, 244);
+    font-weight: bold;
+}
+
+#delay_window_stop_button:active {
+    background:  rgb(192, 28, 40);
+    border: 1px solid rgb(192, 28, 40);
+    color: rgb(246, 245, 244);
+    font-weight: normal;
+}
+
+#delay_window_stop_button:hover {
+    background:  rgb(224, 27, 36);
+    border: 1px solid rgb(224, 27, 36);
+    color: rgb(246, 245, 244);
+    font-weight: bold;
+}
+
+.disabled {
+    opacity: 0.5;
+}
+
+#record_button {
+    color: rgb(237, 51, 59);
+    font-weight: bold;
+}
+
+#record_button:active {
+    color: rgb(237, 51, 59);
+    font-weight: normal;
+}
+
+#record_button:hover {
+    color: rgb(237, 51, 59);
+    font-weight: bold;
+}
+
+#record_time_label {
+    color: @theme_selected_bg_color;
+}
+
+#stop_button {
+    background: rgb(237, 51, 59);
+    border: 1px solid rgb(237, 51, 59);
+    color: rgb(246, 245, 244);
+    font-weight: bold;
+}
+
+#stop_button:active {
+    background:  rgb(192, 28, 40);
+    border: 1px solid rgb(192, 28, 40);
+    color: rgb(246, 245, 244);
+    font-weight: normal;
+}
+
+#stop_button:hover {
+    background:  rgb(224, 27, 36);
+    border: 1px solid rgb(224, 27, 36);
+    color: rgb(246, 245, 244);
+    font-weight: bold;
 }
