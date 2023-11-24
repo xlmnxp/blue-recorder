@@ -5,23 +5,23 @@ debpkg="libjack-jackd2-0_1.9.12~dfsg-2_amd64.deb"
 debpkg2="libc6_2.27-3ubuntu1.6_amd64.deb"
 
 #Download building tools.
-if [[ -f /usr/bin/curl ]]
+if [[ -f /usr/bin/wget ]]
 then
-   if [[ -f pkg2appimage-x86_64.AppImage ]]
+   if [[ -f pkg2appimage--x86_64.AppImage ]]
    then
-      echo "pkg2appimage-x86_64.AppImage found."
+      echo "pkg2appimage--x86_64.AppImage found."
    else
-      wget "https://github.com/AppImage/pkg2appimage/releases/download/continuous/pkg2appimage-x86_64.AppImage"
+      wget "https://github.com/AppImage/pkg2appimage/releases/download/continuous/pkg2appimage--x86_64.AppImage"
       #Make sure pkg2appimage is available.
-      if [[ -f pkg2appimage-x86_64.AppImage ]]
+      if [[ -f pkg2appimage--x86_64.AppImage ]]
       then
-         echo "pkg2appimage-x86_64.AppImage found."
+         echo "pkg2appimage--x86_64.AppImage found."
       else
-         echo "failed to download pkg2appimage-x86_64.AppImage" && exit 1
+         echo "failed to download pkg2appimage--x86_64.AppImage" && exit 1
       fi
    fi
 else
-   echo "please install curl." && exit 1
+   echo "please install wget." && exit 1
 fi
 
 if [[ -f appimagetool-x86_64.AppImage ]]
@@ -39,7 +39,7 @@ else
 fi
 
 #Make exec.
-chmod +x pkg2appimage-x86_64.AppImage
+chmod +x pkg2appimage--x86_64.AppImage
 chmod +x appimagetool-x86_64.AppImage
 
 #Create BlueRecorder.yml file.
@@ -52,7 +52,11 @@ ingredients:
   packages:
     - ffmpeg
     - x11-utils
-    - pulseaudio
+    - gstreamer1.0-plugins-bad
+    - gstreamer1.0-plugins-base
+    - gstreamer1.0-plugins-good
+    - gstreamer1.0-plugins-ugly
+    - gstreamer1.0-libav
 
   script:
     - mkdir -p BlueRecorder.AppDir/usr/bin
@@ -67,7 +71,6 @@ ingredients:
     - cd BlueRecorder.AppDir
     - ln -s "usr/bin/data/blue-recorder.svg" "blue-recorder.svg"
   
-
   sources:
     - deb http://ly.archive.ubuntu.com/ubuntu/ bionic main universe
 
@@ -79,13 +82,13 @@ script:
   - Icon=blue-recorder
   - Exec=blue-recorder
   - Categories=AudioVideo;GTK;
-  - Comment=A simple desktop recorder for Linux systems. Built using GTK+ 3 and ffmpeg.
+  - Comment=A simple desktop recorder for Linux systems. Built using GTK 4 and ffmpeg.
   - EOF
 EOF
 
 #Building AppImage using pkg2appimage.
 echo "Building appimage directory..."
-"$PWD/pkg2appimage-x86_64.AppImage" BlueRecorder.yml
+"$PWD/pkg2appimage--x86_64.AppImage" BlueRecorder.yml
 rm -rf "$PWD/out"
 
 #Installing libjack to AppDir.
