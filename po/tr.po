@@ -7,8 +7,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2017-08-08 10:53+0300\n"
-"PO-Revision-Date: 2022-08-27 02:15+0300\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-11-27 10:50+0300\n"
+"PO-Revision-Date: 2023-11-27 10:51+0300\n"
 "Last-Translator: Sabri Ünal <libreajans@gmail.com>\n"
 "Language-Team: Turkish <gnometurk@gnome.org>\n"
 "Language: tr\n"
@@ -17,127 +18,219 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: pygettext.py 1.5\n"
-"X-Generator: Poedit 3.1.1\n"
+"X-Generator: Poedit 3.4.1\n"
 
-msgid ""
-"There seems to be a problem in recording. Try running 'blue-recorder' from "
-"the command line to see the issue."
-msgstr ""
-"Kayıtta bir sorun var gibi görünüyor. Sorunu görmek için 'blue-recorder' "
-"uygulamasını komut satırından çalıştırmayı deneyin."
-
-msgid "Stop Recording"
-msgstr "Kaydetmeyi Durdur"
-
-msgid "Recording has started!"
-msgstr "Kayıt başlatıldı!"
-
-msgid "Recording has stopped!"
-msgstr "Kayıt durduruldu!"
-
-msgid ""
-"Your GIF image is currently being processed, this may take a while according "
-"to your PC's resources."
-msgstr ""
-"GIF resminiz şu anda işleniyor. Bilgisayarınızın kaynaklarına göre bu işlem "
-"biraz sürebilir."
-
-msgid "File already exists!"
-msgstr "Dosya zaten var!"
-
-msgid "Would you like to overwrite this file?"
-msgstr "Bu dosyanın üzerine yazmak ister misiniz?"
-
-msgid "Sorry Jim, looks like you are using something we don't support"
-msgstr "Üzgünüm. Desteklemediğimiz bir şey kullanıyor gibisiniz"
-
-msgid "About"
-msgstr "Hakkında"
-
+#. --- default properties
+#. Windows
+#: data/blue-recorder.desktop:3 data/blue-recorder.desktop:5
+#: flatpak/sa.sy.bluerecorder.metainfo.xml:5 src/main.rs:107 src/main.rs:583
 msgid "Blue Recorder"
 msgstr "Blue Recorder"
 
-msgid "AreaChooser"
-msgstr "Alan Seçici"
+#: data/blue-recorder.desktop:7
+msgid "Record your desktop easily using a simple GUI"
+msgstr "Basit kullanıcı arayüzünü kullanarak masaüstünüzü kolayca kaydedin"
 
-msgid "File Name.."
-msgstr "Dosya Adı.."
-
-msgid "Enter your command here.."
-msgstr "Komutu buraya girin.."
-
-msgid "MKV (Matroska multimedia container format)"
-msgstr "MKV"
-
-msgid "AVI (Audio Video Interleaved)"
-msgstr "AVI"
-
-msgid "MP4 (MPEG-4 Part 14)"
-msgstr "MP4"
-
-msgid "WMV (Windows Media Video)"
-msgstr "WMV (Windows Media Videosu)"
-
-msgid "GIF (Graphics Interchange Format)"
-msgstr "GIF"
-
-msgid "NUT (NUT Recording Format)"
-msgstr "NUT (NUT Kayıt Biçimi)"
-
-msgid "Record Video"
-msgstr "Video Kaydet"
-
-msgid "Record Audio"
-msgstr "Ses Kaydet"
-
-msgid "Show Mouse"
-msgstr "Fareyi Göster"
-
-msgid "Follow Mouse"
-msgstr "Fareyi Takip Et"
-
-msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
+#: flatpak/sa.sy.bluerecorder.metainfo.xml:6
+msgid "A simple screen recorder for Linux desktop. Supports Wayland &amp; Xorg"
 msgstr ""
-"Linux masaüstü için basit bir ekran kaydedici. Wayland ve Xorg'u destekler."
+"Linux masaüstü için basit bir ekran kaydedici. Wayland  ve Xorgʼu destekler"
 
-msgid "Select a Window"
-msgstr "Pencere Seç"
-
-msgid "Select an Area"
-msgstr "Alan Seç"
-
-msgid "Frames:"
-msgstr "Kare:"
-
-msgid "Delay:"
-msgstr "Gecikme:"
-
-msgid "Run Command After Recording:"
-msgstr "Kayıttan Sonra Komut Çalıştır:"
-
-msgid "Audio Input Source:"
-msgstr "Ses Girdi Kaynağı:"
-
-msgid "Default PulseAudio Input Source"
-msgstr "Öntanımlı PulseAudio Girdi Kaynağı"
-
+#: flatpak/sa.sy.bluerecorder.metainfo.xml:12
 msgid ""
-"You didn't run the program using the application icon (desktop file). This "
-"will cause the program not to work. Run it using the icon from the menus "
-"only. (Need to export GDK_BACKEND=x11 first)"
+"A simple desktop recorder for Linux systems. Built using Rust, GTK4 and "
+"ffmpeg."
 msgstr ""
-"Programı uygulama simgesini (desktop dosyası) kullanarak çalıştırmadınız. "
-"Bu, programın çalışmamasına neden olacaktır. Yalnızca menülerdeki simgeyi "
-"kullanarak çalıştırın. (Önce GDK_BACKEND=x11'i dışa aktarmanız gerekir)"
+"Linux sistemler için basit bir masaüstü kaydedici. Rust, GTK4 ve ffmpeg "
+"kullanılarak oluşturulmuştur."
 
-msgid "Your window position has been saved!"
-msgstr "Pencere konumunuz kaydedildi!"
+#: flatpak/sa.sy.bluerecorder.metainfo.xml:13
+msgid ""
+"It supports recording audio and video on almost all Linux interfaces with "
+"support for Wayland display server on GNOME session. The following formats "
+"are currently supported: mkv, avi, mp4, wmv, gif and nut (And only WebM for "
+"Wayland's GNOME session). You can stop the recording process easily by right-"
+"clicking the icon and choosing \"Stop Record\". Or middle-clicking the "
+"recording icon in the notifications area (but doesn't work on all "
+"interfaces). You can choose the audio input source you want from the list. "
+"You can also set the default values you want by simply changing them in the "
+"interface, and the program will save them for you for the next time you open "
+"it. Based on GREEN RECORDER but rewritten in RUST"
+msgstr ""
 
+#: src/ffmpeg_interface.rs:71
+msgid "File already exist. Do you want to overwrite it?"
+msgstr "Dosya zaten var. Üzerine yazmak istiyor musunuz?"
+
+#: src/main.rs:109 src/main.rs:439
 msgid "Area Chooser"
 msgstr "Alan Seçici"
 
-msgid "Your area position has been saved!"
-msgstr "Alan konumunuz kaydedildi!"
+#: src/main.rs:124
+msgid "Not supported in Wayland"
+msgstr "Waylandʼda desteklenmiyor"
 
-msgid "stop recording"
-msgstr "kaydı durdur"
+#. Entries
+#: src/main.rs:128
+msgid "Default filename:"
+msgstr "Öntanımlı dosya adı:"
+
+#: src/main.rs:129
+msgid "Default command:"
+msgstr "Öntanımlı komut:"
+
+#. CheckBox
+#: src/main.rs:134
+msgid "MP4 (MPEG-4 Part 14)"
+msgstr "MP4"
+
+#: src/main.rs:137
+msgid "MKV (Matroska multimedia container format)"
+msgstr "MKV"
+
+#: src/main.rs:139
+msgid "WEBM (Open Web Media File)"
+msgstr "WEBM"
+
+#: src/main.rs:140
+msgid "GIF (Graphics Interchange Format)"
+msgstr "GIF"
+
+#: src/main.rs:141
+msgid "AVI (Audio Video Interleaved)"
+msgstr "AVI"
+
+#: src/main.rs:142
+msgid "WMV (Windows Media Video)"
+msgstr "WMV (Windows Media Videosu)"
+
+#: src/main.rs:143
+msgid "NUT (NUT Recording Format)"
+msgstr "NUT (NUT Kayıt Biçimi)"
+
+#: src/main.rs:174
+msgid "Default PulseAudio Input Source"
+msgstr "Öntanımlı PulseAudio Girdi Kaynağı"
+
+#. Switchs
+#: src/main.rs:181
+msgid "Record Video"
+msgstr "Video Kaydet"
+
+#: src/main.rs:182
+msgid "Record Audio"
+msgstr "Ses Kaydet"
+
+#: src/main.rs:183
+msgid "Show Mouse"
+msgstr "Fareyi Göster"
+
+#: src/main.rs:184
+msgid "Follow Mouse"
+msgstr "Fareyi Takip Et"
+
+#: src/main.rs:185
+msgid "Auto Hide"
+msgstr "Kendiliğinden Gizle"
+
+#. Labels
+#: src/main.rs:346
+msgid "Run Command After Recording:"
+msgstr "Kayıttan Sonra Komut Çalıştır:"
+
+#: src/main.rs:347
+msgid "Frames:"
+msgstr "Kare:"
+
+#: src/main.rs:348
+msgid "Delay:"
+msgstr "Gecikme:"
+
+#: src/main.rs:349
+msgid "Audio Input Source:"
+msgstr "Ses Girdi Kaynağı:"
+
+#: src/main.rs:589
+msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
+msgstr ""
+"Linux masaüstü için basit bir ekran kaydedici. Wayland  ve Xorgʼu destekler."
+
+#. Translators: Replace "translator-credits" with your names, one name per line
+#: src/main.rs:604
+msgid "translator-credits"
+msgstr "Sabri Ünal <libreajans@gmail.com>"
+
+#~ msgid ""
+#~ "A simple screen recorder for Linux desktop. Supports Waylan_windowd & "
+#~ "Xorg."
+#~ msgstr ""
+#~ "Linux masaüstü için basit bir ekran kaydedici. Wayland ve Xorgʼu "
+#~ "destekler."
+
+#~ msgid ""
+#~ "There seems to be a problem in recording. Try running 'blue-recorder' "
+#~ "from the command line to see the issue."
+#~ msgstr ""
+#~ "Kayıtta bir sorun var gibi görünüyor. Sorunu görmek için 'blue-recorder' "
+#~ "uygulamasını komut satırından çalıştırmayı deneyin."
+
+#~ msgid "Stop Recording"
+#~ msgstr "Kaydetmeyi Durdur"
+
+#~ msgid "Recording has started!"
+#~ msgstr "Kayıt başlatıldı!"
+
+#~ msgid "Recording has stopped!"
+#~ msgstr "Kayıt durduruldu!"
+
+#~ msgid ""
+#~ "Your GIF image is currently being processed, this may take a while "
+#~ "according to your PC's resources."
+#~ msgstr ""
+#~ "GIF resminiz şu anda işleniyor. Bilgisayarınızın kaynaklarına göre bu "
+#~ "işlem biraz sürebilir."
+
+#~ msgid "File already exists!"
+#~ msgstr "Dosya zaten var!"
+
+#~ msgid "Would you like to overwrite this file?"
+#~ msgstr "Bu dosyanın üzerine yazmak ister misiniz?"
+
+#~ msgid "Sorry Jim, looks like you are using something we don't support"
+#~ msgstr "Üzgünüm. Desteklemediğimiz bir şey kullanıyor gibisiniz"
+
+#~ msgid "About"
+#~ msgstr "Hakkında"
+
+#~ msgid "AreaChooser"
+#~ msgstr "Alan Seçici"
+
+#~ msgid "File Name.."
+#~ msgstr "Dosya Adı.."
+
+#~ msgid "Enter your command here.."
+#~ msgstr "Komutu buraya girin.."
+
+#~ msgid "Select a Window"
+#~ msgstr "Pencere Seç"
+
+#~ msgid "Select an Area"
+#~ msgstr "Alan Seç"
+
+#~ msgid ""
+#~ "You didn't run the program using the application icon (desktop file). "
+#~ "This will cause the program not to work. Run it using the icon from the "
+#~ "menus only. (Need to export GDK_BACKEND=x11 first)"
+#~ msgstr ""
+#~ "Programı uygulama simgesini (desktop dosyası) kullanarak çalıştırmadınız. "
+#~ "Bu, programın çalışmamasına neden olacaktır. Yalnızca menülerdeki simgeyi "
+#~ "kullanarak çalıştırın. (Önce GDK_BACKEND=x11'i dışa aktarmanız gerekir)"
+
+#~ msgid "Your window position has been saved!"
+#~ msgstr "Pencere konumunuz kaydedildi!"
+
+#~ msgid "Your area position has been saved!"
+#~ msgstr "Alan konumunuz kaydedildi!"
+
+#~ msgid "stop recording"
+#~ msgstr "kaydı durdur"
