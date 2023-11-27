@@ -1,0 +1,9 @@
+data/blue-recorder.desktop
+flatpak/sa.sy.bluerecorder.metainfo.xml
+src/area_capture.rs
+src/config_management.rs
+src/ffmpeg_interface.rs
+src/main.rs
+src/timer.rs
+src/utils.rs
+src/wayland_record.rs
