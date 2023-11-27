@@ -1,124 +1,155 @@
-# Blue Recorder
-# Copyright (C) 2017, FOSS Project
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Blue Recorder
 # This file is distributed under the same license as the Blue Recorder package.
-# M.Hanny Sabbagh <mhsabbagh@outlook.com>, 2017
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2017-08-08 10:53+0300\n"
-"PO-Revision-Date: 2019-04-05 19:35+0800\n"
+"Project-Id-Version: Blue Recorder\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-11-27 10:20+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: pygettext.py 1.5\n"
 
-
-msgid "There seems to be a problem in recording. Try running 'blue-recorder' from the command line to see the issue."
-msgstr ""
-
-msgid "Stop Recording"
-msgstr ""
-
-msgid "Recording has started!"
-msgstr ""
-
-msgid "Recording has stopped!"
-msgstr ""
-
-msgid "Your GIF image is currently being processed, this may take a while according to your PC's resources."
-msgstr ""
-
-msgid "File already exists!"
-msgstr ""
-
-msgid "Would you like to overwrite this file?"
-msgstr ""
-
-msgid "Sorry Jim, looks like you are using something we don't support"
-msgstr ""
-
-msgid "About"
-msgstr ""
-
+#. --- default properties
+#. Windows
+#: data/blue-recorder.desktop:3 data/blue-recorder.desktop:5
+#: flatpak/sa.sy.bluerecorder.metainfo.xml:5 src/main.rs:107 src/main.rs:583
 msgid "Blue Recorder"
 msgstr ""
 
-msgid "AreaChooser"
+#: data/blue-recorder.desktop:7
+msgid "Record your desktop easily using a simple GUI"
 msgstr ""
 
-msgid "File Name.."
+#: flatpak/sa.sy.bluerecorder.metainfo.xml:6
+msgid "A simple screen recorder for Linux desktop. Supports Wayland &amp; Xorg"
 msgstr ""
 
-msgid "Enter your command here.."
+#: flatpak/sa.sy.bluerecorder.metainfo.xml:12
+msgid ""
+"A simple desktop recorder for Linux systems. Built using Rust, GTK and "
+"ffmpeg."
 msgstr ""
 
-msgid "MKV (Matroska multimedia container format)"
+#: flatpak/sa.sy.bluerecorder.metainfo.xml:13
+msgid ""
+"It supports recording audio and video on almost all Linux interfaces with "
+"support for Wayland display server on GNOME session. The following formats "
+"are currently supported: mkv, avi, mp4, wmv, gif and nut (And only WebM for "
+"Wayland's GNOME session). You can stop the recording process easily by right-"
+"clicking the icon and choosing \"Stop Record\". Or middle-clicking the "
+"recording icon in the notifications area (but doesn't work on all "
+"interfaces). You can choose the audio input source you want from the list. "
+"You can also set the default values you want by simply changing them in the "
+"interface, and the program will save them for you for the next time you open "
+"it. Based on GREEN RECORDER but rewritten in RUST"
 msgstr ""
 
-msgid "AVI (Audio Video Interleaved)"
+#: src/ffmpeg_interface.rs:71
+msgid "File already exist. Do you want to overwrite it?"
 msgstr ""
 
-msgid "MP4 (MPEG-4 Part 14)"
-msgstr ""
-
-msgid "WMV (Windows Media Video)"
-msgstr ""
-
-msgid "GIF (Graphics Interchange Format)"
-msgstr ""
-
-msgid "NUT (NUT Recording Format)"
-msgstr ""
-
-msgid "Record Video"
-msgstr ""
-
-msgid "Record Audio"
-msgstr ""
-
-msgid "Show Mouse"
-msgstr ""
-
-msgid "Follow Mouse"
-msgstr ""
-
-msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
-msgstr ""
-
-msgid "Select a Window"
-msgstr ""
-
-msgid "Select an Area"
-msgstr ""
-
-msgid "Frames:"
-msgstr ""
-
-msgid "Delay:"
-msgstr ""
-
-msgid "Run Command After Recording:"
-msgstr ""
-
-msgid "Audio Input Source:"
-msgstr ""
-
-msgid "Default PulseAudio Input Source"
-msgstr ""
-
-msgid "You didn't run the program using the application icon (desktop file). This will cause the program not to work. Run it using the icon from the menus only. (Need to export GDK_BACKEND=x11 first)"
-msgstr ""
-
-msgid "Your window position has been saved!"
-msgstr ""
-
+#: src/main.rs:109 src/main.rs:439
 msgid "Area Chooser"
 msgstr ""
 
-msgid "Your area position has been saved!"
+#: src/main.rs:124
+msgid "Not supported in Wayland"
 msgstr ""
 
-msgid "stop recording"
+#. Entries
+#: src/main.rs:128
+msgid "Default filename:"
+msgstr ""
+
+#: src/main.rs:129
+msgid "Default command:"
+msgstr ""
+
+#. CheckBox
+#: src/main.rs:134
+msgid "MP4 (MPEG-4 Part 14)"
+msgstr ""
+
+#: src/main.rs:137
+msgid "MKV (Matroska multimedia container format)"
+msgstr ""
+
+#: src/main.rs:139
+msgid "WEBM (Open Web Media File)"
+msgstr ""
+
+#: src/main.rs:140
+msgid "GIF (Graphics Interchange Format)"
+msgstr ""
+
+#: src/main.rs:141
+msgid "AVI (Audio Video Interleaved)"
+msgstr ""
+
+#: src/main.rs:142
+msgid "WMV (Windows Media Video)"
+msgstr ""
+
+#: src/main.rs:143
+msgid "NUT (NUT Recording Format)"
+msgstr ""
+
+#: src/main.rs:174
+msgid "Default PulseAudio Input Source"
+msgstr ""
+
+#. Switchs
+#: src/main.rs:181
+msgid "Record Video"
+msgstr ""
+
+#: src/main.rs:182
+msgid "Record Audio"
+msgstr ""
+
+#: src/main.rs:183
+msgid "Show Mouse"
+msgstr ""
+
+#: src/main.rs:184
+msgid "Follow Mouse"
+msgstr ""
+
+#: src/main.rs:185
+msgid "Auto Hide"
+msgstr ""
+
+#. Labels
+#: src/main.rs:346
+msgid "Run Command After Recording:"
+msgstr ""
+
+#: src/main.rs:347
+msgid "Frames:"
+msgstr ""
+
+#: src/main.rs:348
+msgid "Delay:"
+msgstr ""
+
+#: src/main.rs:349
+msgid "Audio Input Source:"
+msgstr ""
+
+#: src/main.rs:589
+msgid ""
+"A simple screen recorder for Linux desktop. Supports Waylan_windowd & Xorg."
+msgstr ""
+
+#. Translators: Replace "translator-credits" with your names, one name per line
+#: src/main.rs:604
+msgid "translator-credits"
 msgstr ""
