@@ -600,6 +600,8 @@ pub fn build_ui(application: &Application) {
         "Mustapha Assabar",
         "Abdullah Al-Baroty <albaroty@gmail.com>",
     ]);
+    // Translators: Replace "translator-credits" with your names, one name per line
+    about_dialog.set_translator_credits(Some(&gettext("translator-credits")));
     about_dialog.set_website(Some("https://github.com/xlmnxp/blue-recorder/"));
     about_dialog.set_logo_icon_name(Some("blue-recorder"));
     about_dialog.set_logo(logo.paintable().as_ref());
