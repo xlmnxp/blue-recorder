@@ -63,7 +63,27 @@ parts:
       set -eux
       cd /snap/gnome-42-2204/current
       find . -type f,l -exec rm -f $CRAFT_PRIME/{} \;
-
+  pipewire:
+    source: https://gitlab.freedesktop.org/pipewire/pipewire/-/archive/0.3.32/pipewire-0.3.32.tar.gz
+    plugin: meson
+    meson-parameters:
+      - --prefix=/usr
+      - --buildtype=release
+      - --strip
+      - -Dalsa=disabled
+      - -Dpipewire-alsa=disabled
+      - -Djack=disabled
+      - -Dpipewire-jack=disabled
+      - -Dsession-managers=[]
+    build-packages:
+      - pkg-config
+      - libdbus-1-dev
+      - libpulse-dev
+    prime:
+      - usr/lib/*/pipewire-*
+      - usr/lib/*/spa-*
+      - usr/lib/*/libpipewire*.so*
+      - usr/share/pipewire
 apps:
   blue-recorder:
     command: blue-recorder
@@ -77,6 +97,7 @@ apps:
       - audio-record
       - wayland
       - x11
+      - pipewire
       - screencast-legacy # for wayland support
     slots:
       - dbus-daemon
