@@ -586,7 +586,7 @@ pub fn build_ui(application: &Application) {
     about_dialog.set_wrap_license(true);
     about_dialog.set_license(Some("Blue Recorder is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\nBlue Recorder is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\nSee the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with Blue Recorder. If not, see <http://www.gnu.org/licenses/>."));
     about_dialog.set_comments(Some(&gettext(
-        "A simple screen recorder for Linux desktop. Supports Waylan_windowd & Xorg.",
+        "A simple screen recorder for Linux desktop. Supports Wayland & Xorg.",
     )));
     about_dialog.set_authors(&[
         "Salem Yaslem <s@sy.sa>",

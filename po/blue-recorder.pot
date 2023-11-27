@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Blue Recorder\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-27 10:43+0300\n"
+"POT-Creation-Date: 2023-11-27 10:50+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -145,8 +145,7 @@ msgid "Audio Input Source:"
 msgstr ""
 
 #: src/main.rs:589
-msgid ""
-"A simple screen recorder for Linux desktop. Supports Waylan_windowd & Xorg."
+msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
 msgstr ""
 
 #. Translators: Replace "translator-credits" with your names, one name per line
