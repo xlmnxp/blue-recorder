@@ -2,7 +2,7 @@
 
 <img src="screenshots/screenshot1.png"/>
 
-A simple desktop recorder for Linux systems. Built using GTK+ 3 and ffmpeg. 
+A simple desktop recorder for Linux systems. Built using GTK4 and ffmpeg. 
 
 - It supports recording audio and video on almost all Linux interfaces with support for Wayland display server on GNOME session.
 - The following formats are currently supported: mkv, avi, mp4, wmv, gif and nut.

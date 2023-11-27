@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Blue Recorder\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-27 10:20+0300\n"
+"POT-Creation-Date: 2023-11-27 10:43+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,7 +34,7 @@ msgstr ""
 
 #: flatpak/sa.sy.bluerecorder.metainfo.xml:12
 msgid ""
-"A simple desktop recorder for Linux systems. Built using Rust, GTK and "
+"A simple desktop recorder for Linux systems. Built using Rust, GTK4 and "
 "ffmpeg."
 msgstr ""
 
