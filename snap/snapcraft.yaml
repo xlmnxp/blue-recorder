@@ -8,9 +8,8 @@ description: |
   You can choose the audio input source you want from the list. You can also set the default values you want by simply changing them in the interface, and the program will save them for you for the next time you open it.
   Based on GREEN RECORDER but rewritten in RUST
 adopt-info: blue-recorder
-
 grade: stable # must be 'stable' to release into candidate/stable channels
-confinement: devmode # use 'strict' once you have the right plugs and slots
+confinement: strict # use 'strict' once you have the right plugs and slots
 compression: lzo
 
 parts:
@@ -28,11 +27,19 @@ parts:
       - ffmpeg
     stage-packages:
       - x11-utils
+      - libgstreamer-plugins-base1.0-0
+      - libgstreamer1.0-0
+      - libpipewire-0.3-0
+      - libwayland-client0
+      - libwayland-cursor0
+      - libwayland-egl1
+      - libwayland-server0
       - gstreamer1.0-plugins-bad
       - gstreamer1.0-plugins-base
       - gstreamer1.0-plugins-good
       - gstreamer1.0-plugins-ugly
-      - gstreamer1.0-libav
+      - gstreamer1.0-pipewire
+      - gstreamer1.0-x
     build-packages:
       - clang
       - gettext
@@ -40,6 +47,7 @@ parts:
       - libgstreamer-plugins-bad1.0-dev
       - libgstreamer-plugins-base1.0-dev
       - libgstreamer1.0-dev
+      - libgstreamer1.0-0
     override-pull: | # set version from Cargo.toml
       craftctl default
       craftctl set version=$(cat Cargo.toml | grep version | head -n1 | cut -d"=" -f2 | awk '{$1=$1};1' | tr -d '"')
@@ -47,6 +55,14 @@ parts:
       craftctl default
       cp -a data interfaces po $CRAFT_PART_INSTALL
       cp -a target/release/blue-recorder $CRAFT_PART_INSTALL/blue-recorder
+  cleanup:
+    after: [blue-recorder]
+    plugin: nil
+    build-snaps: [gnome-42-2204]
+    override-prime: |
+      set -eux
+      cd /snap/gnome-42-2204/current
+      find . -type f,l -exec rm -f $CRAFT_PRIME/{} \;
 
 apps:
   blue-recorder:
@@ -62,12 +78,12 @@ apps:
       - wayland
       - x11
       - screencast-legacy # for wayland support
-    # slots:
-    #   - dbus-daemon
-    # common-id: sa.sy.blue-recorder
+    slots:
+      - dbus-daemon
+    common-id: sa.sy.blue-recorder
 
-# slots:
-#   dbus-daemon:
-#     interface: dbus
-#     bus: session
-#     name: sa.sy.blue-recorder
+slots:
+  dbus-daemon:
+    interface: dbus
+    bus: session
+    name: sa.sy.blue-recorder
