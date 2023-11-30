@@ -14,14 +14,15 @@
     </p>
   </description>
   
-  <launchable type="desktop-id">sa.sy.bluerecorder.desktop</launchable>
   <screenshots>
     <screenshot type="default">
       <image>https://dashboard.snapcraft.io/site_media/appmedia/2021/02/blue-recorder.png</image>
     </screenshot>
   </screenshots>
   
-  <content_rating type="oars-1.0" />
+  <content_rating type="oars-1.1" />
+  <translation type="gettext">gnome-system-monitor</translation>
+  <launchable type="desktop-id">sa.sy.bluerecorder.desktop</launchable>
 
   <categories>
     <category>AudioVideo</category>
@@ -33,11 +34,15 @@
   </provides>
 
   <url type="homepage">https://github.com/xlmnxp/blue-recorder</url>
-	<releases>
+  <url type="bugtracker">https://github.com/xlmnxp/blue-recorder/issues</url>
+  <url type="vcs-browser">https://github.com/xlmnxp/blue-recorder</url>
+  <url type="translate">https://github.com/xlmnxp/blue-recorder/tree/master/po</url>
+  
+  <releases>
     <release version="0.2.0" date="2023-11-22"/>
-		<release version="0.1.5" date="2021-12-22"/>
-		<release version="0.1.4" date="2021-05-24"/>
-		<release version="0.1.3" date="2021-04-27"/>
-	</releases>
+    <release version="0.1.5" date="2021-12-22"/>
+    <release version="0.1.4" date="2021-05-24"/>
+    <release version="0.1.3" date="2021-04-27"/>
+  </releases>
 
 </component>
