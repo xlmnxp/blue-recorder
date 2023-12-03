@@ -1,0 +1,123 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE blue-recorder'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the blue-recorder package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: blue-recorder 0.2.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-12-03 02:43+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ./src/ffmpeg_interface.rs:71
+msgid "File already exist. Do you want to overwrite it?"
+msgstr ""
+
+#: ./src/main.rs:117 ./src/main.rs:593
+msgid "Blue Recorder"
+msgstr ""
+
+#: ./src/main.rs:119 ./src/main.rs:449
+msgid "Area Chooser"
+msgstr ""
+
+#: ./src/main.rs:134
+msgid "Not supported in Wayland"
+msgstr ""
+
+#. Entries
+#: ./src/main.rs:138
+msgid "Default filename:"
+msgstr ""
+
+#: ./src/main.rs:139
+msgid "Default command:"
+msgstr ""
+
+#. CheckBox
+#: ./src/main.rs:144
+msgid "MP4 (MPEG-4 Part 14)"
+msgstr ""
+
+#: ./src/main.rs:147
+msgid "MKV (Matroska multimedia container format)"
+msgstr ""
+
+#: ./src/main.rs:149
+msgid "WEBM (Open Web Media File)"
+msgstr ""
+
+#: ./src/main.rs:150
+msgid "GIF (Graphics Interchange Format)"
+msgstr ""
+
+#: ./src/main.rs:151
+msgid "AVI (Audio Video Interleaved)"
+msgstr ""
+
+#: ./src/main.rs:152
+msgid "WMV (Windows Media Video)"
+msgstr ""
+
+#: ./src/main.rs:153
+msgid "NUT (NUT Recording Format)"
+msgstr ""
+
+#: ./src/main.rs:184
+msgid "Default PulseAudio Input Source"
+msgstr ""
+
+#. Switchs
+#: ./src/main.rs:191
+msgid "Record Video"
+msgstr ""
+
+#: ./src/main.rs:192
+msgid "Record Audio"
+msgstr ""
+
+#: ./src/main.rs:193
+msgid "Show Mouse"
+msgstr ""
+
+#: ./src/main.rs:194
+msgid "Follow Mouse"
+msgstr ""
+
+#: ./src/main.rs:195
+msgid "Auto Hide"
+msgstr ""
+
+#. Labels
+#: ./src/main.rs:356
+msgid "Run Command After Recording:"
+msgstr ""
+
+#: ./src/main.rs:357
+msgid "Frames:"
+msgstr ""
+
+#: ./src/main.rs:358
+msgid "Delay:"
+msgstr ""
+
+#: ./src/main.rs:359
+msgid "Audio Input Source:"
+msgstr ""
+
+#: ./src/main.rs:599
+msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
+msgstr ""
+
+#. Translators: Replace "translator-credits" with your names, one name per line
+#: ./src/main.rs:614
+msgid "translator-credits"
+msgstr ""
