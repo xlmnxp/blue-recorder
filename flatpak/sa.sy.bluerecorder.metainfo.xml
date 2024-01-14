@@ -21,7 +21,7 @@
   </screenshots>
   
   <content_rating type="oars-1.1" />
-  <translation type="gettext">gnome-system-monitor</translation>
+  <translation type="gettext">blue-recorder</translation>
   <launchable type="desktop-id">sa.sy.bluerecorder.desktop</launchable>
 
   <categories>
