@@ -14,6 +14,7 @@ use std::sync::mpsc::Sender;
 use std::thread::sleep;
 use std::time::Duration;
 use subprocess::Exec;
+use filename::Filename;
 
 #[derive(Clone)]
 pub struct Ffmpeg {
@@ -34,6 +35,7 @@ pub struct Ffmpeg {
     pub record_wayland: WaylandRecorder,
     pub record_window: Rc<RefCell<bool>>,
     pub main_context: gtk::glib::MainContext,
+    pub temp_video_filename: String,
 }
 
 impl Ffmpeg {
@@ -142,14 +144,14 @@ impl Ffmpeg {
         } else if self.record_video.is_active() && is_wayland() {
             sleep(Duration::from_secs(self.record_delay.value() as u64));
 
+            let tempfile = tempfile::NamedTempFile::new().expect("cannot create temp file").keep().expect("cannot keep temp file");
+            self.temp_video_filename = tempfile.0.file_name().expect("cannot get file name").to_str().unwrap().to_string();
+
             let record_window = self.record_window.take();
             self.record_window.replace(record_window);
 
             if !self.main_context.block_on(self.record_wayland.start(
-                format!(
-                    "{}.temp.without.audio.webm",
-                    self.saved_filename.as_ref().unwrap()
-                ),
+                self.temp_video_filename.clone(),
                 if record_window {
                     RecordTypes::Window
                 } else {
@@ -230,10 +232,7 @@ impl Ffmpeg {
 
         let video_filename = {
             if is_wayland() {
-                format!(
-                    "{}.temp.without.audio.webm",
-                    self.saved_filename.as_ref().unwrap()
-                )
+                self.temp_video_filename.clone()
             } else {
                 format!(
                     "{}.temp.without.audio.{}",
@@ -246,15 +245,7 @@ impl Ffmpeg {
         let audio_filename = format!("{}.temp.audio", self.saved_filename.as_ref().unwrap());
 
         let is_video_record = {
-            if is_wayland() {
-                std::path::Path::new(&format!(
-                    "{}.temp.without.audio.webm",
-                    self.saved_filename.as_ref().unwrap()
-                ))
-                .exists()
-            } else {
-                std::path::Path::new(video_filename.as_str()).exists()
-            }
+            std::path::Path::new(video_filename.as_str()).exists()
         };
         let is_audio_record = std::path::Path::new(audio_filename.as_str()).exists();
 
@@ -264,10 +255,7 @@ impl Ffmpeg {
                 Command::new("ffmpeg")
                     .args([
                         "-i",
-                        format!(
-                            "{}.temp.without.audio.webm",
-                            self.saved_filename.as_ref().unwrap()
-                        )
+                        self.temp_video_filename
                         .as_str(),
                         "-crf",
                         "23", // default quality
