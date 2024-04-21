@@ -23,3 +23,5 @@ dark-light = "1.0.0"
 async-std = {version = "1.12.0", features = ["attributes"]}
 gstreamer = "0.20.5"
 zbus = "3.12.0"
+tempfile = "3.10.1"
+filename = "0.1.1"
