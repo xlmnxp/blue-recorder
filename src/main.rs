@@ -490,6 +490,7 @@ pub fn build_ui(application: &Application) {
         record_wayland: wayland_record,
         record_window,
         main_context,
+        temp_video_filename: String::new(),
     }));
 
     // Record Button
