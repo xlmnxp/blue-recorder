@@ -10,8 +10,7 @@ mod wayland_record;
 mod utils;
 
 use ffmpeg_interface::Ffmpeg;
-use i18n_embed::{DesktopLanguageRequester, gettext::gettext_language_loader};
-use gettextrs::gettext;
+use gettextrs::{bindtextdomain, gettext, setlocale, textdomain, LocaleCategory};
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::{
@@ -20,7 +19,6 @@ use gtk::{
     ToggleButton, Window,
 };
 use utils::is_wayland;
-use rust_embed::RustEmbed;
 use std::cell::RefCell;
 use std::ops::Add;
 use std::path::Path;
@@ -29,11 +27,6 @@ use std::rc::Rc;
 use timer::{recording_delay, start_timer, stop_timer};
 use wayland_record::WaylandRecorder;
 
-#[derive(RustEmbed)]
-// path to the compiled localization resources,
-// as determined by i18n.toml settings
-#[folder = "i18n/mo"]
-struct Localizations;
 
 #[async_std::main]
 async fn main() {
@@ -50,26 +43,23 @@ pub fn build_ui(application: &Application) {
     let builder: Builder = Builder::from_string(ui_src.as_str());
 
     // Translate
-    let language_loader = gettext_language_loader!();
-    let requested_languages = DesktopLanguageRequester::requested_languages();
-    let _result = i18n_embed::select(
-        &language_loader, &Localizations, &requested_languages);
-    //let mut po_path_abs = {
-        //let mut current_exec_dir = std::env::current_exe().unwrap();
-        //current_exec_dir.pop();
-        //current_exec_dir
-    //}
-    //.join(Path::new("po"));
+    let mut po_path_abs = {
+        let mut current_exec_dir = std::env::current_exe().unwrap();
+        current_exec_dir.pop();
+        current_exec_dir
+    }
+    .join(Path::new("po"));
 
-    //if !po_path_abs.exists() {
-        //po_path_abs = std::fs::canonicalize(Path::new(&String::from("po")),
-        //)
-        //.unwrap();
-    //}
+    if !po_path_abs.exists() {
+        po_path_abs = std::fs::canonicalize(Path::new(
+            &std::env::var("PO_DIR").unwrap_or_else(|_| String::from("po")),
+        ))
+        .unwrap();
+    }
 
-    //setlocale(LocaleCategory::LcAll, "");
-    //bindtextdomain("blue-recorder", po_path_abs.to_str().unwrap()).unwrap();
-    //textdomain("blue-recorder").unwrap();
+    setlocale(LocaleCategory::LcAll, "");
+    bindtextdomain("blue-recorder", po_path_abs.to_str().unwrap()).unwrap();
+    textdomain("blue-recorder").unwrap();
 
     // Config initialize
     config_management::initialize();
