@@ -625,7 +625,7 @@
 				</child>
 				<child type="end">
 					<object class="GtkButton" id="aboutbutton">
-						<property name="label">About</property>
+						<property name="label" translatable="yes">button</property>
 						<property name="visible">True</property>
 						<property name="can-focus">True</property>
 						<property name="receives-default">True</property>

@@ -2,7 +2,6 @@ extern crate subprocess;
 use crate::utils::{is_snap, is_wayland};
 use crate::wayland_record::{CursorModeTypes, RecordTypes, WaylandRecorder};
 use chrono::prelude::*;
-use gettextrs::gettext;
 use gtk::{prelude::*, ResponseType};
 use gtk::{ButtonsType, DialogFlags, MessageDialog, MessageType};
 use gtk::{CheckButton, ComboBoxText, Entry, FileChooserNative, SpinButton, Window};
@@ -36,6 +35,7 @@ pub struct Ffmpeg {
     pub record_window: Rc<RefCell<bool>>,
     pub main_context: gtk::glib::MainContext,
     pub temp_video_filename: String,
+    pub bundle: String,
 }
 
 impl Ffmpeg {
@@ -70,7 +70,7 @@ impl Ffmpeg {
                 DialogFlags::all(),
                 MessageType::Warning,
                 ButtonsType::YesNo,
-                &gettext("File already exist. Do you want to overwrite it?"),
+                &self.bundle,
             );
 
             let answer = self.main_context.block_on(message_dialog.run_future());
