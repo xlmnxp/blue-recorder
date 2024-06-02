@@ -1,5 +1,4 @@
 extern crate gdk;
-extern crate gettextrs;
 extern crate gio;
 extern crate gtk;
 mod area_capture;
@@ -10,7 +9,8 @@ mod wayland_record;
 mod utils;
 
 use ffmpeg_interface::Ffmpeg;
-use gettextrs::{bindtextdomain, gettext, setlocale, textdomain, LocaleCategory};
+use fluent_bundle::bundle::FluentBundle;
+use fluent_bundle::FluentResource;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::{
@@ -43,23 +43,32 @@ pub fn build_ui(application: &Application) {
     let builder: Builder = Builder::from_string(ui_src.as_str());
 
     // Translate
-    let mut po_path_abs = {
+    let mut ftl_path = {
         let mut current_exec_dir = std::env::current_exe().unwrap();
         current_exec_dir.pop();
         current_exec_dir
+    }.join(Path::new("locales"));
+    if !ftl_path.exists() {
+        ftl_path = std::fs::canonicalize(Path::new(
+            &std::env::var("LOCPATH").unwrap_or_else(|_| String::from("locales")),
+        )).unwrap();
     }
-    .join(Path::new("po"));
-
-    if !po_path_abs.exists() {
-        po_path_abs = std::fs::canonicalize(Path::new(
-            &std::env::var("PO_DIR").unwrap_or_else(|_| String::from("po")),
-        ))
-        .unwrap();
+    let supported_lang: Vec<String> = std::fs::read_dir(&ftl_path)
+        .unwrap()
+        .map(|entry| {
+            let path = entry.unwrap().path();
+            path.file_stem().unwrap().to_string_lossy().to_string()
+        }).collect();
+    let mut locale = std::env::var("LANG").unwrap_or("en-US".to_string());
+    if !supported_lang.contains(&locale) {
+        locale = String::from("en-US");
     }
-
-    setlocale(LocaleCategory::LcAll, "");
-    bindtextdomain("blue-recorder", po_path_abs.to_str().unwrap()).unwrap();
-    textdomain("blue-recorder").unwrap();
+    let ftl_file = std::fs::read_to_string(
+        format!("{}/{}.ftl", ftl_path.to_str().unwrap(),locale.split('.').next().unwrap())
+    ).unwrap();
+    let res = FluentResource::try_new(ftl_file).unwrap();
+    let mut bundle = FluentBundle::default();
+    bundle.add_resource(res).expect("Failed to add localization resources to the bundle.");
 
     // Config initialize
     config_management::initialize();
@@ -104,9 +113,11 @@ pub fn build_ui(application: &Application) {
 
     // --- default properties
     // Windows
-    main_window.set_title(Some(&gettext("Blue Recorder")));
+    main_window.set_title(Some(&bundle.format_pattern(bundle.get_message("blue-recorder").unwrap()
+                                                      .value().unwrap(), None, &mut vec![]).to_string()));
     main_window.set_application(Some(application));
-    area_chooser_window.set_title(Some(&gettext("Area Chooser"))); // Title is hidden
+    area_chooser_window.set_title(Some(&bundle.format_pattern(bundle.get_message("area-chooser").unwrap()
+                                                              .value().unwrap(), None, &mut vec![]).to_string())); // Title is hidden
     
     // disable interaction with main window
     // main_window.set_can_focus(false);
@@ -121,26 +132,36 @@ pub fn build_ui(application: &Application) {
         area_grab_button.set_can_focus(false);
         area_grab_button.set_can_target(false);
         area_grab_button.add_css_class("disabled");
-        area_grab_button.set_tooltip_text(Some(&gettext("Not supported in Wayland")));
+        area_grab_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("wayland-msg").unwrap()
+                                                                      .value().unwrap(), None, &mut vec![]).to_string()));
     }
 
     // Entries
-    filename_entry.set_placeholder_text(Some(&gettext("Default filename:")));
-    command_entry.set_placeholder_text(Some(&gettext("Default command:")));
+    filename_entry.set_placeholder_text(Some(&bundle.format_pattern(bundle.get_message("file-name").unwrap()
+                                                                    .value().unwrap(), None, &mut vec![]).to_string()));
+    command_entry.set_placeholder_text(Some(&bundle.format_pattern(bundle.get_message("default-command").unwrap()
+                                                                   .value().unwrap(), None, &mut vec![]).to_string()));
     filename_entry.set_text(&config_management::get("default", "filename"));
     command_entry.set_text(&config_management::get("default", "command"));
 
     // CheckBox
-    format_chooser_combobox.append(Some("mp4"), &gettext("MP4 (MPEG-4 Part 14)"));
+    format_chooser_combobox.append(Some("mp4"), &bundle.format_pattern(bundle.get_message("mp4-format").unwrap()
+                                                                       .value().unwrap(), None, &mut vec![]).to_string());
     format_chooser_combobox.append(
         Some("mkv"),
-        &gettext("MKV (Matroska multimedia container format)"),
+        &bundle.format_pattern(bundle.get_message("mkv-format").unwrap()
+                               .value().unwrap(), None, &mut vec![]).to_string(),
     );
-    format_chooser_combobox.append(Some("webm"), &gettext("WEBM (Open Web Media File)"));
-    format_chooser_combobox.append(Some("gif"), &gettext("GIF (Graphics Interchange Format)"));
-    format_chooser_combobox.append(Some("avi"), &gettext("AVI (Audio Video Interleaved)"));
-    format_chooser_combobox.append(Some("wmv"), &gettext("WMV (Windows Media Video)"));
-    format_chooser_combobox.append(Some("nut"), &gettext("NUT (NUT Recording Format)"));
+    format_chooser_combobox.append(Some("webm"), &bundle.format_pattern(bundle.get_message("webm-format").unwrap()
+                                                                        .value().unwrap(), None, &mut vec![]).to_string());
+    format_chooser_combobox.append(Some("gif"), &bundle.format_pattern(bundle.get_message("gif-format").unwrap()
+                                                                       .value().unwrap(), None, &mut vec![]).to_string());
+    format_chooser_combobox.append(Some("avi"), &bundle.format_pattern(bundle.get_message("avi-format").unwrap()
+                                                                       .value().unwrap(), None, &mut vec![]).to_string());
+    format_chooser_combobox.append(Some("wmv"), &bundle.format_pattern(bundle.get_message("wmv-format").unwrap()
+                                                                       .value().unwrap(), None, &mut vec![]).to_string());
+    format_chooser_combobox.append(Some("nut"), &bundle.format_pattern(bundle.get_message("nut-format").unwrap()
+                                                                       .value().unwrap(), None, &mut vec![]).to_string());
     format_chooser_combobox.set_active(Some(0));
 
     // Get audio sources
@@ -171,18 +192,24 @@ pub fn build_ui(application: &Application) {
             .collect()
     };
 
-    audio_source_combobox.append(Some("default"), &gettext("Default PulseAudio Input Source"));
+    audio_source_combobox.append(Some("default"), &bundle.format_pattern(bundle.get_message("audio-input").unwrap()
+                                                                         .value().unwrap(), None, &mut vec![]).to_string());
     for (id, audio_source) in sources_descriptions.iter().enumerate() {
         audio_source_combobox.append(Some(id.to_string().as_str()), audio_source);
     }
     audio_source_combobox.set_active(Some(0));
 
     // Switchs
-    video_switch.set_label(Some(&gettext("Record Video")));
-    audio_switch.set_label(Some(&gettext("Record Audio")));
-    mouse_switch.set_label(Some(&gettext("Show Mouse")));
-    follow_mouse_switch.set_label(Some(&gettext("Follow Mouse")));
-    hide_switch.set_label(Some(&gettext("Auto Hide")));
+    video_switch.set_label(Some(&bundle.format_pattern(bundle.get_message("record-video").unwrap()
+                                                       .value().unwrap(), None, &mut vec![]).to_string()));
+    audio_switch.set_label(Some(&bundle.format_pattern(bundle.get_message("record-audio").unwrap()
+                                                       .value().unwrap(), None, &mut vec![]).to_string()));
+    mouse_switch.set_label(Some(&bundle.format_pattern(bundle.get_message("show-mouse").unwrap()
+                                                       .value().unwrap(), None, &mut vec![]).to_string()));
+    follow_mouse_switch.set_label(Some(&bundle.format_pattern(bundle.get_message("follow-mouse").unwrap()
+                                                              .value().unwrap(), None, &mut vec![]).to_string()));
+    hide_switch.set_label(Some(&bundle.format_pattern(bundle.get_message("auto-hide").unwrap()
+                                                      .value().unwrap(), None, &mut vec![]).to_string()));
     video_switch.set_active(config_management::get_bool("default", "videocheck"));
     audio_switch.set_active(config_management::get_bool("default", "audiocheck"));
     mouse_switch.set_active(config_management::get_bool("default", "mousecheck"));
@@ -343,10 +370,14 @@ pub fn build_ui(application: &Application) {
         }
     }
     // Labels
-    command_label.set_label(&gettext("Run Command After Recording:"));
-    frames_label.set_label(&gettext("Frames:"));
-    delay_label.set_label(&gettext("Delay:"));
-    audio_source_label.set_label(&gettext("Audio Input Source:"));
+    command_label.set_label(&bundle.format_pattern(bundle.get_message("run-command").unwrap()
+                                                   .value().unwrap(), None, &mut vec![]).to_string());
+    frames_label.set_label(&bundle.format_pattern(bundle.get_message("frames").unwrap()
+                                                  .value().unwrap(), None, &mut vec![]).to_string());
+    delay_label.set_label(&bundle.format_pattern(bundle.get_message("delay").unwrap()
+                                                 .value().unwrap(), None, &mut vec![]).to_string());
+    audio_source_label.set_label(&bundle.format_pattern(bundle.get_message("audio-source").unwrap()
+                                                        .value().unwrap(), None, &mut vec![]).to_string());
 
     // Spin
     frames_spin.set_value(
@@ -416,6 +447,8 @@ pub fn build_ui(application: &Application) {
     // --- connections
     // Show dialog window when about button clicked then hide it after close
     let _about_dialog: AboutDialog = about_dialog.to_owned();
+    about_button.set_label(&bundle.format_pattern(bundle.get_message("about").unwrap()
+                                                  .value().unwrap(), None, &mut vec![]).to_string());
     about_button.connect_clicked(move |_| {
         _about_dialog.show();
         _about_dialog.set_hide_on_close(true);
@@ -434,9 +467,6 @@ pub fn build_ui(application: &Application) {
     let _area_chooser_window = area_chooser_window.clone();
     let mut _area_capture = area_capture.clone();
     area_set_button.connect_clicked(move |_| {
-        _area_capture
-            .borrow_mut()
-            .get_window_by_name(&gettext("Area Chooser"));
         _area_chooser_window.hide();
     });
 
@@ -467,6 +497,8 @@ pub fn build_ui(application: &Application) {
 
     let main_context = glib::MainContext::default();
     let wayland_record = main_context.block_on(WaylandRecorder::new());
+    let bundle_msg = bundle.format_pattern(bundle.get_message("already-exist").unwrap()
+                                            .value().unwrap(), None, &mut vec![]).to_string();
     // Init record struct
     let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
         filename: (
@@ -491,6 +523,7 @@ pub fn build_ui(application: &Application) {
         record_window,
         main_context,
         temp_video_filename: String::new(),
+        bundle: bundle_msg,
     }));
 
     // Record Button
@@ -581,14 +614,14 @@ pub fn build_ui(application: &Application) {
 
     let logo = Image::from_file(&about_icon_path.to_str().unwrap());
     about_dialog.set_transient_for(Some(&main_window));
-    about_dialog.set_program_name(Some(&gettext("Blue Recorder")));
+    about_dialog.set_program_name(Some(&bundle.format_pattern(bundle.get_message("blue-recorder").unwrap()
+                                                              .value().unwrap(), None, &mut vec![]).to_string()));
     about_dialog.set_version(Some("0.2.0"));
     about_dialog.set_copyright(Some("© 2021 Salem Yaslem"));
     about_dialog.set_wrap_license(true);
     about_dialog.set_license(Some("Blue Recorder is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\nBlue Recorder is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\nSee the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with Blue Recorder. If not, see <http://www.gnu.org/licenses/>."));
-    about_dialog.set_comments(Some(&gettext(
-        "A simple screen recorder for Linux desktop. Supports Wayland & Xorg.",
-    )));
+    about_dialog.set_comments(Some(&bundle.format_pattern(bundle.get_message("dialog-comment").unwrap()
+                                                          .value().unwrap(), None, &mut vec![]).to_string()));
     about_dialog.set_authors(&[
         "Salem Yaslem <s@sy.sa>",
         "M.Hanny Sabbagh <mhsabbagh@outlook.com>",
@@ -602,7 +635,8 @@ pub fn build_ui(application: &Application) {
         "Abdullah Al-Baroty <albaroty@gmail.com>",
     ]);
     // Translators: Replace "translator-credits" with your names, one name per line
-    about_dialog.set_translator_credits(Some(&gettext("translator-credits")));
+    about_dialog.set_translator_credits(Some(&bundle.format_pattern(bundle.get_message("translator-credits").unwrap()
+                                                                    .value().unwrap(), None, &mut vec![]).to_string()));
     about_dialog.set_website(Some("https://github.com/xlmnxp/blue-recorder/"));
     about_dialog.set_logo_icon_name(Some("blue-recorder"));
     about_dialog.set_logo(logo.paintable().as_ref());
