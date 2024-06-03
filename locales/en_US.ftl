@@ -42,13 +42,25 @@ delay = Delay:
 
 audio-source = Audio Input Source:
 
-about = about
+about = About
+
+apply = Apply
 
 dialog-comment =  A simple screen recorder for Linux desktop. Supports Wayland & Xorg.
 
 translator-credits = translator-credits
 
 already-exist = File already exist. Do you want to overwrite it?
+
+record = Record
+
+delay-title = Start Recording in…
+
+delay-window-label = {$value}
+
+delay-window-stop = Stop
+
+stop-recording = Stop recording
 
 blue-recorder-preferences = Blue Recorder Preferences
 
@@ -60,9 +72,11 @@ select-window = Select a Window
 
 select-area = Select an Area
 
-default-frames = Default frames:
+select-screen = Select a Screen
 
-default-delay = Default delay:
+default-frames = {$value}
+
+default-delay = {$value}
 
 default-folder = Default folder:
 
@@ -71,5 +85,3 @@ default-pipeline = Default pipeline:
 record-mouse = Record Mouse
 
 position-msg = Your area position has been saved!
-
-stop-recording = stop recording

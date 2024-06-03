@@ -68,10 +68,10 @@
 									</object>
 								</child>
 								<child>
-									<object class="GtkLabel">
+									<object class="GtkLabel" id="area_apply">
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
-										<property name="label" translatable="yes">Apply</property>
+										<property name="label" translatable="yes">label</property>
 									</object>
 								</child>
 							</object>
@@ -98,7 +98,7 @@
 					<object class="GtkLabel" id="delay_window_title">
 						<property name="name">delay_window_title</property>
 						<property name="visible">True</property>
-						<property name="label" translatable="yes">Start Recording in…</property>
+						<property name="label" translatable="yes">label</property>
 						<property name="margin-top">10</property>
 					</object>
 				</child>
@@ -108,6 +108,7 @@
 						<property name="vexpand">True</property>
 						<property name="hexpand">True</property>
 						<property name="visible">True</property>
+						<property name="label" translatable="yes">label</property>
 					</object>
 				</child>
 				<child type="bottom">
@@ -119,7 +120,7 @@
 						<property name="margin-start">10</property>
 						<property name="margin-end">10</property>
 						<property name="margin-bottom">10</property>
-						<property name="label" translatable="yes">Stop</property>
+						<property name="label" translatable="yes">label</property>
 					</object>
 				</child>
 			</object>
@@ -239,8 +240,8 @@
 											</object>
 										</child>
 										<child>
-											<object class="GtkLabel">
-												<property name="label" translatable="yes">Select an Area</property>
+											<object class="GtkLabel" id="area_grab_label">
+												<property name="label" translatable="yes">label</property>
 												<property name="visible">True</property>
 												<property name="can-focus">True</property>
 											</object>
@@ -274,8 +275,8 @@
 											</object>
 										</child>
 										<child>
-											<object class="GtkLabel">
-												<property name="label" translatable="yes">Select Screen</property>
+											<object class="GtkLabel" id="screen_grab_label">
+												<property name="label" translatable="yes">label</property>
 												<property name="visible">True</property>
 												<property name="can-focus">True</property>
 											</object>
@@ -308,8 +309,8 @@
 											</object>
 										</child>
 										<child>
-											<object class="GtkLabel">
-												<property name="label" translatable="yes">Select a Window</property>
+											<object class="GtkLabel" id="window_grab_label">
+												<property name="label" translatable="yes">label</property>
 												<property name="visible">True</property>
 												<property name="can-focus">True</property>
 											</object>
@@ -424,9 +425,8 @@
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
 										<property name="max-width-chars">2</property>
-										<property name="text" translatable="yes">60</property>
+										<property name="text" translatable="yes">number</property>
 										<property name="adjustment">adjustment2</property>
-										<property name="value">60</property>
 									</object>
 								</child>
 								<child>
@@ -446,7 +446,7 @@
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
 										<property name="max-width-chars">2</property>
-										<property name="text" translatable="yes">0</property>
+										<property name="text" translatable="yes">number</property>
 										<property name="adjustment">adjustment1</property>
 										<property name="climb-rate">1</property>
 										<layout>
@@ -562,10 +562,10 @@
 									</object>
 								</child>
 								<child>
-									<object class="GtkLabel">
+									<object class="GtkLabel" id="record_label">
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
-										<property name="label" translatable="yes">Record</property>
+										<property name="label" translatable="yes">label</property>
 									</object>
 								</child>
 							</object>
@@ -592,10 +592,10 @@
 									</object>
 								</child>
 								<child>
-									<object class="GtkLabel">
+									<object class="GtkLabel" id="stop_label">
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
-										<property name="label" translatable="yes">Stop Recording</property>
+										<property name="label" translatable="yes">label</property>
 									</object>
 								</child>
 							</object>
