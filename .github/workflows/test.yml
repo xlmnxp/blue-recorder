@@ -1,0 +1,15 @@
+name: Test
+on: [pull_request, push]
+jobs:
+  blue-recorder:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - name: Install dependencies
+        run: |
+          sudo apt-get install \
+            librust-gstreamer-sys-dev \
+            librust-gtk4-sys-dev \
+            libunwind-dev
+      - run: cargo test
