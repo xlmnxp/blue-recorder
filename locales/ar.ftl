@@ -4,7 +4,7 @@ area-chooser = محدد المنطقة
 
 wayland-msg = غير مدعوم في وايلاند
 
-default-command = تشغيل أمر عند الانتهاء:
+default-command = أمرٌ ينفذ عند الانتهاء:
 
 file-name = اسم الملفّ الافتراضي:
 
@@ -24,17 +24,17 @@ nut-format = NUT (NUT Recording Format)
 
 audio-input = مصدر صوت PulseAudio الافتراضي
 
-record-video = تسجيل الصوت
+record-video = تسجيل الشاشة
 
 record-audio = تسجيل الصوت
 
-show-mouse = إظهار الفأرة
+show-mouse = إظهار مؤشر الفأرة
 
-follow-mouse = متابعة الفأرة
+follow-mouse = متابعة مؤشر الفأرة
 
 auto-hide = إخفاء تلقائي
 
-run-command = تشغيل أمر عند الانتهاء:
+run-command = أمرٌ ينفذ عند الانتهاء:
 
 frames = الإطارات:
 
@@ -44,32 +44,32 @@ audio-source = مدخل الصوت:
 
 about = عن البرنامج
 
-dialog-comment =  مسجّل شاشة بسيط لسطح مكتب لينكس، يدعم إكس ووايلاند.
+dialog-comment =  مسجّل شاشة لسطح مكتب لينكس، يدعم إكس ووايلاند.
 
 translator-credits = translator-credits
 
-already-exist = File already exist. Do you want to overwrite it?
+already-exist = الملف موجود، أترغب بالكتابة عليه؟
 
-blue-recorder-preferences = Blue Recorder Preferences
+blue-recorder-preferences = تفضيلات المسجل الأزرق
 
-file-name-overwritten = File Name (Will be overwritten)..
+file-name-overwritten = اسم الملف (سيُكتَبُ عليه)
 
-enter-command = Enter your command here..
+enter-command = اكتب الأمر هنا..
 
-select-window = Select a Window
+select-window = حدد نافذة
 
-select-area = Select an Area
+select-area = حدد منطقة
 
-default-frames = Default frames:
+default-frames = عدد الإطارات الافتراضي:
 
-default-delay = Default delay:
+default-delay = التأخير الافتراضي:
 
-default-folder = Default folder:
+default-folder = المجلد الافتراضي:
 
 default-pipeline = Default pipeline:
 
-record-mouse = Record Mouse
+record-mouse = تسجيل مؤشر الفأرة
 
-position-msg = Your area position has been saved!
+position-msg = حُفِظَتْ إحداثيات المنطقة المحددة!
 
-stop-recording = stop recording
+stop-recording = إيقاف التسجيل
