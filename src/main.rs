@@ -10,7 +10,7 @@ mod utils;
 
 use ffmpeg_interface::Ffmpeg;
 use fluent_bundle::bundle::FluentBundle;
-use fluent_bundle::FluentResource;
+use fluent_bundle::{FluentArgs, FluentResource};
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::{
@@ -59,9 +59,9 @@ pub fn build_ui(application: &Application) {
             let path = entry.unwrap().path();
             path.file_stem().unwrap().to_string_lossy().to_string()
         }).collect();
-    let mut locale = std::env::var("LANG").unwrap_or("en-US".to_string());
+    let mut locale = std::env::var("LANG").unwrap_or("en_US".to_string());
     if !supported_lang.contains(&locale) {
-        locale = String::from("en-US");
+        locale = String::from("en_US");
     }
     let ftl_file = std::fs::read_to_string(
         format!("{}/{}.ftl", ftl_path.to_str().unwrap(),locale.split('.').next().unwrap())
@@ -75,9 +75,11 @@ pub fn build_ui(application: &Application) {
 
     // Get Objects from UI
     let main_window: Window = builder.object("main_window").unwrap();
+    let area_apply_label: Label = builder.object("area_apply").unwrap();
     let area_chooser_window: Window = builder.object("area_chooser_window").unwrap();
     let area_grab_button: ToggleButton = builder.object("area_grab_button").unwrap();
     let area_grab_icon: Image = builder.object("area_grab_icon").unwrap();
+    let area_grab_label: Label = builder.object("area_grab_label").unwrap();
     let area_set_button: Button = builder.object("area_set_button").unwrap();
     let about_button: Button = builder.object("aboutbutton").unwrap();
     let about_dialog: AboutDialog = builder.object("about_dialog").unwrap();
@@ -89,8 +91,9 @@ pub fn build_ui(application: &Application) {
     let delay_label: Label = builder.object("delay_label").unwrap();
     let delay_spin: SpinButton = builder.object("delay").unwrap();
     let delay_window: Window = builder.object("delay_window").unwrap();
-    let delay_window_label: Label = builder.object("delay_window_label").unwrap();
     let delay_window_button: ToggleButton = builder.object("delay_window_stopbutton").unwrap();
+    let delay_window_label: Label = builder.object("delay_window_label").unwrap();
+    let delay_window_title: Label = builder.object("delay_window_title").unwrap();
     let filename_entry: Entry = builder.object("filename").unwrap();
     let folder_chooser_button: Button = builder.object("folder_chooser").unwrap();
     let folder_chooser_image: Image = builder.object("folder_chooser_image").unwrap();
@@ -103,13 +106,17 @@ pub fn build_ui(application: &Application) {
     let mouse_switch: CheckButton = builder.object("mouseswitch").unwrap();
     let play_button: Button = builder.object("playbutton").unwrap();
     let record_button: Button = builder.object("recordbutton").unwrap();
+    let record_label: Label = builder.object("record_label").unwrap();
     let record_time_label: Label = builder.object("record_time_label").unwrap();
     let screen_grab_button: ToggleButton = builder.object("screen_grab_button").unwrap();
     let screen_grab_icon: Image = builder.object("screen_grab_icon").unwrap();
+    let screen_grab_label: Label = builder.object("screen_grab_label").unwrap();
     let stop_button: Button = builder.object("stopbutton").unwrap();
+    let stop_label: Label = builder.object("stop_label").unwrap();
     let video_switch: CheckButton = builder.object("videoswitch").unwrap();
-    let window_grab_icon: Image = builder.object("window_grab_icon").unwrap();
     let window_grab_button: ToggleButton = builder.object("window_grab_button").unwrap();
+    let window_grab_icon: Image = builder.object("window_grab_icon").unwrap();
+    let window_grab_label: Label = builder.object("window_grab_label").unwrap();
 
     // --- default properties
     // Windows
@@ -369,15 +376,6 @@ pub fn build_ui(application: &Application) {
             window_grab_icon.set_from_file(Some(&window_icon_path));        
         }
     }
-    // Labels
-    command_label.set_label(&bundle.format_pattern(bundle.get_message("run-command").unwrap()
-                                                   .value().unwrap(), None, &mut vec![]).to_string());
-    frames_label.set_label(&bundle.format_pattern(bundle.get_message("frames").unwrap()
-                                                  .value().unwrap(), None, &mut vec![]).to_string());
-    delay_label.set_label(&bundle.format_pattern(bundle.get_message("delay").unwrap()
-                                                 .value().unwrap(), None, &mut vec![]).to_string());
-    audio_source_label.set_label(&bundle.format_pattern(bundle.get_message("audio-source").unwrap()
-                                                        .value().unwrap(), None, &mut vec![]).to_string());
 
     // Spin
     frames_spin.set_value(
@@ -404,6 +402,24 @@ pub fn build_ui(application: &Application) {
     delay_spin.connect_value_changed(move |_| {
         config_management::set("default", "delay", _delay_spin.value().to_string().as_str());
     });
+
+    // Labels
+    let mut frames_value = FluentArgs::new();
+    frames_value.set("value", frames_spin.value());
+    let mut delay_time_value = FluentArgs::new();
+    delay_time_value.set("value", delay_spin.value());
+    command_label.set_label(&bundle.format_pattern(bundle.get_message("run-command").unwrap()
+                                                   .value().unwrap(), None, &mut vec![]).to_string());
+    frames_label.set_label(&bundle.format_pattern(bundle.get_message("frames").unwrap()
+                                                  .value().unwrap(), None, &mut vec![]).to_string());
+    frames_spin.set_text(&bundle.format_pattern(bundle.get_message("default-frames").unwrap()
+                                                 .value().unwrap(), Some(&frames_value), &mut vec![]).to_string());
+    delay_label.set_label(&bundle.format_pattern(bundle.get_message("delay").unwrap()
+                                                 .value().unwrap(), None, &mut vec![]).to_string());
+    delay_spin.set_text(&bundle.format_pattern(bundle.get_message("default-delay").unwrap()
+                                                 .value().unwrap(), Some(&delay_time_value), &mut vec![]).to_string());
+    audio_source_label.set_label(&bundle.format_pattern(bundle.get_message("audio-source").unwrap()
+                                                        .value().unwrap(), None, &mut vec![]).to_string());
 
     // FileChooser
     let folder_chooser_native = FileChooserNative::new(
@@ -460,12 +476,16 @@ pub fn build_ui(application: &Application) {
 
     let _area_chooser_window = area_chooser_window.clone();
     let mut _area_capture = area_capture.clone();
+    area_grab_label.set_label(&bundle.format_pattern(bundle.get_message("select-area").unwrap()
+                                                  .value().unwrap(), None, &mut vec![]).to_string());
     area_grab_button.connect_clicked(move |_| {
         _area_chooser_window.show();
     });
 
     let _area_chooser_window = area_chooser_window.clone();
     let mut _area_capture = area_capture.clone();
+    area_apply_label.set_label(&bundle.format_pattern(bundle.get_message("apply").unwrap()
+                                                      .value().unwrap(), None, &mut vec![]).to_string());
     area_set_button.connect_clicked(move |_| {
         _area_chooser_window.hide();
     });
@@ -475,7 +495,8 @@ pub fn build_ui(application: &Application) {
     let record_window: Rc<RefCell<bool>> = Rc::new(RefCell::new(false));
     let window_grab_button_record_window: Rc<RefCell<bool>> = record_window.clone();
     let screen_grab_button_record_window: Rc<RefCell<bool>> = record_window.clone();
-
+    screen_grab_label.set_label(&bundle.format_pattern(bundle.get_message("select-screen").unwrap()
+                                                      .value().unwrap(), None, &mut vec![]).to_string());
     screen_grab_button.connect_clicked(move |_| {
         screen_grab_button_record_window.replace(false);
         _area_chooser_window.hide();
@@ -484,6 +505,8 @@ pub fn build_ui(application: &Application) {
 
     let _area_chooser_window: Window = area_chooser_window.clone();
     let mut _area_capture: Rc<RefCell<area_capture::AreaCapture>> = area_capture.clone();
+    window_grab_label.set_label(&bundle.format_pattern(bundle.get_message("select-window").unwrap()
+                                                       .value().unwrap(), None, &mut vec![]).to_string());
     window_grab_button.connect_clicked(move |_| {
         _area_chooser_window.hide();
         if is_wayland() {
@@ -535,7 +558,12 @@ pub fn build_ui(application: &Application) {
     let _record_button = record_button.clone();
     let _record_time_label = record_time_label.clone();
     let _stop_button = stop_button.clone();
-
+    record_label.set_label(&bundle.format_pattern(bundle.get_message("record").unwrap()
+                                                   .value().unwrap(), None, &mut vec![]).to_string());
+    delay_window_title.set_label(&bundle.format_pattern(bundle.get_message("delay-title").unwrap()
+                                                        .value().unwrap(), None, &mut vec![]).to_string());
+    delay_window_button.set_label(&bundle.format_pattern(bundle.get_message("delay-window-stop").unwrap()
+                                                        .value().unwrap(), None, &mut vec![]).to_string());
     record_button.connect_clicked(move |_| {
         _delay_window_button.set_active(false);
         if _delay_spin.value() as u64 > 0 {
@@ -576,6 +604,8 @@ pub fn build_ui(application: &Application) {
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     let _play_button = play_button.clone();
     let _stop_button = stop_button.clone();
+    stop_label.set_label(&bundle.format_pattern(bundle.get_message("stop-recording").unwrap()
+                                                .value().unwrap(), None, &mut vec![]).to_string());
     stop_button.connect_clicked(move |_| {
         _record_time_label.set_visible(false);
         stop_timer(_record_time_label.clone());

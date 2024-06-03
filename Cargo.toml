@@ -10,6 +10,7 @@ async-std = {version = "1.12.0", features = ["attributes"]}
 chrono = "0.4.19"
 dark-light = "1.0.0"
 dirs = "4.0.0"
+fluent = "0.16.1"
 fluent-bundle = "0.15.3"
 filename = "0.1.1"
 gdk = { git = "https://github.com/gtk-rs/gtk4-rs.git", package = "gdk4"}
@@ -17,7 +18,7 @@ gdk-pixbuf = "0.9.0"
 gio = { version = "0.15.0" }
 glib = "0.10.3"
 gstreamer = "0.20.5"
-gtk = { version = "0.4.8", package = "gtk4", features = ["v4_8"] }
+gtk = { version = "0.4.6", package = "gtk4", features = ["v4_6"] }
 gtk-sys = "0.15"
 regex = "1.4.3"
 rust-ini = "0.16"
