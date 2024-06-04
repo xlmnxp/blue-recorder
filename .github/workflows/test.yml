@@ -9,15 +9,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get install \
-            librust-gstreamer-sys-dev \
-            librust-gtk4-sys-dev \
-            libunwind-dev \
-            librust-gstreamer-sys-dev \
             librust-gdk-sys-dev \
-            librust-atk-dev \
+            librust-gstreamer-sys-dev \
             librust-gtk4-sys-dev \
-            libgdk-pixbuf-2.0-dev \
-            librust-pango-dev \
-            librust-gobject-sys-dev \
-            ffmpeg
+            libunwind-dev
       - run: cargo test
