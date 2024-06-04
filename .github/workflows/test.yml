@@ -11,5 +11,13 @@ jobs:
           sudo apt-get install \
             librust-gstreamer-sys-dev \
             librust-gtk4-sys-dev \
-            libunwind-dev
+            libunwind-dev \
+            librust-gstreamer-sys-dev \
+            librust-gdk-sys-dev \
+            librust-atk-dev \
+            librust-gtk4-sys-dev \
+            libgdk-pixbuf-2.0-dev \
+            librust-pango-dev \
+            librust-gobject-sys-dev \
+            ffmpeg
       - run: cargo test
