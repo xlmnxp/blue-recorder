@@ -6,8 +6,8 @@ mod area_capture;
 mod config_management;
 mod ffmpeg_interface;
 mod timer;
-mod wayland_record;
 mod utils;
+mod wayland_record;
 
 use ffmpeg_interface::Ffmpeg;
 use gettextrs::{bindtextdomain, gettext, setlocale, textdomain, LocaleCategory};
@@ -15,18 +15,16 @@ use gtk::glib;
 use gtk::prelude::*;
 use gtk::{
     AboutDialog, Application, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry,
-    FileChooserAction, FileChooserNative, Image, Label, SpinButton,
-    ToggleButton, Window,
+    FileChooserAction, FileChooserNative, Image, Label, SpinButton, ToggleButton, Window,
 };
-use utils::is_wayland;
 use std::cell::RefCell;
 use std::ops::Add;
 use std::path::Path;
 use std::process::{Command, Stdio};
 use std::rc::Rc;
 use timer::{recording_delay, start_timer, stop_timer};
+use utils::is_wayland;
 use wayland_record::WaylandRecorder;
-
 
 #[async_std::main]
 async fn main() {
@@ -107,7 +105,7 @@ pub fn build_ui(application: &Application) {
     main_window.set_title(Some(&gettext("Blue Recorder")));
     main_window.set_application(Some(application));
     area_chooser_window.set_title(Some(&gettext("Area Chooser"))); // Title is hidden
-    
+
     // disable interaction with main window
     // main_window.set_can_focus(false);
     // main_window.set_can_target(false);
@@ -284,7 +282,7 @@ pub fn build_ui(application: &Application) {
 
             area_grab_icon.set_from_file(Some(area_icon_path));
             screen_grab_icon.set_from_file(Some(screen_icon_path));
-            window_grab_icon.set_from_file(Some(&window_icon_path));        
+            window_grab_icon.set_from_file(Some(&window_icon_path));
         }
         // any theme
         _ => {
@@ -339,7 +337,7 @@ pub fn build_ui(application: &Application) {
 
             area_grab_icon.set_from_file(Some(area_icon_path));
             screen_grab_icon.set_from_file(Some(screen_icon_path));
-            window_grab_icon.set_from_file(Some(&window_icon_path));        
+            window_grab_icon.set_from_file(Some(&window_icon_path));
         }
     }
     // Labels
