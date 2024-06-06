@@ -87,7 +87,7 @@ file-name = Default filename:
 file-name-overwritten = File Name (Will be overwritten)..
 
 # Follow mouse label
-follow-mouse = Follow Mouse
+follow-mouse = Highlight Mouse
 
 # Frames label
 frames = Frames:
@@ -126,13 +126,13 @@ show-mouse = Show Mouse
 website = Website
 
 # Tooltip
-about-tooltip = Blue Recorder information
+about-tooltip = Information about Blue Recorder
 area-tooltip = Select area to record
 audio-source-tooltip = Select audio source
 audio-tooltip = Audio recording
 delay-tooltip = Delay time before starting record
 folder-tooltip = Select storage location
-follow-mouse-tooltip = Focus on mouse movement
+follow-mouse-tooltip = Highlight mouse courser
 format-tooltip = Select file format
 frames-tooltip = Frames rate
 hide-tooltip = Hide window when start recording
