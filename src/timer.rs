@@ -4,8 +4,8 @@ use gtk::glib;
 use gtk::{Button, ToggleButton, Label, SpinButton, Window};
 use gtk::prelude::*;
 
-pub fn recording_delay(delay_spin: SpinButton, mut delay_time: u64, delay_window: Window,
-                       delay_window_button: ToggleButton, delay_window_label: Label, record_button: Button) {
+pub fn recording_delay(delay_spin: SpinButton, mut delay_time: u64, delay_window: Window, delay_window_button: ToggleButton,
+                       delay_window_label: Label, record_button: Button) {
     // Keep time label alive and update every 1sec
     let default_value = delay_time;
     let capture_delay_label = move || {
@@ -56,7 +56,7 @@ pub fn stop_timer(record_time_label: Label) {
 
 fn current_delay_time(delay_time: u64) -> String {
     let delay = secfmt::from(delay_time);
-    format!("{:02}:{:02}", delay.minutes, delay.seconds)
+    format!("{:02}", delay.seconds)
 }
 
 fn current_record_time(start_time: u64) -> String {
