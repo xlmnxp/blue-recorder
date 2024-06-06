@@ -126,7 +126,7 @@ show-mouse = Show Mouse
 website = Website
 
 # Tooltip
-about-tooltip = Blue Recorder information
+about-tooltip = Information about Blue Recorder
 area-tooltip = Select area to record
 audio-source-tooltip = Select audio source
 audio-tooltip = Audio recording
