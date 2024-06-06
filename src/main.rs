@@ -406,7 +406,6 @@ pub fn build_ui(application: &Application) {
                                                             .value().unwrap(), None, &mut vec![]).to_string()));
     delay_spin.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("delay-tooltip").unwrap()
                                                              .value().unwrap(), None, &mut vec![]).to_string()));
-    frames_spin.set_alignment(0.0);
     frames_spin.set_value(
         config_management::get("default", "frame")
             .parse::<f64>()
