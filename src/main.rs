@@ -144,12 +144,12 @@ pub fn build_ui(application: &Application) {
     // Get audio sources
     let sources_descriptions: Vec<String> = {
         let list_sources_child = Command::new("pactl")
-            .args(&["list", "sources"])
+            .args(["list", "sources"])
             .stdout(Stdio::piped())
             .spawn();
         let sources_descriptions = String::from_utf8(if let Ok(..) = list_sources_child {
             Command::new("grep")
-                .args(&["-e", "device.description"])
+                .args(["-e", "device.description"])
                 .stdin(list_sources_child.unwrap().stdout.take().unwrap())
                 .output()
                 .unwrap()
