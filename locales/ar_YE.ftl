@@ -21,16 +21,16 @@ address-salem-yaslem = Salem Yaslem <s@sy.sa>
 address-suliman-altassan = Suliman Altassan <suliman@dismail.de>
 address-william-grunow = William Grunow
 # sections
-authors = Created by:
-patreon = Patreon Supporters:
-design = Design by:
-translate = Translated by:
+authors = برمجه:
+patreon = الداعمين على پاتريون:
+design = صممه:
+translate = ترجمه:
 
 # Overwrite warning 
 already-exist = الملف موجود، أترغب بالكتابة عليه؟
 
 # Area select apply button
-apply = apply
+apply = طبق
 
 # Area select button
 area-chooser = محدد المنطقة
@@ -66,10 +66,10 @@ default-command = أمرٌ ينفذ عند الانتهاء:
 default-folder = المجلد الافتراضي:
 
 # Delay label
-delay = التأخير:
+delay = المهلة:
 
 # Delay message
-delay-title = Start Recording in…
+delay-title = سيبدأ التسجيل في غضون
 
 # Stop delay timer
 delay-window-stop = إيقاف
@@ -87,7 +87,7 @@ file-name = اسم الملفّ الافتراضي:
 file-name-overwritten = اسم الملف (سيُكتَبُ عليه)
 
 # Follow mouse label
-follow-mouse = متابعة مؤشر الفأرة
+follow-mouse = إبراز مؤشر الفأرة
 
 # Frames label
 frames = الإطارات:
@@ -95,9 +95,12 @@ frames = الإطارات:
 # License
 license-website = http://www.gnu.org/licenses/
 license =
- Blue Recorder is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
- Blue Recorder is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with Blue Recorder. If not, see { license-website }.
+المسجل الأزرق برمجية حُرَّة!
+لك فيه حرية إعادة توزيعه أو تعديله وفق ما تنص عليه رخصة جنو العمومية التي نشرتها مؤسسة البرمجيات الحرة، سواء كان الإصدار الثالث من الرخصة أو أي إصدار لاحق حسب رغبتك.
+
+نشرنا المسجل الأزرق وإننا راجون أن يُنتَفع به، لكن دون أي ضمان حتى الضمان الضمني لقابلية التسويق أو الملاءمة لغرض معين.
+
+لمزيد تفاصيل راجع رخصة جنو العمومية. إن لم تكن حصلت على نسخة من رخصة جنو العمومية مع المسجل الأزرق فانظر { license-website }.
 
 # Recording button
 record = سجل
@@ -123,23 +126,23 @@ stop-recording = إيقاف التسجيل
 show-mouse = إظهار مؤشر الفأرة
 
 # Website link
-website = Website
+website = الموقع
 
 # Tooltip
-about-tooltip = Blue Recorder information
-area-tooltip = Select area to record
-audio-source-tooltip = Select audio source
-audio-tooltip = Audio recording
-delay-tooltip = Delay time before starting record
-folder-tooltip = Select storage location
-follow-mouse-tooltip = Focus on mouse movement
-format-tooltip = Select file format
-frames-tooltip = Frames rate
-hide-tooltip = Hide window when start recording
-mouse-tooltip = Mouse appears in video recording
-record-tooltip = Start screen record
-screen-tooltip = Select screen to record
-stop-tooltip = Stop screen recording
-video-tooltip = Video recording
-wayland-tooltip = Not supported in Wayland
-window-tooltip = Select window to record
+about-tooltip = ما يُستَحسَنُ أن تعلمه عن المسجل الأزرق
+area-tooltip = يحدد المنطقة المُراد تسجيلها
+audio-source-tooltip = لاختيار مدخل الصوت
+audio-tooltip = يسجل مع الصوت
+delay-tooltip = مُهلة قبل بدء التسجيل
+folder-tooltip = لاختيار مكان التخزين
+follow-mouse-tooltip = يميز مؤشر الفأرة عند التسجيل
+format-tooltip = لاختيار صيغة الخَرج
+frames-tooltip = عدد الإطارات في الثانية
+hide-tooltip = لإخفاء نافذة المسجل الأزرق عند بدء التسجيل
+mouse-tooltip = يظهر مؤشر الفأرة عند التسجيل
+record-tooltip = يبدأ تسجيل الشاشة
+screen-tooltip = يحدد الشاشة ليسجلها
+stop-tooltip = وقف تسجيل الشاشة
+video-tooltip = يسجل الشاشة
+wayland-tooltip = غير مدعوم في وايلاند
+window-tooltip = يحدد نافذة ليسجلها
