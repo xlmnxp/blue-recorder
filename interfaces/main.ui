@@ -8,7 +8,7 @@
 		<property name="modal">True</property>
 	</object>
 	<object class="GtkAdjustment" id="adjustment1">
-		<property name="upper">10000</property>
+		<property name="upper">10</property>
 		<property name="step-increment">1</property>
 		<property name="page-increment">2</property>
 	</object>
@@ -108,7 +108,6 @@
 						<property name="vexpand">True</property>
 						<property name="hexpand">True</property>
 						<property name="visible">True</property>
-						<property name="label" translatable="yes">label</property>
 					</object>
 				</child>
 				<child type="bottom">
@@ -177,6 +176,7 @@
 								<property name="margin-end">5</property>
 								<property name="margin-top">5</property>
 								<property name="margin-bottom">5</property>
+								<property name="has-tooltip">True</property>
 								<child>
 									<object class="GtkBox">
 										<property name="visible">True</property>
@@ -207,6 +207,7 @@
 						<property name="margin-end">10</property>
 						<property name="margin-top">5</property>
 						<property name="margin-bottom">5</property>
+						<property name="has-tooltip">True</property>
 					</object>
 				</child>
 				<child>
@@ -227,6 +228,7 @@
 								<property name="margin-end">3</property>
 								<property name="margin-top">3</property>
 								<property name="margin-bottom">3</property>
+								<property name="has-tooltip">True</property>
 								<child>
 									<object class="GtkBox">
 										<property name="visible">True</property>
@@ -262,6 +264,7 @@
 								<property name="margin-top">3</property>
 								<property name="margin-bottom">3</property>
 								<property name="active">True</property>
+								<property name="has-tooltip">True</property>
 								<child>
 									<object class="GtkGrid">
 										<property name="visible">True</property>
@@ -296,6 +299,7 @@
 								<property name="margin-end">3</property>
 								<property name="margin-top">3</property>
 								<property name="margin-bottom">3</property>
+								<property name="has-tooltip">True</property>
 								<child>
 									<object class="GtkGrid">
 										<property name="visible">True</property>
@@ -344,6 +348,7 @@
 										<property name="can-focus">True</property>
 										<property name="receives-default">False</property>
 										<property name="active">True</property>
+										<property name="has-tooltip">True</property>
 									</object>
 								</child>
 								<child>
@@ -353,6 +358,7 @@
 										<property name="can-focus">True</property>
 										<property name="receives-default">False</property>
 										<property name="active">True</property>
+										<property name="has-tooltip">True</property>
 									</object>
 								</child>
 								<child>
@@ -362,6 +368,7 @@
 										<property name="can-focus">True</property>
 										<property name="receives-default">False</property>
 										<property name="active">True</property>
+										<property name="has-tooltip">True</property>
 										<layout>
 											<property name="column">0</property>
 											<property name="row">1</property>
@@ -375,6 +382,7 @@
 										<property name="can-focus">True</property>
 										<property name="receives-default">False</property>
 										<property name="active">True</property>
+										<property name="has-tooltip">True</property>
 										<layout>
 											<property name="column">1</property>
 											<property name="row">1</property>
@@ -388,6 +396,7 @@
 										<property name="can-focus">True</property>
 										<property name="receives-default">False</property>
 										<property name="active">False</property>
+										<property name="has-tooltip">True</property>
 										<layout>
 											<property name="column">0</property>
 											<property name="row">2</property>
@@ -425,8 +434,10 @@
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
 										<property name="max-width-chars">2</property>
-										<property name="text" translatable="yes">number</property>
+										<property name="width-chars">2</property>
+										<property name="text">number</property>
 										<property name="adjustment">adjustment2</property>
+										<property name="has-tooltip">True</property>
 									</object>
 								</child>
 								<child>
@@ -446,9 +457,11 @@
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
 										<property name="max-width-chars">2</property>
-										<property name="text" translatable="yes">number</property>
+										<property name="width-chars">2</property>
+										<property name="text">number</property>
 										<property name="adjustment">adjustment1</property>
 										<property name="climb-rate">1</property>
+										<property name="has-tooltip">True</property>
 										<layout>
 											<property name="column">1</property>
 											<property name="row">1</property>
@@ -528,6 +541,7 @@
 								<property name="margin-bottom">5</property>
 								<property name="hexpand">True</property>
 								<property name="vexpand">True</property>
+								<property name="has-tooltip">True</property>
 								<layout>
 									<property name="column">1</property>
 									<property name="row">0</property>
@@ -548,6 +562,7 @@
 						<property name="visible">True</property>
 						<property name="can-focus">True</property>
 						<property name="receives-default">True</property>
+						<property name="has-tooltip">True</property>
 						<child>
 							<object class="GtkGrid">
 								<property name="visible">True</property>
@@ -578,6 +593,7 @@
 						<property name="visible">True</property>
 						<property name="can-focus">True</property>
 						<property name="receives-default">True</property>
+						<property name="has-tooltip">True</property>
 						<child>
 							<object class="GtkGrid">
 								<property name="visible">True</property>
@@ -629,6 +645,7 @@
 						<property name="visible">True</property>
 						<property name="can-focus">True</property>
 						<property name="receives-default">True</property>
+						<property name="has-tooltip">True</property>
 					</object>
 				</child>
 			</object>

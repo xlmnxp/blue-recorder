@@ -10,7 +10,6 @@ async-std = {version = "1.12.0", features = ["attributes"]}
 chrono = "0.4.19"
 dark-light = "1.0.0"
 dirs = "4.0.0"
-fluent = "0.16.1"
 fluent-bundle = "0.15.3"
 filename = "0.1.1"
 gdk = { git = "https://github.com/gtk-rs/gtk4-rs.git", package = "gdk4"}

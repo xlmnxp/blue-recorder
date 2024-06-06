@@ -391,7 +391,6 @@ dependencies = [
  "dark-light",
  "dirs",
  "filename",
- "fluent",
  "fluent-bundle",
  "gdk-pixbuf 0.9.0",
  "gdk4 0.9.0",
@@ -769,16 +768,6 @@ checksum = "63e4df03effebdf9cfa31a663f569fd96cc7e206184b0d4dcd388dc490f7ebe8"
 dependencies = [
  "libc",
  "winapi",
-]
-
-[[package]]
-name = "fluent"
-version = "0.16.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb74634707bebd0ce645a981148e8fb8c7bccd4c33c652aeffd28bf2f96d555a"
-dependencies = [
- "fluent-bundle",
- "unic-langid",
 ]
 
 [[package]]
@@ -2604,7 +2593,7 @@ dependencies = [
  "serde",
  "serde_spanned",
  "toml_datetime",
- "winnow 0.6.9",
+ "winnow 0.6.11",
 ]
 
 [[package]]
@@ -2987,9 +2976,9 @@ dependencies = [
 
 [[package]]
 name = "winnow"
-version = "0.6.9"
+version = "0.6.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "86c949fede1d13936a99f14fafd3e76fd642b556dd2ce96287fbe2e0151bfac6"
+checksum = "56c52728401e1dc672a56e81e593e912aa54c78f40246869f78359a2bf24d29d"
 dependencies = [
  "memchr",
 ]

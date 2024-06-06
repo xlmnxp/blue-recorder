@@ -10,7 +10,7 @@ mod utils;
 
 use ffmpeg_interface::Ffmpeg;
 use fluent_bundle::bundle::FluentBundle;
-use fluent_bundle::{FluentArgs, FluentResource};
+use fluent_bundle::FluentResource;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::{
@@ -50,7 +50,7 @@ pub fn build_ui(application: &Application) {
     }.join(Path::new("locales"));
     if !ftl_path.exists() {
         ftl_path = std::fs::canonicalize(Path::new(
-            &std::env::var("LOCPATH").unwrap_or_else(|_| String::from("locales")),
+            &std::env::var("LC_DIR").unwrap_or_else(|_| String::from("locales")),
         )).unwrap();
     }
     let supported_lang: Vec<String> = std::fs::read_dir(&ftl_path)
@@ -61,7 +61,10 @@ pub fn build_ui(application: &Application) {
         }).collect();
     let mut locale = std::env::var("LANG").unwrap_or("en_US".to_string());
     if !supported_lang.contains(&locale) {
-        locale = String::from("en_US");
+        locale = locale.split('_').next().unwrap().to_string();
+        if !supported_lang.contains(&locale) {
+            locale = String::from("en_US");
+        }
     }
     let ftl_file = std::fs::read_to_string(
         format!("{}/{}.ftl", ftl_path.to_str().unwrap(),locale.split('.').next().unwrap())
@@ -134,12 +137,23 @@ pub fn build_ui(application: &Application) {
     stop_button.hide();
     play_button.hide();
 
+    // Comboboxs tooltip
+    audio_source_combobox.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("audio-source-tooltip").unwrap()
+                                                                       .value().unwrap(), None, &mut vec![]).to_string()));
+    format_chooser_combobox.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("format-tooltip").unwrap()
+                                                                         .value().unwrap(), None, &mut vec![]).to_string()));
+
     // Hide window grab button in Wayland
+    area_grab_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("area-tooltip").unwrap()
+                                                                  .value().unwrap(), None, &mut vec![]).to_string()));
+    // Temporary solution
     if is_wayland() {
-        area_grab_button.set_can_focus(false);
-        area_grab_button.set_can_target(false);
-        area_grab_button.add_css_class("disabled");
-        area_grab_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("wayland-msg").unwrap()
+        // Disabled for the tooltip
+        //area_grab_button.set_can_focus(false);
+        //area_grab_button.set_can_target(false);
+        //area_grab_button.add_css_class("disabled");
+        area_grab_button.set_sensitive(false);
+        area_grab_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("wayland-tooltip").unwrap()
                                                                       .value().unwrap(), None, &mut vec![]).to_string()));
     }
 
@@ -207,14 +221,24 @@ pub fn build_ui(application: &Application) {
     audio_source_combobox.set_active(Some(0));
 
     // Switchs
+    video_switch.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("video-tooltip").unwrap()
+                                                              .value().unwrap(), None, &mut vec![]).to_string()));
     video_switch.set_label(Some(&bundle.format_pattern(bundle.get_message("record-video").unwrap()
                                                        .value().unwrap(), None, &mut vec![]).to_string()));
+    audio_switch.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("audio-tooltip").unwrap()
+                                                              .value().unwrap(), None, &mut vec![]).to_string()));
     audio_switch.set_label(Some(&bundle.format_pattern(bundle.get_message("record-audio").unwrap()
                                                        .value().unwrap(), None, &mut vec![]).to_string()));
+    mouse_switch.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("mouse-tooltip").unwrap()
+                                                              .value().unwrap(), None, &mut vec![]).to_string()));
     mouse_switch.set_label(Some(&bundle.format_pattern(bundle.get_message("show-mouse").unwrap()
                                                        .value().unwrap(), None, &mut vec![]).to_string()));
+    follow_mouse_switch.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("follow-mouse-tooltip").unwrap()
+                                                              .value().unwrap(), None, &mut vec![]).to_string()));
     follow_mouse_switch.set_label(Some(&bundle.format_pattern(bundle.get_message("follow-mouse").unwrap()
                                                               .value().unwrap(), None, &mut vec![]).to_string()));
+    hide_switch.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("hide-tooltip").unwrap()
+                                                             .value().unwrap(), None, &mut vec![]).to_string()));
     hide_switch.set_label(Some(&bundle.format_pattern(bundle.get_message("auto-hide").unwrap()
                                                       .value().unwrap(), None, &mut vec![]).to_string()));
     video_switch.set_active(config_management::get_bool("default", "videocheck"));
@@ -378,6 +402,11 @@ pub fn build_ui(application: &Application) {
     }
 
     // Spin
+    frames_spin.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("frames-tooltip").unwrap()
+                                                            .value().unwrap(), None, &mut vec![]).to_string()));
+    delay_spin.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("delay-tooltip").unwrap()
+                                                             .value().unwrap(), None, &mut vec![]).to_string()));
+    frames_spin.set_alignment(0.0);
     frames_spin.set_value(
         config_management::get("default", "frame")
             .parse::<f64>()
@@ -404,20 +433,12 @@ pub fn build_ui(application: &Application) {
     });
 
     // Labels
-    let mut frames_value = FluentArgs::new();
-    frames_value.set("value", frames_spin.value());
-    let mut delay_time_value = FluentArgs::new();
-    delay_time_value.set("value", delay_spin.value());
     command_label.set_label(&bundle.format_pattern(bundle.get_message("run-command").unwrap()
                                                    .value().unwrap(), None, &mut vec![]).to_string());
     frames_label.set_label(&bundle.format_pattern(bundle.get_message("frames").unwrap()
                                                   .value().unwrap(), None, &mut vec![]).to_string());
-    frames_spin.set_text(&bundle.format_pattern(bundle.get_message("default-frames").unwrap()
-                                                 .value().unwrap(), Some(&frames_value), &mut vec![]).to_string());
     delay_label.set_label(&bundle.format_pattern(bundle.get_message("delay").unwrap()
                                                  .value().unwrap(), None, &mut vec![]).to_string());
-    delay_spin.set_text(&bundle.format_pattern(bundle.get_message("default-delay").unwrap()
-                                                 .value().unwrap(), Some(&delay_time_value), &mut vec![]).to_string());
     audio_source_label.set_label(&bundle.format_pattern(bundle.get_message("audio-source").unwrap()
                                                         .value().unwrap(), None, &mut vec![]).to_string());
 
@@ -444,6 +465,8 @@ pub fn build_ui(application: &Application) {
     folder_chooser_label.set_label(&folder_chooser_name.to_string_lossy());
     let folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
     folder_chooser_image.set_icon_name(Some(folder_chooser_icon));
+    folder_chooser_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("folder-tooltip").unwrap()
+                                                                       .value().unwrap(), None, &mut vec![]).to_string()));
     // Show file chooser dialog
     folder_chooser_button.connect_clicked(glib::clone!(@strong folder_chooser_native => move |_| {
             folder_chooser_native.connect_response(glib::clone!(@strong folder_chooser_native, @strong folder_chooser_label, @strong folder_chooser_image => move |_, response| {
@@ -463,6 +486,8 @@ pub fn build_ui(application: &Application) {
     // --- connections
     // Show dialog window when about button clicked then hide it after close
     let _about_dialog: AboutDialog = about_dialog.to_owned();
+    about_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("about-tooltip").unwrap()
+                                                              .value().unwrap(), None, &mut vec![]).to_string()));
     about_button.set_label(&bundle.format_pattern(bundle.get_message("about").unwrap()
                                                   .value().unwrap(), None, &mut vec![]).to_string());
     about_button.connect_clicked(move |_| {
@@ -495,6 +520,8 @@ pub fn build_ui(application: &Application) {
     let record_window: Rc<RefCell<bool>> = Rc::new(RefCell::new(false));
     let window_grab_button_record_window: Rc<RefCell<bool>> = record_window.clone();
     let screen_grab_button_record_window: Rc<RefCell<bool>> = record_window.clone();
+    screen_grab_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("screen-tooltip").unwrap()
+                                                                       .value().unwrap(), None, &mut vec![]).to_string()));
     screen_grab_label.set_label(&bundle.format_pattern(bundle.get_message("select-screen").unwrap()
                                                       .value().unwrap(), None, &mut vec![]).to_string());
     screen_grab_button.connect_clicked(move |_| {
@@ -505,6 +532,8 @@ pub fn build_ui(application: &Application) {
 
     let _area_chooser_window: Window = area_chooser_window.clone();
     let mut _area_capture: Rc<RefCell<area_capture::AreaCapture>> = area_capture.clone();
+    window_grab_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("window-tooltip").unwrap()
+                                                                       .value().unwrap(), None, &mut vec![]).to_string()));
     window_grab_label.set_label(&bundle.format_pattern(bundle.get_message("select-window").unwrap()
                                                        .value().unwrap(), None, &mut vec![]).to_string());
     window_grab_button.connect_clicked(move |_| {
@@ -558,6 +587,8 @@ pub fn build_ui(application: &Application) {
     let _record_button = record_button.clone();
     let _record_time_label = record_time_label.clone();
     let _stop_button = stop_button.clone();
+    record_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("record-tooltip").unwrap()
+                                                               .value().unwrap(), None, &mut vec![]).to_string()));
     record_label.set_label(&bundle.format_pattern(bundle.get_message("record").unwrap()
                                                    .value().unwrap(), None, &mut vec![]).to_string());
     delay_window_title.set_label(&bundle.format_pattern(bundle.get_message("delay-title").unwrap()
@@ -604,6 +635,8 @@ pub fn build_ui(application: &Application) {
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     let _play_button = play_button.clone();
     let _stop_button = stop_button.clone();
+    stop_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("stop-tooltip").unwrap()
+                                                             .value().unwrap(), None, &mut vec![]).to_string()));
     stop_label.set_label(&bundle.format_pattern(bundle.get_message("stop-recording").unwrap()
                                                 .value().unwrap(), None, &mut vec![]).to_string());
     stop_button.connect_clicked(move |_| {
@@ -647,27 +680,78 @@ pub fn build_ui(application: &Application) {
     about_dialog.set_program_name(Some(&bundle.format_pattern(bundle.get_message("blue-recorder").unwrap()
                                                               .value().unwrap(), None, &mut vec![]).to_string()));
     about_dialog.set_version(Some("0.2.0"));
-    about_dialog.set_copyright(Some("© 2021 Salem Yaslem"));
+    about_dialog.set_copyright(Some(&bundle.format_pattern(bundle.get_message("copy-right").unwrap()
+                                                           .value().unwrap(), None, &mut vec![]).to_string()));
     about_dialog.set_wrap_license(true);
-    about_dialog.set_license(Some("Blue Recorder is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\nBlue Recorder is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\nSee the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with Blue Recorder. If not, see <http://www.gnu.org/licenses/>."));
+    about_dialog.set_license(Some(&bundle.format_pattern(bundle.get_message("license").unwrap()
+                                                         .value().unwrap(), None, &mut vec![]).to_string()));
     about_dialog.set_comments(Some(&bundle.format_pattern(bundle.get_message("dialog-comment").unwrap()
                                                           .value().unwrap(), None, &mut vec![]).to_string()));
-    about_dialog.set_authors(&[
-        "Salem Yaslem <s@sy.sa>",
-        "M.Hanny Sabbagh <mhsabbagh@outlook.com>",
-        "Alessandro Toia <gort818@gmail.com>",
-        "Suliman Altassan <suliman@dismail.de>",
-        "O.Chibani <11yzyv86j@relay.firefox.com>",
-        "Patreon Supporters: Ahmad Gharib, Medium,\nWilliam Grunow, Alex Benishek.",
-    ]);
-    about_dialog.set_artists(&[
-        "Mustapha Assabar",
-        "Abdullah Al-Baroty <albaroty@gmail.com>",
-    ]);
-    // Translators: Replace "translator-credits" with your names, one name per line
-    about_dialog.set_translator_credits(Some(&bundle.format_pattern(bundle.get_message("translator-credits").unwrap()
-                                                                    .value().unwrap(), None, &mut vec![]).to_string()));
+    // Authors
+    about_dialog.add_credit_section(
+        &bundle.format_pattern(bundle.get_message("authors").unwrap()
+                               .value().unwrap(), None, &mut vec![]).to_string(),
+        &[&bundle.format_pattern(bundle.get_message("address-abdullah-al-baroty").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
+          &bundle.format_pattern(bundle.get_message("address-alessandro-toia").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
+          &bundle.format_pattern(bundle.get_message("address-chibani").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
+          &bundle.format_pattern(bundle.get_message("address-hanny-sabbagh").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
+          &bundle.format_pattern(bundle.get_message("address-salem-yaslem").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
+          &bundle.format_pattern(bundle.get_message("address-suliman-altassan").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
+       ]
+    );
+    // Patreon suppoters
+    about_dialog.add_credit_section(
+        &bundle.format_pattern(bundle.get_message("patreon").unwrap()
+                               .value().unwrap(), None, &mut vec![]).to_string(),
+        &[&bundle.format_pattern(bundle.get_message("address-ahmad-gharib").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
+          &bundle.format_pattern(bundle.get_message("address-medium").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
+          &bundle.format_pattern(bundle.get_message("address-william-grunow").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
+          &bundle.format_pattern(bundle.get_message("address-alex-benishek").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
+        ]
+    );
+    // Designers
+    about_dialog.add_credit_section(
+        &bundle.format_pattern(bundle.get_message("design").unwrap()
+                               .value().unwrap(), None, &mut vec![]).to_string(),
+        &[&bundle.format_pattern(bundle.get_message("address-abdullah-al-baroty").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
+          &bundle.format_pattern(bundle.get_message("address-mustapha-assabar").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
+        ]
+    );
+    // Translators
+    about_dialog.add_credit_section(
+        &bundle.format_pattern(bundle.get_message("translate").unwrap()
+                               .value().unwrap(), None, &mut vec![]).to_string(),
+        &[&bundle.format_pattern(bundle.get_message("address-ake-engelbrektson").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
+          &bundle.format_pattern(bundle.get_message("address-amerey").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
+          &bundle.format_pattern(bundle.get_message("address-gmou3").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
+          &bundle.format_pattern(bundle.get_message("address-larry-wei").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
+          &bundle.format_pattern(bundle.get_message("address-mark-wagie").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
+          &bundle.format_pattern(bundle.get_message("address-albanobattistella").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
+          &bundle.format_pattern(bundle.get_message("address-mr-Narsus").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
+       ]
+    );
     about_dialog.set_website(Some("https://github.com/xlmnxp/blue-recorder/"));
+    about_dialog.set_website_label(&bundle.format_pattern(bundle.get_message("website").unwrap()
+                                                          .value().unwrap(), None, &mut vec![]).to_string());
     about_dialog.set_logo_icon_name(Some("blue-recorder"));
     about_dialog.set_logo(logo.paintable().as_ref());
     about_dialog.set_modal(true);
