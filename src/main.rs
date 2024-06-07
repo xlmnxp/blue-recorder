@@ -22,10 +22,10 @@ use utils::is_wayland;
 use std::cell::RefCell;
 use std::ops::Add;
 use std::path::Path;
-use std::process::{Command, Stdio};
 use std::rc::Rc;
 use timer::{recording_delay, start_timer, stop_timer};
 use wayland_record::WaylandRecorder;
+use cpal::traits::{DeviceTrait, HostTrait};
 
 
 #[async_std::main]
@@ -39,8 +39,12 @@ async fn main() {
 pub fn build_ui(application: &Application) {
     gtk::init().expect("Failed to initialize GTK.");
 
+    // UI source
     let ui_src = include_str!("../interfaces/main.ui").to_string();
     let builder: Builder = Builder::from_string(ui_src.as_str());
+
+    // Init audio source
+    let host_audio_device = cpal::default_host();
 
     // Translate
     let mut ftl_path = {
@@ -186,7 +190,11 @@ pub fn build_ui(application: &Application) {
     format_chooser_combobox.set_active(Some(0));
 
     // Get audio sources
-    let sources_descriptions: Vec<String> = {
+    let input_device = host_audio_device.input_devices().unwrap();
+    let sources_descriptions: Vec<String> = input_device
+        .filter_map(|device| device.name().ok())
+        .collect();
+    /*let sources_descriptions: Vec<String> = {
         let list_sources_child = Command::new("pactl")
             .args(&["list", "sources"])
             .stdout(Stdio::piped())
@@ -211,7 +219,7 @@ pub fn build_ui(application: &Application) {
             })
             .filter(|s| !s.is_empty())
             .collect()
-    };
+    };*/
 
     audio_source_combobox.append(Some("default"), &bundle.format_pattern(bundle.get_message("audio-input").unwrap()
                                                                          .value().unwrap(), None, &mut vec![]).to_string());
