@@ -19,6 +19,7 @@ glib = "0.10.3"
 gstreamer = "0.20.5"
 gtk = { version = "0.4.6", package = "gtk4", features = ["v4_6"] }
 gtk-sys = "0.15"
+open = "5.1.4"
 regex = "1.4.3"
 rust-ini = "0.16"
 secfmt = "0.1.1"
