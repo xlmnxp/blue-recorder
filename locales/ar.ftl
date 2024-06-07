@@ -36,7 +36,7 @@ apply = طبق
 area-chooser = محدد المنطقة
 
 # Audio source input
-audio-input = مصدر صوت PulseAudio الافتراضي
+audio-input = مصدر الصوت الافتراضي
 
 # Audio source label
 audio-source = مدخل الصوت:

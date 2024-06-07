@@ -36,7 +36,7 @@ apply = Apply
 area-chooser = Area Chooser
 
 # Audio source input
-audio-input = Default PulseAudio Input Source
+audio-input = Default Input Source
 
 # Audio source label
 audio-source = Audio Input Source:
