@@ -336,10 +336,7 @@ impl Ffmpeg {
                     .spawn()
                     .unwrap();
             } else {
-                Command::new("xdg-open")
-                    .arg(self.saved_filename.unwrap())
-                    .spawn()
-                    .unwrap();
+                open::that(self.saved_filename.unwrap()).unwrap();
             }
         }
     }
