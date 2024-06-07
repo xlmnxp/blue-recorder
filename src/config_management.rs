@@ -81,7 +81,7 @@ pub fn get(selection: &str, key: &str) -> String {
         .join("blue-recorder")
         .join("config.ini");
     String::from(
-        Ini::load_from_file(&config_path)
+        Ini::load_from_file(config_path)
             .unwrap()
             .with_section(Some(selection))
             .get(key)
