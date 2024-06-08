@@ -10,15 +10,15 @@ A simple desktop recorder for Linux systems. Built using GTK4 and ffmpeg.
 - You can choose the audio input source you want from the list.
 - You can also set the default values you want by simply changing them in the interface, and the program will save them for you for the next time you open it. 
 
-it based on [Green Recorder](https://github.com/mhsabbagh/green-recorder) and rewritten in Rust with improvements
+It based on [Green Recorder](https://github.com/mhsabbagh/green-recorder) and rewritten in Rust with improvements.
 
 ## Installation
-Blue Recorder available as Snap and Flatpak package
+Blue Recorder available as Snap and Flatpak package:
 
 <a href='https://snapcraft.io/blue-recorder'><img height='60' alt='Get it from the Snap Store' src='https://snapcraft.io/static/images/badges/en/snap-store-black.svg'/></a> <a href='https://flathub.org/apps/details/sa.sy.bluerecorder'><img height='60' alt='Download on Flathub' src='https://flathub.org/assets/badges/flathub-badge-en.png'/></a>
 
 ## Build from source
-Blue Recorder depend in the following dependencies 
+Blue Recorder depend in the following dependencies:
 ```
 ffmpeg
 gtk
@@ -30,18 +30,18 @@ x11-utils
 pulseaudio
 ```
 
-install dependencies Ubuntu and Debian based distros
+Install dependencies Ubuntu and Debian based distros:
 ```
 sudo apt install build-essential clang cargo libappindicator3-1 x11-utils gettext pulseaudio ffmpeg
 ```
-the use `Cargo` to build it
+Then use `Cargo` to build it:
 ```
 git clone https://github.com/xlmnxp/blue-recorder
 cd <Project Directory>
 cargo build --release
 cp -a data interfaces po target/release
 ```
-then you will find the executable file at 
+Then you will find the executable file at: 
 `<Project Directory>/target/release/blue-recorder`
 
 ## License
@@ -53,4 +53,4 @@ License Contact: Free Software Foundation (fsf.org).
 SPDX short identifier: GPL-3.0-only
 Further resources...
 ```
-[read the license](LICENSE.md)
+[Read the license](LICENSE.md)
