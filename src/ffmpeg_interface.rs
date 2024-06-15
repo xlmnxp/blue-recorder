@@ -2,12 +2,14 @@ extern crate subprocess;
 use crate::utils::{is_snap, is_wayland};
 use crate::wayland_record::{CursorModeTypes, RecordTypes, WaylandRecorder};
 use chrono::prelude::*;
+use ffmpeg_sidecar::child::FfmpegChild;
+use ffmpeg_sidecar::command::FfmpegCommand;
 use gtk::{prelude::*, ResponseType};
 use gtk::{ButtonsType, DialogFlags, MessageDialog, MessageType};
 use gtk::{CheckButton, ComboBoxText, Entry, FileChooserNative, SpinButton, Window};
 use std::cell::RefCell;
 use std::path::PathBuf;
-use std::process::{Child, Command};
+use std::process::Command;
 use std::rc::Rc;
 use std::sync::mpsc::Sender;
 use std::thread::sleep;
@@ -26,8 +28,8 @@ pub struct Ffmpeg {
     pub record_frames: SpinButton,
     pub record_delay: SpinButton,
     pub command: Entry,
-    pub video_process: Option<Rc<RefCell<Child>>>,
-    pub audio_process: Option<Rc<RefCell<Child>>>,
+    pub video_process: Option<Rc<RefCell<FfmpegChild>>>,
+    pub audio_process: Option<Rc<RefCell<FfmpegChild>>>,
     pub saved_filename: Option<String>,
     pub unbound: Option<Sender<bool>>,
     pub window: Window,
@@ -36,6 +38,7 @@ pub struct Ffmpeg {
     pub main_context: gtk::glib::MainContext,
     pub temp_video_filename: String,
     pub bundle: String,
+    pub record_quality: SpinButton,
 }
 
 impl Ffmpeg {
@@ -82,27 +85,17 @@ impl Ffmpeg {
         }
 
         if self.record_video.is_active() && !is_wayland() {
-            let mut ffmpeg_command: Command = Command::new("ffmpeg");
+            let mut ffmpeg_command = FfmpegCommand::new();
 
             // record video with specified width and hight
-            ffmpeg_command.args([
-                "-video_size",
-                format!("{}x{}", width, height).as_str(),
-                "-framerate",
-                self.record_frames.value().to_string().as_str(),
-                "-f",
-                "x11grab",
-                "-i",
-                format!(
-                    "{}+{},{}",
-                    std::env::var("DISPLAY")
-                        .unwrap_or_else(|_| ":0".to_string())
-                        .as_str(),
-                    x,
-                    y
-                )
-                .as_str(),
-            ]);
+            ffmpeg_command.size(width.into(), height.into())
+                          .rate(self.record_frames.value() as f32)
+                          .format("x11grab")
+                          .input(format!("{}+{},{}", std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string())
+                                         .as_str(),
+                                         x,
+                                         y
+                          ));
 
             // if show mouse switch is enabled, draw the mouse to video
             ffmpeg_command.arg("-draw_mouse");
@@ -123,9 +116,8 @@ impl Ffmpeg {
                 self.filename.2.active_id().unwrap()
             );
 
+            ffmpeg_command.crf(self.record_quality.value() as u32);
             ffmpeg_command.args([
-                "-crf",
-                "1",
                 {
                     if self.record_audio.is_active() {
                         video_filename.as_str()
@@ -133,8 +125,8 @@ impl Ffmpeg {
                         self.saved_filename.as_ref().unwrap()
                     }
                 },
-                "-y",
             ]);
+            ffmpeg_command.overwrite();
 
             // sleep for delay
             sleep(Duration::from_secs(self.record_delay.value() as u64));
@@ -171,18 +163,15 @@ impl Ffmpeg {
         }
 
         if self.record_audio.is_active() {
-            let mut ffmpeg_command = Command::new("ffmpeg");
-            ffmpeg_command.arg("-f");
-            ffmpeg_command.arg("pulse");
-            ffmpeg_command.arg("-i");
-            ffmpeg_command.arg(&self.audio_id.active_id().unwrap());
-            ffmpeg_command.arg("-f");
-            ffmpeg_command.arg("ogg");
+            let mut ffmpeg_command = FfmpegCommand::new();
+            ffmpeg_command.format("pulse")
+                          .input(&self.audio_id.active_id().unwrap())
+                          .format("ogg");
             ffmpeg_command.arg(format!(
                 "{}.temp.audio",
                 self.saved_filename.as_ref().unwrap()
             ));
-            ffmpeg_command.arg("-y");
+            ffmpeg_command.overwrite();
             self.audio_process = Some(Rc::new(RefCell::new(ffmpeg_command.spawn().unwrap())));
         }
 
@@ -192,19 +181,11 @@ impl Ffmpeg {
     pub fn stop_record(&mut self) {
         // kill the process to stop recording
         if self.video_process.is_some() {
-            Command::new("kill")
-                .arg(format!(
-                    "{}",
-                    self.video_process.clone().unwrap().borrow_mut().id()
-                ))
-                .output()
-                .unwrap();
-
             self.video_process
                 .clone()
                 .unwrap()
                 .borrow_mut()
-                .wait()
+                .quit()
                 .unwrap();
 
             println!("video killed");
@@ -213,20 +194,13 @@ impl Ffmpeg {
         }
 
         if self.audio_process.is_some() {
-            Command::new("kill")
-                .arg(format!(
-                    "{}",
-                    self.audio_process.clone().unwrap().borrow_mut().id()
-                ))
-                .output()
-                .unwrap();
-
             self.audio_process
                 .clone()
                 .unwrap()
                 .borrow_mut()
-                .wait()
+                .quit()
                 .unwrap();
+
             println!("audio killed");
         }
 
@@ -252,20 +226,15 @@ impl Ffmpeg {
         if is_video_record {
             if is_wayland() {
                 // convert webm to specified format
-                Command::new("ffmpeg")
-                    .args([
-                        "-i",
-                        self.temp_video_filename
-                        .as_str(),
-                        "-crf",
-                        "23", // default quality
-                        "-c:a",
-                        self.filename.2.active_id().unwrap().as_str(),
-                        self.saved_filename.as_ref().unwrap(),
-                        "-y",
-                    ])
-                    .output()
-                    .unwrap();
+                let mut ffmpeg_command = FfmpegCommand::new();
+                ffmpeg_command.input(self.temp_video_filename.as_str())
+                              .crf(self.record_quality.value() as u32)
+                              .args([
+                                  "-c:a",
+                                  self.filename.2.active_id().unwrap().as_str(),
+                                  self.saved_filename.as_ref().unwrap(),
+                              ]).overwrite().spawn()
+                                .unwrap().wait().unwrap();
             } else {
                 let mut move_command = Command::new("mv");
                 move_command.args([
@@ -281,23 +250,20 @@ impl Ffmpeg {
 
             // if audio record, then merge video and audio
             if is_audio_record {
-                Command::new("ffmpeg")
-                    .args([
-                        "-i",
-                        video_filename.as_str(),
-                        "-f",
-                        "ogg",
-                        "-i",
-                        audio_filename.as_str(),
-                        "-crf",
-                        "23", // default quality
-                        "-c:a",
-                        "aac",
-                        self.saved_filename.as_ref().unwrap(),
-                        "-y",
-                    ])
-                    .output()
-                    .expect("failed to merge video and audio");
+                FfmpegCommand::new().input(video_filename.as_str())
+                                    .format("ogg")
+                                    .input(audio_filename.as_str())
+                                    .crf(self.record_quality.value() as u32)
+                                    .args([
+                                        "-c:a",
+                                        "aac",
+                                        self.saved_filename.as_ref().unwrap(),
+                                    ])
+                                    .overwrite()
+                                    .spawn()
+                                    .unwrap()
+                                    .wait()
+                                    .expect("failed to merge video and audio");
 
                 std::fs::remove_file(audio_filename).unwrap();
             }
@@ -306,16 +272,13 @@ impl Ffmpeg {
         }
         // if only audio is recording then convert it to chosen format
         else if is_audio_record {
-            Command::new("ffmpeg")
-                .args([
-                    "-f",
-                    "ogg",
-                    "-i",
-                    audio_filename.as_str(),
-                    self.saved_filename.as_ref().unwrap(),
-                ])
-                .output()
-                .expect("failed convert audio to video");
+            let mut ffmpeg_command = FfmpegCommand::new();
+            ffmpeg_command.format("ogg").input(audio_filename.as_str()).arg(
+                self.saved_filename.as_ref().unwrap(),
+            ).spawn()
+             .unwrap()
+             .wait()
+             .expect("failed convert audio to video");
 
             std::fs::remove_file(audio_filename).unwrap();
         }

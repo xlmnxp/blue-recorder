@@ -99,11 +99,17 @@ license =
  Blue Recorder is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with Blue Recorder. If not, see { license-website }.
 
+# Quality label
+quality = Quality:
+
 # Recording button
 record = Record
 
 # Record audio label
 record-audio = Record Audio
+
+# Record speaker label
+record-speaker = Record Speaker
 
 # Record video label
 record-video = Record Video
@@ -132,13 +138,15 @@ audio-source-tooltip = Select audio source
 audio-tooltip = Audio recording
 delay-tooltip = Delay time before starting record
 folder-tooltip = Select storage location
-follow-mouse-tooltip = Highlight Mouse
+follow-mouse-tooltip = Highlight mouse
 format-tooltip = Select file format
 frames-tooltip = Frames rate
 hide-tooltip = Hide window when start recording
 mouse-tooltip = Mouse appears in video recording
+quality-tooltip = Video quality (CRF)
 record-tooltip = Start screen record
 screen-tooltip = Select screen to record
+speaker-tooltip = Speakr sound recording
 stop-tooltip = Stop screen recording
 video-tooltip = Video recording
 wayland-tooltip = Not supported in Wayland
