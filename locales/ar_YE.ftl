@@ -102,11 +102,17 @@ license =
 
  لمزيد تفاصيل راجع رخصة جنو العمومية. إن لم تكن حصلت على نسخة من رخصة جنو العمومية مع المسجل الأزرق فانظر { license-website }.
 
+# Quality label
+quality = الجودة:
+
 # Recording button
 record = سجل
 
 # Record audio label
 record-audio = تسجيل الصوت
+
+# Record speaker label
+record-speaker = تسجيل المكبر
 
 # Record video label
 record-video = تسجيل الصورة
@@ -140,8 +146,10 @@ format-tooltip = لاختيار صيغة الخَرج
 frames-tooltip = عدد الإطارات في الثانية
 hide-tooltip = لإخفاء نافذة المسجل الأزرق عند بدء التسجيل
 mouse-tooltip = يظهر مؤشر الفأرة عند التسجيل
+quality-tooltip = جودة التسجيل (CRF)
 record-tooltip = يبدأ تسجيل الشاشة
 screen-tooltip = يحدد الشاشة ليسجلها
+speaker-tooltip = تسجيل صوت المكبر
 stop-tooltip = وقف تسجيل الشاشة
 video-tooltip = يسجل الشاشة
 wayland-tooltip = غير مدعوم في وايلاند

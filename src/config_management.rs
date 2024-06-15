@@ -29,6 +29,8 @@ pub fn initialize() -> PathBuf {
 fn default() {
     set("default", "frame", "60");
     set("default", "delay", "0");
+    set("default", "format", "0");
+    set("default", "quality", get_quality(&self::get("default", "format")));
     set(
         "default",
         "folder",
@@ -54,6 +56,7 @@ fn default() {
     set("default", "mousecheck", "1");
     set("default", "followmousecheck", "0");
     set("default", "hidecheck", "0");
+    set("default", "speakercheck", "0");
 }
 
 fn merge_previous_version() -> Option<PathBuf> {
@@ -124,4 +127,18 @@ pub fn folder_icon(folder_chooser_name: Option<&str>) -> &str {
             _ => "folder",
         }
     }
+}
+
+pub fn get_quality(format: &str) -> &str {
+    let crf = match format {
+        "0" => "23",
+        "1" => "23",
+        "2" => "10.0",
+        "3" => "23",
+        "4" => "23",
+        "5" => "23",
+        "6" => "23.0",
+        _=> "23", // Default value
+    };
+    crf
 }

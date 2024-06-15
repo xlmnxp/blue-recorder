@@ -81,7 +81,6 @@ pub fn build_ui(application: &Application) {
     config_management::initialize();
 
     // Get Objects from UI
-    let main_window: Window = builder.object("main_window").unwrap();
     let area_apply_label: Label = builder.object("area_apply").unwrap();
     let area_chooser_window: Window = builder.object("area_chooser_window").unwrap();
     let area_grab_button: ToggleButton = builder.object("area_grab_button").unwrap();
@@ -110,14 +109,18 @@ pub fn build_ui(application: &Application) {
     let frames_label: Label = builder.object("frames_label").unwrap();
     let frames_spin: SpinButton = builder.object("frames").unwrap();
     let hide_switch: CheckButton = builder.object("hideswitch").unwrap();
+    let main_window: Window = builder.object("main_window").unwrap();
     let mouse_switch: CheckButton = builder.object("mouseswitch").unwrap();
     let play_button: Button = builder.object("playbutton").unwrap();
+    let quality_label: Label = builder.object("quality_label").unwrap();
+    let quality_spin: SpinButton = builder.object("quality").unwrap();
     let record_button: Button = builder.object("recordbutton").unwrap();
     let record_label: Label = builder.object("record_label").unwrap();
     let record_time_label: Label = builder.object("record_time_label").unwrap();
     let screen_grab_button: ToggleButton = builder.object("screen_grab_button").unwrap();
     let screen_grab_icon: Image = builder.object("screen_grab_icon").unwrap();
     let screen_grab_label: Label = builder.object("screen_grab_label").unwrap();
+    let speaker_switch: CheckButton = builder.object("speakerswitch").unwrap();
     let stop_button: Button = builder.object("stopbutton").unwrap();
     let stop_label: Label = builder.object("stop_label").unwrap();
     let video_switch: CheckButton = builder.object("videoswitch").unwrap();
@@ -133,10 +136,6 @@ pub fn build_ui(application: &Application) {
     area_chooser_window.set_title(Some(&bundle.format_pattern(bundle.get_message("area-chooser").unwrap()
                                                               .value().unwrap(), None, &mut vec![]).to_string())); // Title is hidden
     
-    // disable interaction with main window
-    // main_window.set_can_focus(false);
-    // main_window.set_can_target(false);
-
     // Hide stop & play buttons
     stop_button.hide();
     play_button.hide();
@@ -169,7 +168,7 @@ pub fn build_ui(application: &Application) {
     filename_entry.set_text(&config_management::get("default", "filename"));
     command_entry.set_text(&config_management::get("default", "command"));
 
-    // CheckBox
+    // Format combobox
     format_chooser_combobox.append(Some("mp4"), &bundle.format_pattern(bundle.get_message("mp4-format").unwrap()
                                                                        .value().unwrap(), None, &mut vec![]).to_string());
     format_chooser_combobox.append(
@@ -187,39 +186,13 @@ pub fn build_ui(application: &Application) {
                                                                        .value().unwrap(), None, &mut vec![]).to_string());
     format_chooser_combobox.append(Some("nut"), &bundle.format_pattern(bundle.get_message("nut-format").unwrap()
                                                                        .value().unwrap(), None, &mut vec![]).to_string());
-    format_chooser_combobox.set_active(Some(0));
+    //format_chooser_combobox.set_active(Some(config_management::get("default", "format").parse::<u32>().unwrap()));
 
     // Get audio sources
     let input_device = host_audio_device.input_devices().unwrap();
     let sources_descriptions: Vec<String> = input_device
         .filter_map(|device| device.name().ok())
         .collect();
-    /*let sources_descriptions: Vec<String> = {
-        let list_sources_child = Command::new("pactl")
-            .args(&["list", "sources"])
-            .stdout(Stdio::piped())
-            .spawn();
-        let sources_descriptions = String::from_utf8(if let Ok(..) = list_sources_child {
-            Command::new("grep")
-                .args(&["-e", "device.description"])
-                .stdin(list_sources_child.unwrap().stdout.take().unwrap())
-                .output()
-                .unwrap()
-                .stdout
-        } else {
-            Vec::new()
-        })
-        .unwrap();
-        sources_descriptions
-            .split('\n')
-            .map(|s| {
-                s.trim()
-                    .replace("device.description = ", "")
-                    .replace('\"', "")
-            })
-            .filter(|s| !s.is_empty())
-            .collect()
-    };*/
 
     audio_source_combobox.append(Some("default"), &bundle.format_pattern(bundle.get_message("audio-input").unwrap()
                                                                          .value().unwrap(), None, &mut vec![]).to_string());
@@ -249,11 +222,16 @@ pub fn build_ui(application: &Application) {
                                                              .value().unwrap(), None, &mut vec![]).to_string()));
     hide_switch.set_label(Some(&bundle.format_pattern(bundle.get_message("auto-hide").unwrap()
                                                       .value().unwrap(), None, &mut vec![]).to_string()));
+    speaker_switch.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("speaker-tooltip").unwrap()
+                                                             .value().unwrap(), None, &mut vec![]).to_string()));
+    speaker_switch.set_label(Some(&bundle.format_pattern(bundle.get_message("record-speaker").unwrap()
+                                                      .value().unwrap(), None, &mut vec![]).to_string()));
     video_switch.set_active(config_management::get_bool("default", "videocheck"));
     audio_switch.set_active(config_management::get_bool("default", "audiocheck"));
     mouse_switch.set_active(config_management::get_bool("default", "mousecheck"));
     follow_mouse_switch.set_active(config_management::get_bool("default", "followmousecheck"));
     hide_switch.set_active(config_management::get_bool("default", "hidecheck"));
+    speaker_switch.set_active(config_management::get_bool("default", "speakercheck"));
 
     let _video_switch = video_switch.clone();
     let _audio_switch = audio_switch.clone();
@@ -294,6 +272,9 @@ pub fn build_ui(application: &Application) {
     });
     hide_switch.connect_toggled(|switch: &CheckButton| {
         config_management::set_bool("default", "hidecheck", switch.is_active());
+    });
+    speaker_switch.connect_toggled(|switch: &CheckButton| {
+        config_management::set_bool("default", "speakercheck", switch.is_active());
     });
 
     match dark_light::detect() {
@@ -414,17 +395,43 @@ pub fn build_ui(application: &Application) {
                                                             .value().unwrap(), None, &mut vec![]).to_string()));
     delay_spin.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("delay-tooltip").unwrap()
                                                              .value().unwrap(), None, &mut vec![]).to_string()));
+    quality_spin.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("quality-tooltip").unwrap()
+                                                              .value().unwrap(), None, &mut vec![]).to_string()));
     frames_spin.set_value(
         config_management::get("default", "frame")
             .parse::<f64>()
             .unwrap(),
     );
-
     delay_spin.set_value(
         config_management::get("default", "delay")
             .parse::<f64>()
             .unwrap(),
     );
+    //quality_spin.set_value(
+        //config_management::get("default", "quality")
+            //.parse::<f64>()
+            //.unwrap(),
+    //);
+
+    let _format_chooser_combobox = format_chooser_combobox.clone();
+    let _quality_spin = quality_spin.clone();
+    format_chooser_combobox.connect_changed(move |_| {
+        if _format_chooser_combobox.active_text().is_some() {
+            config_management::set(
+                "default",
+                "format",
+                &_format_chooser_combobox.active().unwrap().to_string(),
+            );
+            let quality_spin = _quality_spin.clone();
+            _quality_spin.connect_value_changed(move |_| {
+                config_management::set(
+                    "default",
+                    "quality",
+                    quality_spin.to_string().as_str(),
+                );
+            });
+        }
+    });
 
     let _frames_spin = frames_spin.to_owned();
     frames_spin.connect_value_changed(move |_| {
@@ -436,7 +443,17 @@ pub fn build_ui(application: &Application) {
     });
     let _delay_spin = delay_spin.to_owned();
     delay_spin.connect_value_changed(move |_| {
-        config_management::set("default", "delay", _delay_spin.value().to_string().as_str());
+        config_management::set("default",
+                               "delay",
+                               _delay_spin.value().to_string().as_str());
+    });
+    let _quality_spin = delay_spin.to_owned();
+    quality_spin.connect_value_changed(move |_| {
+        config_management::set(
+            "default",
+            "quality",
+            _quality_spin.value().to_string().as_str(),
+        );
     });
 
     // Labels
@@ -445,6 +462,8 @@ pub fn build_ui(application: &Application) {
     frames_label.set_label(&bundle.format_pattern(bundle.get_message("frames").unwrap()
                                                   .value().unwrap(), None, &mut vec![]).to_string());
     delay_label.set_label(&bundle.format_pattern(bundle.get_message("delay").unwrap()
+                                                 .value().unwrap(), None, &mut vec![]).to_string());
+    quality_label.set_label(&bundle.format_pattern(bundle.get_message("quality").unwrap()
                                                  .value().unwrap(), None, &mut vec![]).to_string());
     audio_source_label.set_label(&bundle.format_pattern(bundle.get_message("audio-source").unwrap()
                                                         .value().unwrap(), None, &mut vec![]).to_string());
@@ -583,6 +602,7 @@ pub fn build_ui(application: &Application) {
         main_context,
         temp_video_filename: String::new(),
         bundle: bundle_msg,
+        record_quality: quality_spin,
     }));
 
     // Record Button

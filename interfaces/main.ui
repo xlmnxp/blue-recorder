@@ -15,17 +15,12 @@
 	<object class="GtkAdjustment" id="adjustment2">
 		<property name="lower">1</property>
 		<property name="upper">200</property>
-		<property name="value">30</property>
 		<property name="step-increment">1</property>
 		<property name="page-increment">10</property>
 	</object>
 	<object class="GtkAdjustment" id="adjustment3">
-		<property name="upper">100</property>
-		<property name="step-increment">1</property>
-		<property name="page-increment">10</property>
-	</object>
-	<object class="GtkAdjustment" id="adjustment4">
-		<property name="upper">100</property>
+		<property name="lower">0</property>
+		<property name="upper">51</property>
 		<property name="step-increment">1</property>
 		<property name="page-increment">10</property>
 	</object>
@@ -404,6 +399,20 @@
 									</object>
 								</child>
 								<child>
+									<object class="GtkCheckButton" id="speakerswitch">
+										<property name="label" translatable="yes">checkbutton</property>
+										<property name="visible">True</property>
+										<property name="can-focus">True</property>
+										<property name="receives-default">False</property>
+										<property name="active">False</property>
+										<property name="has-tooltip">True</property>
+										<layout>
+											<property name="column">1</property>
+											<property name="row">2</property>
+										</layout>
+									</object>
+								</child>
+								<child>
 									<object class="GtkSeparator" id="followmouse-separator">
 										<property name="visible">True</property>
 										<property name="opacity">0.0</property>
@@ -478,6 +487,43 @@
 										</layout>
 									</object>
 								</child>
+								<child>
+									<object class="GtkLabel" id="quality_label">
+										<property name="visible">True</property>
+										<property name="can-focus">True</property>
+										<property name="label" translatable="yes">label</property>
+										<layout>
+											<property name="column">0</property>
+											<property name="row">2</property>
+										</layout>
+									</object>
+								</child>
+								<child>
+									<object class="GtkSpinButton" id="quality">
+										<property name="visible">True</property>
+										<property name="can-focus">True</property>
+										<property name="max-width-chars">2</property>
+										<property name="width-chars">2</property>
+										<property name="text">number</property>
+										<property name="adjustment">adjustment3</property>
+										<property name="climb-rate">1</property>
+										<property name="has-tooltip">True</property>
+										<layout>
+											<property name="column">1</property>
+											<property name="row">2</property>
+										</layout>
+									</object>
+								</child>
+								<child>
+									<object class="GtkSeparator" id="quality-separator">
+										<property name="visible">True</property>
+										<property name="opacity">0.0</property>
+										<layout>
+											<property name="column">1</property>
+											<property name="row">2</property>
+										</layout>
+									</object>
+								</child>
 							</object>
 						</child>
 					</object>
@@ -502,7 +548,7 @@
 								<property name="vexpand">True</property>
 								<layout>
 									<property name="column">1</property>
-									<property name="row">1</property>
+									<property name="row">2</property>
 								</layout>
 							</object>
 						</child>
@@ -515,7 +561,7 @@
 								<property name="label" translatable="yes">label</property>
 								<layout>
 									<property name="column">0</property>
-									<property name="row">1</property>
+									<property name="row">2</property>
 								</layout>
 							</object>
 						</child>
