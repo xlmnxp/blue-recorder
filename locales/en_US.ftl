@@ -106,7 +106,7 @@ quality = Quality:
 record = Record
 
 # Record audio label
-record-audio = Record Audio
+record-audio = Record Mic
 
 # Record speaker label
 record-speaker = Record Speaker
@@ -135,7 +135,7 @@ website = Website
 about-tooltip = Information about Blue Recorder
 area-tooltip = Select area to record
 audio-source-tooltip = Select audio source
-audio-tooltip = Audio recording
+audio-tooltip = Mic audio recording
 delay-tooltip = Delay time before starting record
 folder-tooltip = Select storage location
 follow-mouse-tooltip = Highlight mouse

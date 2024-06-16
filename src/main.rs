@@ -186,7 +186,7 @@ pub fn build_ui(application: &Application) {
                                                                        .value().unwrap(), None, &mut vec![]).to_string());
     format_chooser_combobox.append(Some("nut"), &bundle.format_pattern(bundle.get_message("nut-format").unwrap()
                                                                        .value().unwrap(), None, &mut vec![]).to_string());
-    //format_chooser_combobox.set_active(Some(config_management::get("default", "format").parse::<u32>().unwrap()));
+    format_chooser_combobox.set_active(Some(config_management::get("default", "format").parse::<u32>().unwrap()));
 
     // Get audio sources
     let input_device = host_audio_device.input_devices().unwrap();
@@ -407,29 +407,33 @@ pub fn build_ui(application: &Application) {
             .parse::<f64>()
             .unwrap(),
     );
-    //quality_spin.set_value(
-        //config_management::get("default", "quality")
-            //.parse::<f64>()
-            //.unwrap(),
-    //);
+    quality_spin.set_value(
+        config_management::get("default",
+                               &format!
+                               ("quality-{}",
+                                &format_chooser_combobox.active().unwrap().to_string()))
+            .parse::<f64>()
+            .unwrap(),
+    );
 
     let _format_chooser_combobox = format_chooser_combobox.clone();
     let _quality_spin = quality_spin.clone();
     format_chooser_combobox.connect_changed(move |_| {
+        let format_chooser_combobox = _format_chooser_combobox.clone();
         if _format_chooser_combobox.active_text().is_some() {
             config_management::set(
                 "default",
                 "format",
                 &_format_chooser_combobox.active().unwrap().to_string(),
             );
-            let quality_spin = _quality_spin.clone();
-            _quality_spin.connect_value_changed(move |_| {
-                config_management::set(
-                    "default",
-                    "quality",
-                    quality_spin.to_string().as_str(),
-                );
-            });
+            _quality_spin.set_value(
+                config_management::get("default",
+                                       &format!
+                                       ("quality-{}",
+                                        &format_chooser_combobox.active().unwrap().to_string()))
+                    .parse::<f64>()
+                    .unwrap(),
+            );
         }
     });
 
@@ -447,14 +451,15 @@ pub fn build_ui(application: &Application) {
                                "delay",
                                _delay_spin.value().to_string().as_str());
     });
-    let _quality_spin = delay_spin.to_owned();
+    let _quality_spin = quality_spin.to_owned();
+    let _format_chooser_combobox = format_chooser_combobox.clone();
     quality_spin.connect_value_changed(move |_| {
-        config_management::set(
-            "default",
-            "quality",
-            _quality_spin.value().to_string().as_str(),
-        );
-    });
+        config_management::set("default",
+                               &format!
+                               ("quality-{}",
+                                &_format_chooser_combobox.active().unwrap().to_string()),
+                               _quality_spin.value().to_string().as_str());
+     });
 
     // Labels
     command_label.set_label(&bundle.format_pattern(bundle.get_message("run-command").unwrap()

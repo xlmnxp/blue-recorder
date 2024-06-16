@@ -109,10 +109,10 @@ quality = الجودة:
 record = سجل
 
 # Record audio label
-record-audio = تسجيل الصوت
+record-audio = تسجيل صوت اللاقط
 
 # Record speaker label
-record-speaker = تسجيل المكبر
+record-speaker = تسجيل صوت المكبر
 
 # Record video label
 record-video = تسجيل الصورة
@@ -138,7 +138,7 @@ website = الموقع
 about-tooltip = ما يُستَحسَنُ أن تعلمه عن المسجل الأزرق
 area-tooltip = يحدد المنطقة المُراد تسجيلها
 audio-source-tooltip = لاختيار مدخل الصوت
-audio-tooltip = يسجل مع الصوت
+audio-tooltip = يسجل باستخدام مدخل الصوت
 delay-tooltip = مُهلة قبل بدء التسجيل
 folder-tooltip = لاختيار مكان التخزين
 follow-mouse-tooltip = يميز مؤشر الفأرة عند التسجيل
@@ -149,7 +149,7 @@ mouse-tooltip = يظهر مؤشر الفأرة عند التسجيل
 quality-tooltip = جودة التسجيل (CRF)
 record-tooltip = يبدأ تسجيل الشاشة
 screen-tooltip = يحدد الشاشة ليسجلها
-speaker-tooltip = تسجيل صوت المكبر
+speaker-tooltip = يسجل باستخدام مخرج الصوت
 stop-tooltip = وقف تسجيل الشاشة
 video-tooltip = يسجل الشاشة
 wayland-tooltip = غير مدعوم في وايلاند
