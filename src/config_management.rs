@@ -27,10 +27,12 @@ pub fn initialize() -> PathBuf {
 }
 
 fn default() {
+    for format in 0..7 {
+        set_default_quality(&format.to_string());
+    }
     set("default", "frame", "60");
     set("default", "delay", "0");
     set("default", "format", "0");
-    set("default", "quality", get_quality(&self::get("default", "format")));
     set(
         "default",
         "folder",
@@ -129,16 +131,16 @@ pub fn folder_icon(folder_chooser_name: Option<&str>) -> &str {
     }
 }
 
-pub fn get_quality(format: &str) -> &str {
+pub fn set_default_quality(format: &str) -> bool {
     let crf = match format {
-        "0" => "23",
-        "1" => "23",
-        "2" => "10.0",
-        "3" => "23",
-        "4" => "23",
-        "5" => "23",
-        "6" => "23.0",
-        _=> "23", // Default value
+        "0" => self::set("default", "quality-0", "23"),
+        "1" => self::set("default", "quality-1", "23"),
+        "2" => self::set("default", "quality-2", "10"),
+        "3" => self::set("default", "quality-3", "23"),
+        "4" => self::set("default", "quality-4", "23"),
+        "5" => self::set("default", "quality-5", "23"),
+        "6" => self::set("default", "quality-6", "23"),
+        _ => self::set("default", "quality-0", "23"), // Default value
     };
     crf
 }
