@@ -87,9 +87,16 @@ impl Ffmpeg {
         if self.record_video.is_active() && !is_wayland() {
             let mut ffmpeg_command = FfmpegCommand::new();
 
+            // if show mouse switch is enabled, draw the mouse to video
+            let draw_mouse = if self.record_mouse.is_active() {
+                "-draw_mouse 1"
+            } else {
+                "-draw_mouse 0"
+            };
+
             // record video with specified width and hight
             ffmpeg_command.size(width.into(), height.into())
-                          .format("x11grab")
+                          .format("x11grab").args(draw_mouse.split(' '))
                           .input(format!("{}+{},{}", std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string())
                                          .as_str(),
                                          x,
@@ -99,19 +106,6 @@ impl Ffmpeg {
             // Disable frame rate if value is zero
             if self.record_frames.value() > 0.0 {
                 ffmpeg_command.rate(self.record_frames.value() as f32);
-            }
-
-            // if show mouse switch is enabled, draw the mouse to video
-            if self.record_mouse.is_active() {
-                ffmpeg_command.args([
-                    "-draw_mouse",
-                    "1",
-                ]);
-            } else {
-                ffmpeg_command.args([
-                    "-draw_mouse",
-                    "0",
-                ]);
             }
 
             // if follow mouse switch is enabled, follow the mouse
@@ -133,6 +127,7 @@ impl Ffmpeg {
                 self.filename.2.active_id().unwrap()
             );
 
+            // Output
             ffmpeg_command.args([
                 {
                     if self.record_audio.is_active() {
