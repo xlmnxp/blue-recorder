@@ -102,8 +102,8 @@ license =
 
  لمزيد تفاصيل راجع رخصة جنو العمومية. إن لم تكن حصلت على نسخة من رخصة جنو العمومية مع المسجل الأزرق فانظر { license-website }.
 
-# Quality label
-quality = الجودة:
+# Bitrate label
+bitrate = معدل البت:
 
 # Recording button
 record = سجل
@@ -146,7 +146,7 @@ format-tooltip = لاختيار صيغة الخَرج
 frames-tooltip = عدد الإطارات في الثانية
 hide-tooltip = لإخفاء نافذة المسجل الأزرق عند بدء التسجيل
 mouse-tooltip = يظهر مؤشر الفأرة عند التسجيل
-quality-tooltip = جودة التسجيل (CRF)
+bitrate-tooltip = ضبط معدل البت بوحدة KB
 record-tooltip = يبدأ تسجيل الشاشة
 screen-tooltip = يحدد الشاشة ليسجلها
 speaker-tooltip = يسجل باستخدام مخرج الصوت

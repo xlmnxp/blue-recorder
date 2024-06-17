@@ -38,7 +38,7 @@ pub struct Ffmpeg {
     pub main_context: gtk::glib::MainContext,
     pub temp_video_filename: String,
     pub bundle: String,
-    pub record_quality: SpinButton,
+    pub record_bitrate: SpinButton,
 }
 
 impl Ffmpeg {
@@ -89,7 +89,6 @@ impl Ffmpeg {
 
             // record video with specified width and hight
             ffmpeg_command.size(width.into(), height.into())
-                          .rate(self.record_frames.value() as f32)
                           .format("x11grab")
                           .input(format!("{}+{},{}", std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string())
                                          .as_str(),
@@ -97,17 +96,35 @@ impl Ffmpeg {
                                          y
                           ));
 
+            // Disable frame rate if value is zero
+            if self.record_frames.value() > 0.0 {
+                ffmpeg_command.rate(self.record_frames.value() as f32);
+            }
+
             // if show mouse switch is enabled, draw the mouse to video
-            ffmpeg_command.arg("-draw_mouse");
             if self.record_mouse.is_active() {
-                ffmpeg_command.arg("1");
+                ffmpeg_command.args([
+                    "-draw_mouse",
+                    "1",
+                ]);
             } else {
-                ffmpeg_command.arg("0");
+                ffmpeg_command.args([
+                    "-draw_mouse",
+                    "0",
+                ]);
             }
 
             // if follow mouse switch is enabled, follow the mouse
             if self.follow_mouse.is_active() {
                 ffmpeg_command.args(["-follow_mouse", "centered"]);
+            }
+
+            // Disable bitrate if value is zero
+            if self.record_bitrate.value() > 0.0 {
+                ffmpeg_command.args([
+                    "-b:v",
+                    &format!("{}K", self.record_bitrate.value()),
+                ]);
             }
 
             let video_filename = format!(
@@ -116,7 +133,6 @@ impl Ffmpeg {
                 self.filename.2.active_id().unwrap()
             );
 
-            ffmpeg_command.crf(self.record_quality.value() as u32);
             ffmpeg_command.args([
                 {
                     if self.record_audio.is_active() {
@@ -227,14 +243,20 @@ impl Ffmpeg {
             if is_wayland() {
                 // convert webm to specified format
                 let mut ffmpeg_command = FfmpegCommand::new();
-                ffmpeg_command.input(self.temp_video_filename.as_str())
-                              .crf(self.record_quality.value() as u32)
-                              .args([
-                                  "-c:a",
-                                  self.filename.2.active_id().unwrap().as_str(),
-                                  self.saved_filename.as_ref().unwrap(),
-                              ]).overwrite().spawn()
-                                .unwrap().wait().unwrap();
+                ffmpeg_command.input(self.temp_video_filename.as_str());
+                if self.record_bitrate.value() > 0.0 {
+                    ffmpeg_command.args([
+                        "-b:v",
+                        &format!("{}K", self.record_bitrate.value()),
+                    ]);
+                }
+                ffmpeg_command.args([
+                    "-c:a",
+                    self.filename.2.active_id().unwrap().as_str(),
+                    self.saved_filename.as_ref().unwrap(),
+                ]).overwrite()
+                  .spawn()
+                  .unwrap().wait().unwrap();
             } else {
                 let mut move_command = Command::new("mv");
                 move_command.args([
@@ -253,7 +275,6 @@ impl Ffmpeg {
                 FfmpegCommand::new().input(video_filename.as_str())
                                     .format("ogg")
                                     .input(audio_filename.as_str())
-                                    .crf(self.record_quality.value() as u32)
                                     .args([
                                         "-c:a",
                                         "aac",
