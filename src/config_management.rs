@@ -28,9 +28,9 @@ pub fn initialize() -> PathBuf {
 
 fn default() {
     for format in 0..7 {
-        set_default_quality(&format.to_string());
+        set_default_bitrate(&format.to_string());
+        set_default_frame(&format.to_string());
     }
-    set("default", "frame", "60");
     set("default", "delay", "0");
     set("default", "format", "0");
     set(
@@ -131,16 +131,30 @@ pub fn folder_icon(folder_chooser_name: Option<&str>) -> &str {
     }
 }
 
-pub fn set_default_quality(format: &str) -> bool {
-    let crf = match format {
-        "0" => self::set("default", "quality-0", "23"),
-        "1" => self::set("default", "quality-1", "23"),
-        "2" => self::set("default", "quality-2", "10"),
-        "3" => self::set("default", "quality-3", "23"),
-        "4" => self::set("default", "quality-4", "23"),
-        "5" => self::set("default", "quality-5", "23"),
-        "6" => self::set("default", "quality-6", "23"),
-        _ => self::set("default", "quality-0", "23"), // Default value
+pub fn set_default_bitrate(format: &str) -> bool {
+    let rate = match format {
+        "0" => self::set("default", "bitrate-0", "0"),
+        "1" => self::set("default", "bitrate-1", "0"),
+        "2" => self::set("default", "bitrate-2", "0"),
+        "3" => self::set("default", "bitrate-3", "0"),
+        "4" => self::set("default", "bitrate-4", "0"),
+        "5" => self::set("default", "bitrate-5", "0"),
+        "6" => self::set("default", "bitrate-6", "0"),
+        _ => self::set("default", "bitrate-0", "0"), // Default value
     };
-    crf
+    rate
+}
+
+pub fn set_default_frame(format: &str) -> bool {
+    let rate = match format {
+        "0" => self::set("default", "frame-0", "60"),
+        "1" => self::set("default", "frame-1", "60"),
+        "2" => self::set("default", "frame-2", "60"),
+        "3" => self::set("default", "frame-3", "60"),
+        "4" => self::set("default", "frame-4", "60"),
+        "5" => self::set("default", "frame-5", "60"),
+        "6" => self::set("default", "frame-6", "60"),
+        _ => self::set("default", "frame-0", "60"), // Default value
+    };
+    rate
 }

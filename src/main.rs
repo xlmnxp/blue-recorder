@@ -112,8 +112,8 @@ pub fn build_ui(application: &Application) {
     let main_window: Window = builder.object("main_window").unwrap();
     let mouse_switch: CheckButton = builder.object("mouseswitch").unwrap();
     let play_button: Button = builder.object("playbutton").unwrap();
-    let quality_label: Label = builder.object("quality_label").unwrap();
-    let quality_spin: SpinButton = builder.object("quality").unwrap();
+    let bitrate_label: Label = builder.object("bitrate_label").unwrap();
+    let bitrate_spin: SpinButton = builder.object("bitrate").unwrap();
     let record_button: Button = builder.object("recordbutton").unwrap();
     let record_label: Label = builder.object("record_label").unwrap();
     let record_time_label: Label = builder.object("record_time_label").unwrap();
@@ -395,10 +395,13 @@ pub fn build_ui(application: &Application) {
                                                             .value().unwrap(), None, &mut vec![]).to_string()));
     delay_spin.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("delay-tooltip").unwrap()
                                                              .value().unwrap(), None, &mut vec![]).to_string()));
-    quality_spin.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("quality-tooltip").unwrap()
+    bitrate_spin.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("bitrate-tooltip").unwrap()
                                                               .value().unwrap(), None, &mut vec![]).to_string()));
     frames_spin.set_value(
-        config_management::get("default", "frame")
+        config_management::get("default",
+                               &format!
+                               ("frame-{}",
+                                &format_chooser_combobox.active().unwrap().to_string()))
             .parse::<f64>()
             .unwrap(),
     );
@@ -407,17 +410,18 @@ pub fn build_ui(application: &Application) {
             .parse::<f64>()
             .unwrap(),
     );
-    quality_spin.set_value(
+    bitrate_spin.set_value(
         config_management::get("default",
                                &format!
-                               ("quality-{}",
+                               ("bitrate-{}",
                                 &format_chooser_combobox.active().unwrap().to_string()))
             .parse::<f64>()
             .unwrap(),
     );
 
     let _format_chooser_combobox = format_chooser_combobox.clone();
-    let _quality_spin = quality_spin.clone();
+    let _frames_spin = frames_spin.clone();
+    let _bitrate_spin = bitrate_spin.clone();
     format_chooser_combobox.connect_changed(move |_| {
         let format_chooser_combobox = _format_chooser_combobox.clone();
         if _format_chooser_combobox.active_text().is_some() {
@@ -426,10 +430,18 @@ pub fn build_ui(application: &Application) {
                 "format",
                 &_format_chooser_combobox.active().unwrap().to_string(),
             );
-            _quality_spin.set_value(
+            _frames_spin.set_value(
                 config_management::get("default",
                                        &format!
-                                       ("quality-{}",
+                                       ("frame-{}",
+                                        &format_chooser_combobox.active().unwrap().to_string()))
+                    .parse::<f64>()
+                    .unwrap(),
+            );
+            _bitrate_spin.set_value(
+                config_management::get("default",
+                                       &format!
+                                       ("bitrate-{}",
                                         &format_chooser_combobox.active().unwrap().to_string()))
                     .parse::<f64>()
                     .unwrap(),
@@ -438,12 +450,13 @@ pub fn build_ui(application: &Application) {
     });
 
     let _frames_spin = frames_spin.to_owned();
+    let _format_chooser_combobox = format_chooser_combobox.clone();
     frames_spin.connect_value_changed(move |_| {
-        config_management::set(
-            "default",
-            "frame",
-            _frames_spin.value().to_string().as_str(),
-        );
+        config_management::set("default",
+                               &format!
+                               ("frame-{}",
+                                &_format_chooser_combobox.active().unwrap().to_string()),
+                               _frames_spin.value().to_string().as_str());
     });
     let _delay_spin = delay_spin.to_owned();
     delay_spin.connect_value_changed(move |_| {
@@ -451,14 +464,14 @@ pub fn build_ui(application: &Application) {
                                "delay",
                                _delay_spin.value().to_string().as_str());
     });
-    let _quality_spin = quality_spin.to_owned();
+    let _bitrate_spin = bitrate_spin.to_owned();
     let _format_chooser_combobox = format_chooser_combobox.clone();
-    quality_spin.connect_value_changed(move |_| {
+    bitrate_spin.connect_value_changed(move |_| {
         config_management::set("default",
                                &format!
-                               ("quality-{}",
+                               ("bitrate-{}",
                                 &_format_chooser_combobox.active().unwrap().to_string()),
-                               _quality_spin.value().to_string().as_str());
+                               _bitrate_spin.value().to_string().as_str());
      });
 
     // Labels
@@ -468,7 +481,7 @@ pub fn build_ui(application: &Application) {
                                                   .value().unwrap(), None, &mut vec![]).to_string());
     delay_label.set_label(&bundle.format_pattern(bundle.get_message("delay").unwrap()
                                                  .value().unwrap(), None, &mut vec![]).to_string());
-    quality_label.set_label(&bundle.format_pattern(bundle.get_message("quality").unwrap()
+    bitrate_label.set_label(&bundle.format_pattern(bundle.get_message("bitrate").unwrap()
                                                  .value().unwrap(), None, &mut vec![]).to_string());
     audio_source_label.set_label(&bundle.format_pattern(bundle.get_message("audio-source").unwrap()
                                                         .value().unwrap(), None, &mut vec![]).to_string());
@@ -607,7 +620,7 @@ pub fn build_ui(application: &Application) {
         main_context,
         temp_video_filename: String::new(),
         bundle: bundle_msg,
-        record_quality: quality_spin,
+        record_bitrate: bitrate_spin,
     }));
 
     // Record Button

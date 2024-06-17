@@ -99,8 +99,8 @@ license =
  Blue Recorder is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with Blue Recorder. If not, see { license-website }.
 
-# Quality label
-quality = Quality:
+# Bitrate label
+bitrate = Bitrate:
 
 # Recording button
 record = Record
@@ -143,7 +143,7 @@ format-tooltip = Select file format
 frames-tooltip = Frames rate
 hide-tooltip = Hide window when start recording
 mouse-tooltip = Mouse appears in video recording
-quality-tooltip = Video quality (CRF)
+bitrate-tooltip = Set video bitrate in KB
 record-tooltip = Start screen record
 screen-tooltip = Select screen to record
 speaker-tooltip = Speakr sound recording
