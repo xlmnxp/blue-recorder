@@ -258,7 +258,6 @@
 								<property name="margin-end">3</property>
 								<property name="margin-top">3</property>
 								<property name="margin-bottom">3</property>
-								<property name="active">True</property>
 								<property name="has-tooltip">True</property>
 								<child>
 									<object class="GtkGrid">

@@ -1,4 +1,5 @@
 extern crate subprocess;
+use crate::config_management;
 use crate::utils::{is_snap, is_wayland};
 use crate::wayland_record::{CursorModeTypes, RecordTypes, WaylandRecorder};
 use chrono::prelude::*;
@@ -85,33 +86,45 @@ impl Ffmpeg {
         }
 
         if self.record_video.is_active() && !is_wayland() {
+            let mode = config_management::get("default", "mode");
+            let format = "x11grab";
+            let display = format!("{}+{},{}",
+                                  std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string())
+                                  .as_str(),
+                                  x,
+                                  y
+            );
             let mut ffmpeg_command = FfmpegCommand::new();
 
-            // if show mouse switch is enabled, draw the mouse to video
-            let draw_mouse = if self.record_mouse.is_active() {
-                "-draw_mouse 1"
-            } else {
-                "-draw_mouse 0"
-            };
-
             // record video with specified width and hight
-            ffmpeg_command.size(width.into(), height.into())
-                          .format("x11grab").args(draw_mouse.split(' '))
-                          .input(format!("{}+{},{}", std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string())
-                                         .as_str(),
-                                         x,
-                                         y
-                          ));
-
-            // Disable frame rate if value is zero
-            if self.record_frames.value() > 0.0 {
-                ffmpeg_command.rate(self.record_frames.value() as f32);
+            if self.follow_mouse.is_active() && mode.as_str() == "screen" {
+                let width = width as f32 * 0.95;
+                let height = height as f32 * 0.95;
+                ffmpeg_command.size(width as u32, height as u32);
+            } else {
+                ffmpeg_command.size(width.into(), height.into());
             }
+
+            // if show mouse switch is enabled, draw the mouse to video
+            if self.record_mouse.is_active() {
+                ffmpeg_command.args(["-draw_mouse", "1"]);
+            } else {
+                ffmpeg_command.args(["-draw_mouse", "0"]);
+            };
 
             // if follow mouse switch is enabled, follow the mouse
             if self.follow_mouse.is_active() {
                 ffmpeg_command.args(["-follow_mouse", "centered"]);
             }
+
+            // Disable frame rate if value is zero
+            if self.record_frames.value() > 0.0 {
+                ffmpeg_command.args(["-framerate", &self.record_frames.value().to_string()]);
+            }
+
+            // Video format && input
+            ffmpeg_command.format(format)
+                          .input(display);
 
             // Disable bitrate if value is zero
             if self.record_bitrate.value() > 0.0 {

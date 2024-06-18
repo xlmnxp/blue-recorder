@@ -87,7 +87,7 @@ file-name = اسم الملفّ الافتراضي:
 file-name-overwritten = اسم الملف (سيُكتَبُ عليه)
 
 # Follow mouse label
-follow-mouse = إبراز مؤشر الفأرة
+follow-mouse = Follow Mouse
 
 # Frames label
 frames = الإطارات:
@@ -103,16 +103,16 @@ license =
  لمزيد تفاصيل راجع رخصة جنو العمومية. إن لم تكن حصلت على نسخة من رخصة جنو العمومية مع المسجل الأزرق فانظر { license-website }.
 
 # Bitrate label
-bitrate = معدل البت:
+bitrate = Bitrate:
 
 # Recording button
 record = سجل
 
 # Record audio label
-record-audio = تسجيل صوت اللاقط
+record-audio = Record Mic
 
 # Record speaker label
-record-speaker = تسجيل صوت المكبر
+record-speaker = Record Speaker
 
 # Record video label
 record-video = تسجيل الصورة
@@ -138,18 +138,18 @@ website = الموقع
 about-tooltip = ما يُستَحسَنُ أن تعلمه عن المسجل الأزرق
 area-tooltip = يحدد المنطقة المُراد تسجيلها
 audio-source-tooltip = لاختيار مدخل الصوت
-audio-tooltip = يسجل باستخدام مدخل الصوت
+audio-tooltip = Mic audio recording
 delay-tooltip = مُهلة قبل بدء التسجيل
 folder-tooltip = لاختيار مكان التخزين
-follow-mouse-tooltip = يميز مؤشر الفأرة عند التسجيل
+follow-mouse-tooltip = Make the grabbed area follow the mouse
 format-tooltip = لاختيار صيغة الخَرج
 frames-tooltip = عدد الإطارات في الثانية
 hide-tooltip = لإخفاء نافذة المسجل الأزرق عند بدء التسجيل
 mouse-tooltip = يظهر مؤشر الفأرة عند التسجيل
-bitrate-tooltip = ضبط معدل البت بوحدة KB
+bitrate-tooltip = Set video bitrate in KB/s
 record-tooltip = يبدأ تسجيل الشاشة
 screen-tooltip = يحدد الشاشة ليسجلها
-speaker-tooltip = يسجل باستخدام مخرج الصوت
+speaker-tooltip = Speakr sound recording
 stop-tooltip = وقف تسجيل الشاشة
 video-tooltip = يسجل الشاشة
 wayland-tooltip = غير مدعوم في وايلاند

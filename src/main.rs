@@ -140,13 +140,16 @@ pub fn build_ui(application: &Application) {
     stop_button.hide();
     play_button.hide();
 
+    // Toggle button
+    config_management::set("default", "mode", "screen");
+    screen_grab_button.set_active(true);
+
     // Comboboxs tooltip
     audio_source_combobox.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("audio-source-tooltip").unwrap()
                                                                        .value().unwrap(), None, &mut vec![]).to_string()));
     format_chooser_combobox.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("format-tooltip").unwrap()
                                                                          .value().unwrap(), None, &mut vec![]).to_string()));
 
-    // Hide window grab button in Wayland
     area_grab_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("area-tooltip").unwrap()
                                                                   .value().unwrap(), None, &mut vec![]).to_string()));
     // Temporary solution
@@ -156,6 +159,7 @@ pub fn build_ui(application: &Application) {
         //area_grab_button.set_can_target(false);
         //area_grab_button.add_css_class("disabled");
         area_grab_button.set_sensitive(false);
+        // Hide window grab button in Wayland
         area_grab_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("wayland-tooltip").unwrap()
                                                                       .value().unwrap(), None, &mut vec![]).to_string()));
     }
@@ -241,23 +245,19 @@ pub fn build_ui(application: &Application) {
         config_management::set_bool("default", "videocheck", switch.is_active());
         if switch.is_active() {
             _mouse_switch.set_sensitive(true);
+            _follow_mouse_switch.set_sensitive(true);
         } else {
             _mouse_switch.set_sensitive(false);
             _follow_mouse_switch.set_sensitive(false);
             _audio_switch.set_active(true);
             _audio_switch.set_sensitive(true);
             _mouse_switch.set_active(false);
+            _follow_mouse_switch.set_active(false);
         }
     });
     let _follow_mouse_switch = follow_mouse_switch.clone();
     mouse_switch.connect_toggled(move |switch: &CheckButton| {
         config_management::set_bool("default", "mousecheck", switch.is_active());
-        if switch.is_active() {
-            _follow_mouse_switch.set_sensitive(true);
-        } else {
-            _follow_mouse_switch.set_active(false);
-            _follow_mouse_switch.set_sensitive(false);
-        }
     });
     let _mouse_switch = mouse_switch.clone();
     audio_switch.connect_toggled(move |switch: &CheckButton| {
@@ -548,6 +548,7 @@ pub fn build_ui(application: &Application) {
     area_grab_label.set_label(&bundle.format_pattern(bundle.get_message("select-area").unwrap()
                                                   .value().unwrap(), None, &mut vec![]).to_string());
     area_grab_button.connect_clicked(move |_| {
+        config_management::set("default", "mode", "area");
         _area_chooser_window.show();
     });
 
@@ -556,6 +557,9 @@ pub fn build_ui(application: &Application) {
     area_apply_label.set_label(&bundle.format_pattern(bundle.get_message("apply").unwrap()
                                                       .value().unwrap(), None, &mut vec![]).to_string());
     area_set_button.connect_clicked(move |_| {
+        _area_capture
+            .borrow_mut()
+            .get_window_by_name(_area_chooser_window.title().unwrap().as_str());
         _area_chooser_window.hide();
     });
 
@@ -569,6 +573,7 @@ pub fn build_ui(application: &Application) {
     screen_grab_label.set_label(&bundle.format_pattern(bundle.get_message("select-screen").unwrap()
                                                       .value().unwrap(), None, &mut vec![]).to_string());
     screen_grab_button.connect_clicked(move |_| {
+        config_management::set("default", "mode", "screen");
         screen_grab_button_record_window.replace(false);
         _area_chooser_window.hide();
         _area_capture.borrow_mut().reset();
@@ -581,6 +586,7 @@ pub fn build_ui(application: &Application) {
     window_grab_label.set_label(&bundle.format_pattern(bundle.get_message("select-window").unwrap()
                                                        .value().unwrap(), None, &mut vec![]).to_string());
     window_grab_button.connect_clicked(move |_| {
+        config_management::set("default", "mode", "window");
         _area_chooser_window.hide();
         if is_wayland() {
             window_grab_button_record_window.replace(true);
