@@ -7,18 +7,18 @@
 		<property name="logo-icon-name">blue-recorder</property>
 		<property name="modal">True</property>
 	</object>
-	<object class="GtkAdjustment" id="adjustment-delay">
+	<object class="GtkAdjustment" id="adjustment_delay">
 		<property name="upper">10</property>
 		<property name="step-increment">1</property>
 		<property name="page-increment">2</property>
 	</object>
-	<object class="GtkAdjustment" id="adjustment-frames">
+	<object class="GtkAdjustment" id="adjustment_frames">
 		<property name="lower">0</property>
 		<property name="upper">240</property>
 		<property name="step-increment">1</property>
 		<property name="page-increment">10</property>
 	</object>
-	<object class="GtkAdjustment" id="adjustment-bitrate">
+	<object class="GtkAdjustment" id="adjustment_bitrate">
 		<property name="lower">0</property>
 		<property name="upper">50000</property>
 		<property name="step-increment">1</property>
@@ -434,7 +434,7 @@
 										<property name="max-width-chars">2</property>
 										<property name="width-chars">2</property>
 										<property name="text">number</property>
-										<property name="adjustment">adjustment-frames</property>
+										<property name="adjustment">adjustment_frames</property>
 										<property name="has-tooltip">True</property>
 									</object>
 								</child>
@@ -457,7 +457,7 @@
 										<property name="max-width-chars">2</property>
 										<property name="width-chars">2</property>
 										<property name="text">number</property>
-										<property name="adjustment">adjustment-delay</property>
+										<property name="adjustment">adjustment_delay</property>
 										<property name="climb-rate">1</property>
 										<property name="has-tooltip">True</property>
 										<layout>
@@ -467,7 +467,7 @@
 									</object>
 								</child>
 								<child>
-									<object class="GtkSeparator" id="delay-separator">
+									<object class="GtkSeparator" id="delay_separator">
 										<property name="visible">True</property>
 										<property name="opacity">0.0</property>
 										<layout>
@@ -477,7 +477,7 @@
 									</object>
 								</child>
 								<child>
-									<object class="GtkLabel" id="bitrate_label">
+									<object class="GtkLabel" id="video_bitrate_label">
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
 										<property name="label" translatable="yes">label</property>
@@ -488,13 +488,13 @@
 									</object>
 								</child>
 								<child>
-									<object class="GtkSpinButton" id="bitrate">
+									<object class="GtkSpinButton" id="video_bitrate">
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
 										<property name="max-width-chars">2</property>
 										<property name="width-chars">2</property>
 										<property name="text">number</property>
-										<property name="adjustment">adjustment-bitrate</property>
+										<property name="adjustment">adjustment_bitrate</property>
 										<property name="climb-rate">1</property>
 										<property name="has-tooltip">True</property>
 										<layout>

@@ -28,7 +28,7 @@ pub fn initialize() -> PathBuf {
 
 fn default() {
     for format in 0..7 {
-        set_default_bitrate(&format.to_string());
+        set_default_video_bitrate(&format.to_string());
         set_default_frame(&format.to_string());
     }
     set("default", "delay", "0");
@@ -132,16 +132,16 @@ pub fn folder_icon(folder_chooser_name: Option<&str>) -> &str {
     }
 }
 
-pub fn set_default_bitrate(format: &str) -> bool {
+pub fn set_default_video_bitrate(format: &str) -> bool {
     let rate = match format {
-        "0" => self::set("default", "bitrate-0", "0"),
-        "1" => self::set("default", "bitrate-1", "0"),
-        "2" => self::set("default", "bitrate-2", "0"),
-        "3" => self::set("default", "bitrate-3", "0"),
-        "4" => self::set("default", "bitrate-4", "0"),
-        "5" => self::set("default", "bitrate-5", "0"),
-        "6" => self::set("default", "bitrate-6", "0"),
-        _ => self::set("default", "bitrate-0", "0"), // Default value
+        "0" => self::set("default", "videobitrate-0", "0"),
+        "1" => self::set("default", "videobitrate-1", "0"),
+        "2" => self::set("default", "videobitrate-2", "0"),
+        "3" => self::set("default", "videobitrate-3", "0"),
+        "4" => self::set("default", "videobitrate-4", "0"),
+        "5" => self::set("default", "videobitrate-5", "0"),
+        "6" => self::set("default", "videobitrate-6", "0"),
+        _ => self::set("default", "videobitrate-0", "0"), // Default value
     };
     rate
 }

@@ -39,7 +39,7 @@ pub struct Ffmpeg {
     pub main_context: gtk::glib::MainContext,
     pub temp_video_filename: String,
     pub bundle: String,
-    pub record_bitrate: SpinButton,
+    pub video_record_bitrate: SpinButton,
 }
 
 impl Ffmpeg {
@@ -85,7 +85,7 @@ impl Ffmpeg {
             }
         }
 
-        if self.record_video.is_active() && !is_wayland() {
+        if self.record_video.is_active() && !is_wayland() && self.filename.2.active_id().unwrap().as_str() != "gif" {
             let mode = config_management::get("default", "mode");
             let format = "x11grab";
             let display = format!("{}+{},{}",
@@ -127,10 +127,10 @@ impl Ffmpeg {
                           .input(display);
 
             // Disable bitrate if value is zero
-            if self.record_bitrate.value() > 0.0 {
+            if self.video_record_bitrate.value() > 0.0 {
                 ffmpeg_command.args([
                     "-b:v",
-                    &format!("{}K", self.record_bitrate.value()),
+                    &format!("{}K", self.video_record_bitrate.value()),
                 ]);
             }
 
@@ -151,6 +151,70 @@ impl Ffmpeg {
                 },
             ]);
             ffmpeg_command.overwrite();
+
+            // sleep for delay
+            sleep(Duration::from_secs(self.record_delay.value() as u64));
+
+            // start recording and return the process id
+            self.video_process = Some(Rc::new(RefCell::new(ffmpeg_command.spawn().unwrap())));
+        } else if self.record_video.is_active() && !is_wayland() && self.filename.2.active_id().unwrap().as_str() == "gif" {
+            let mode = config_management::get("default", "mode");
+            let format = "x11grab";
+            let display = format!("{}+{},{}",
+                                  std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string())
+                                  .as_str(),
+                                  x,
+                                  y
+            );
+            let mut ffmpeg_command = FfmpegCommand::new();
+
+            // record video with specified width and hight
+            if self.follow_mouse.is_active() && mode.as_str() == "screen" {
+                let width = width as f32 * 0.95;
+                let height = height as f32 * 0.95;
+                ffmpeg_command.size(width as u32, height as u32);
+            } else {
+                ffmpeg_command.size(width.into(), height.into());
+            }
+
+            // if show mouse switch is enabled, draw the mouse to video
+            if self.record_mouse.is_active() {
+                ffmpeg_command.args(["-draw_mouse", "1"]);
+            } else {
+                ffmpeg_command.args(["-draw_mouse", "0"]);
+            };
+
+            // if follow mouse switch is enabled, follow the mouse
+            if self.follow_mouse.is_active() {
+                ffmpeg_command.args(["-follow_mouse", "centered"]);
+            }
+
+            // Disable frame rate if value is zero
+            if self.record_frames.value() > 0.0 {
+                ffmpeg_command.args(["-framerate", &self.record_frames.value().to_string()]);
+            }
+
+            // Video format && input
+            ffmpeg_command.format(format)
+                          .input(display);
+
+            // Disable bitrate if value is zero
+            if self.video_record_bitrate.value() > 0.0 {
+                ffmpeg_command.args([
+                    "-b:v",
+                    &format!("{}K", self.video_record_bitrate.value()),
+                ]);
+            }
+
+            let video_filename = format!(
+                "{}.temp.without.audio.{}",
+                self.saved_filename.as_ref().unwrap(),
+                self.filename.2.active_id().unwrap()
+            ).replace("gif", "mp4");
+
+            // Output
+            ffmpeg_command.arg(video_filename.as_str())
+                          .overwrite();
 
             // sleep for delay
             sleep(Duration::from_secs(self.record_delay.value() as u64));
@@ -231,6 +295,12 @@ impl Ffmpeg {
         let video_filename = {
             if is_wayland() {
                 self.temp_video_filename.clone()
+            } else if !is_wayland() && self.filename.2.active_id().unwrap().as_str() == "gif" {
+                format!(
+                    "{}.temp.without.audio.{}",
+                    self.saved_filename.as_ref().unwrap(),
+                    self.filename.2.active_id().unwrap()
+                ).replace("gif", "mp4")
             } else {
                 format!(
                     "{}.temp.without.audio.{}",
@@ -252,10 +322,10 @@ impl Ffmpeg {
                 // convert webm to specified format
                 let mut ffmpeg_command = FfmpegCommand::new();
                 ffmpeg_command.input(self.temp_video_filename.as_str());
-                if self.record_bitrate.value() > 0.0 {
+                if self.video_record_bitrate.value() > 0.0 {
                     ffmpeg_command.args([
                         "-b:v",
-                        &format!("{}K", self.record_bitrate.value()),
+                        &format!("{}K", self.video_record_bitrate.value()),
                     ]);
                 }
                 ffmpeg_command.args([
@@ -265,6 +335,16 @@ impl Ffmpeg {
                 ]).overwrite()
                   .spawn()
                   .unwrap().wait().unwrap();
+            } else if !is_wayland() && self.filename.2.active_id().unwrap().as_str() == "gif" {
+                let mut ffmpeg_command = FfmpegCommand::new();
+                ffmpeg_command.input(video_filename.as_str())
+                              .args(["-loop", "0"])
+                              .filter_complex("fps=10,[0]split[s0][s1]; [s0]palettegen[p]; [s1][p]paletteuse")
+                              .output(self.saved_filename.as_ref().unwrap())
+                              .overwrite().spawn().unwrap().wait().expect("failed to convert video to gif");
+                if is_audio_record {
+                    std::fs::remove_file(audio_filename.clone()).unwrap();
+                }
             } else {
                 let mut move_command = Command::new("mv");
                 move_command.args([
@@ -279,7 +359,7 @@ impl Ffmpeg {
             }
 
             // if audio record, then merge video and audio
-            if is_audio_record {
+            if is_audio_record && self.filename.2.active_id().unwrap().as_str() != "gif" {
                 FfmpegCommand::new().input(video_filename.as_str())
                                     .format("ogg")
                                     .input(audio_filename.as_str())

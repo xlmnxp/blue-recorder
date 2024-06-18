@@ -102,8 +102,9 @@ license =
 
  لمزيد تفاصيل راجع رخصة جنو العمومية. إن لم تكن حصلت على نسخة من رخصة جنو العمومية مع المسجل الأزرق فانظر { license-website }.
 
-# Bitrate label
-bitrate = Bitrate:
+# Video bitrate label
+video-bitrate = B/Video:
+
 
 # Recording button
 record = سجل
@@ -146,7 +147,7 @@ format-tooltip = لاختيار صيغة الخَرج
 frames-tooltip = عدد الإطارات في الثانية
 hide-tooltip = لإخفاء نافذة المسجل الأزرق عند بدء التسجيل
 mouse-tooltip = يظهر مؤشر الفأرة عند التسجيل
-bitrate-tooltip = Set video bitrate in KB/s
+video-bitrate-tooltip = Set video bitrate in KB/s
 record-tooltip = يبدأ تسجيل الشاشة
 screen-tooltip = يحدد الشاشة ليسجلها
 speaker-tooltip = Speakr sound recording

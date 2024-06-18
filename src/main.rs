@@ -112,8 +112,6 @@ pub fn build_ui(application: &Application) {
     let main_window: Window = builder.object("main_window").unwrap();
     let mouse_switch: CheckButton = builder.object("mouseswitch").unwrap();
     let play_button: Button = builder.object("playbutton").unwrap();
-    let bitrate_label: Label = builder.object("bitrate_label").unwrap();
-    let bitrate_spin: SpinButton = builder.object("bitrate").unwrap();
     let record_button: Button = builder.object("recordbutton").unwrap();
     let record_label: Label = builder.object("record_label").unwrap();
     let record_time_label: Label = builder.object("record_time_label").unwrap();
@@ -123,6 +121,8 @@ pub fn build_ui(application: &Application) {
     let speaker_switch: CheckButton = builder.object("speakerswitch").unwrap();
     let stop_button: Button = builder.object("stopbutton").unwrap();
     let stop_label: Label = builder.object("stop_label").unwrap();
+    let video_bitrate_label: Label = builder.object("video_bitrate_label").unwrap();
+    let video_bitrate_spin: SpinButton = builder.object("video_bitrate").unwrap();
     let video_switch: CheckButton = builder.object("videoswitch").unwrap();
     let window_grab_button: ToggleButton = builder.object("window_grab_button").unwrap();
     let window_grab_icon: Image = builder.object("window_grab_icon").unwrap();
@@ -395,7 +395,7 @@ pub fn build_ui(application: &Application) {
                                                             .value().unwrap(), None, &mut vec![]).to_string()));
     delay_spin.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("delay-tooltip").unwrap()
                                                              .value().unwrap(), None, &mut vec![]).to_string()));
-    bitrate_spin.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("bitrate-tooltip").unwrap()
+    video_bitrate_spin.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("video-bitrate-tooltip").unwrap()
                                                               .value().unwrap(), None, &mut vec![]).to_string()));
     frames_spin.set_value(
         config_management::get("default",
@@ -410,10 +410,10 @@ pub fn build_ui(application: &Application) {
             .parse::<f64>()
             .unwrap(),
     );
-    bitrate_spin.set_value(
+    video_bitrate_spin.set_value(
         config_management::get("default",
                                &format!
-                               ("bitrate-{}",
+                               ("videobitrate-{}",
                                 &format_chooser_combobox.active().unwrap().to_string()))
             .parse::<f64>()
             .unwrap(),
@@ -421,7 +421,7 @@ pub fn build_ui(application: &Application) {
 
     let _format_chooser_combobox = format_chooser_combobox.clone();
     let _frames_spin = frames_spin.clone();
-    let _bitrate_spin = bitrate_spin.clone();
+    let _video_bitrate_spin = video_bitrate_spin.clone();
     format_chooser_combobox.connect_changed(move |_| {
         let format_chooser_combobox = _format_chooser_combobox.clone();
         if _format_chooser_combobox.active_text().is_some() {
@@ -438,10 +438,10 @@ pub fn build_ui(application: &Application) {
                     .parse::<f64>()
                     .unwrap(),
             );
-            _bitrate_spin.set_value(
+            _video_bitrate_spin.set_value(
                 config_management::get("default",
                                        &format!
-                                       ("bitrate-{}",
+                                       ("videobitrate-{}",
                                         &format_chooser_combobox.active().unwrap().to_string()))
                     .parse::<f64>()
                     .unwrap(),
@@ -464,14 +464,14 @@ pub fn build_ui(application: &Application) {
                                "delay",
                                _delay_spin.value().to_string().as_str());
     });
-    let _bitrate_spin = bitrate_spin.to_owned();
+    let _video_bitrate_spin = video_bitrate_spin.to_owned();
     let _format_chooser_combobox = format_chooser_combobox.clone();
-    bitrate_spin.connect_value_changed(move |_| {
+    video_bitrate_spin.connect_value_changed(move |_| {
         config_management::set("default",
                                &format!
-                               ("bitrate-{}",
+                               ("videobitrate-{}",
                                 &_format_chooser_combobox.active().unwrap().to_string()),
-                               _bitrate_spin.value().to_string().as_str());
+                               _video_bitrate_spin.value().to_string().as_str());
      });
 
     // Labels
@@ -481,7 +481,7 @@ pub fn build_ui(application: &Application) {
                                                   .value().unwrap(), None, &mut vec![]).to_string());
     delay_label.set_label(&bundle.format_pattern(bundle.get_message("delay").unwrap()
                                                  .value().unwrap(), None, &mut vec![]).to_string());
-    bitrate_label.set_label(&bundle.format_pattern(bundle.get_message("bitrate").unwrap()
+    video_bitrate_label.set_label(&bundle.format_pattern(bundle.get_message("video-bitrate").unwrap()
                                                  .value().unwrap(), None, &mut vec![]).to_string());
     audio_source_label.set_label(&bundle.format_pattern(bundle.get_message("audio-source").unwrap()
                                                         .value().unwrap(), None, &mut vec![]).to_string());
@@ -626,7 +626,7 @@ pub fn build_ui(application: &Application) {
         main_context,
         temp_video_filename: String::new(),
         bundle: bundle_msg,
-        record_bitrate: bitrate_spin,
+        video_record_bitrate: video_bitrate_spin,
     }));
 
     // Record Button
