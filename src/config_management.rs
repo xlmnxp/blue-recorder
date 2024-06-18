@@ -59,6 +59,7 @@ fn default() {
     set("default", "followmousecheck", "0");
     set("default", "hidecheck", "0");
     set("default", "speakercheck", "0");
+    set("default", "mode", "screen");
 }
 
 fn merge_previous_version() -> Option<PathBuf> {
