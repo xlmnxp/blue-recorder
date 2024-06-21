@@ -618,6 +618,7 @@ pub fn build_ui(application: &Application) {
         video_process: None,
         audio_process: None,
         saved_filename: None,
+        height: None,
         unbound: None,
         window: main_window.clone(),
         record_delay: delay_spin,

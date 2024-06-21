@@ -31,6 +31,7 @@ pub struct Ffmpeg {
     pub command: Entry,
     pub video_process: Option<Rc<RefCell<FfmpegChild>>>,
     pub audio_process: Option<Rc<RefCell<FfmpegChild>>>,
+    pub height: Option<u16>,
     pub saved_filename: Option<String>,
     pub unbound: Option<Sender<bool>>,
     pub window: Window,
@@ -221,6 +222,7 @@ impl Ffmpeg {
 
             // start recording and return the process id
             self.video_process = Some(Rc::new(RefCell::new(ffmpeg_command.spawn().unwrap())));
+            self.height = Some(height);
         } else if self.record_video.is_active() && is_wayland() {
             sleep(Duration::from_secs(self.record_delay.value() as u64));
 
@@ -336,12 +338,26 @@ impl Ffmpeg {
                   .spawn()
                   .unwrap().wait().unwrap();
             } else if !is_wayland() && self.filename.2.active_id().unwrap().as_str() == "gif" {
-                let mut ffmpeg_command = FfmpegCommand::new();
-                ffmpeg_command.input(video_filename.as_str())
+                let fps = 100/self.record_frames.value_as_int();
+                let scale = self.height.unwrap();
+                Command::new("ffmpeg").arg("-i")
+                                      .arg(format!("file:{}", video_filename.as_str()))
+                                      .arg("-filter_complex")
+                                      .arg(format!("fps={},scale={}:-1:flags=lanczos,[0]split[s0][s1]; [s0]palettegen[p]; [s1][p]paletteuse",
+                                                   fps,scale))
+                                      .args(["-loop", "0"])
+                                      .arg(self.saved_filename.as_ref().unwrap())
+                                      .status()
+                                      .unwrap();
+                //let mut ffmpeg_command = FfmpegCommand::new();
+                /*ffmpeg_command.input(format!("file:{}", video_filename.as_str()))
+                              .filter_complex(
+                                  format!("fps={},scale={}:-1:flags=lanczos,[0]split[s0][s1]; [s0]palettegen[p]; [s1][p]paletteuse",
+                                  fps,scale)
+                              )
                               .args(["-loop", "0"])
-                              .filter_complex("fps=10,[0]split[s0][s1]; [s0]palettegen[p]; [s1][p]paletteuse")
                               .output(self.saved_filename.as_ref().unwrap())
-                              .overwrite().spawn().unwrap().wait().expect("failed to convert video to gif");
+                              .overwrite().spawn().unwrap().wait().expect("failed to convert video to gif");*/
                 if is_audio_record {
                     std::fs::remove_file(audio_filename.clone()).unwrap();
                 }
