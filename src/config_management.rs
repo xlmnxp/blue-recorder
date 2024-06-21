@@ -141,7 +141,7 @@ pub fn set_default_video_bitrate(format: &str) -> bool {
         "4" => self::set("default", "videobitrate-4", "0"),
         "5" => self::set("default", "videobitrate-5", "0"),
         "6" => self::set("default", "videobitrate-6", "0"),
-        _ => self::set("default", "videobitrate-0", "0"), // Default value
+        _ => self::set("default", "videobitrate-0", "0"), // Default value (disabled)
     };
     rate
 }
@@ -151,11 +151,11 @@ pub fn set_default_frame(format: &str) -> bool {
         "0" => self::set("default", "frame-0", "60"),
         "1" => self::set("default", "frame-1", "60"),
         "2" => self::set("default", "frame-2", "60"),
-        "3" => self::set("default", "frame-3", "60"),
-        "4" => self::set("default", "frame-4", "60"),
-        "5" => self::set("default", "frame-5", "60"),
-        "6" => self::set("default", "frame-6", "60"),
-        _ => self::set("default", "frame-0", "60"), // Default value
+        "3" => self::set("default", "frame-3", "10"),
+        "4" => self::set("default", "frame-4", "2"),
+        "5" => self::set("default", "frame-5", "2"),
+        "6" => self::set("default", "frame-6", "0"),
+        _ => self::set("default", "frame-0", "0"), // Default value (disabled)
     };
     rate
 }
