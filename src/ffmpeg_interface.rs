@@ -159,6 +159,11 @@ impl Ffmpeg {
             // start recording and return the process id
             self.video_process = Some(Rc::new(RefCell::new(ffmpeg_command.spawn().unwrap())));
         } else if self.record_video.is_active() && !is_wayland() && self.filename.2.active_id().unwrap().as_str() == "gif" {
+            let tempfile = tempfile::Builder::new().suffix(".mp4")
+                                                   .tempfile().expect("cannot create temp file")
+                                                              .keep().expect("cannot keep temp file");
+            self.temp_video_filename = tempfile.0.file_name().expect("cannot get file name")
+                                                             .to_str().unwrap().to_string();
             let mode = config_management::get("default", "mode");
             let format = "x11grab";
             let display = format!("{}+{},{}",
@@ -207,14 +212,8 @@ impl Ffmpeg {
                 ]);
             }
 
-            let video_filename = format!(
-                "{}.temp.without.audio.{}",
-                self.saved_filename.as_ref().unwrap(),
-                self.filename.2.active_id().unwrap()
-            ).replace("gif", "mp4");
-
             // Output
-            ffmpeg_command.arg(video_filename.as_str())
+            ffmpeg_command.arg(self.temp_video_filename.clone())
                           .overwrite();
 
             // sleep for delay
@@ -277,8 +276,6 @@ impl Ffmpeg {
                 .borrow_mut()
                 .quit()
                 .unwrap();
-
-            println!("video killed");
         } else if is_wayland() {
             self.main_context.block_on(self.record_wayland.stop());
         }
@@ -290,19 +287,13 @@ impl Ffmpeg {
                 .borrow_mut()
                 .quit()
                 .unwrap();
-
-            println!("audio killed");
         }
 
         let video_filename = {
             if is_wayland() {
                 self.temp_video_filename.clone()
             } else if !is_wayland() && self.filename.2.active_id().unwrap().as_str() == "gif" {
-                format!(
-                    "{}.temp.without.audio.{}",
-                    self.saved_filename.as_ref().unwrap(),
-                    self.filename.2.active_id().unwrap()
-                ).replace("gif", "mp4")
+                self.temp_video_filename.clone()
             } else {
                 format!(
                     "{}.temp.without.audio.{}",
@@ -340,24 +331,15 @@ impl Ffmpeg {
             } else if !is_wayland() && self.filename.2.active_id().unwrap().as_str() == "gif" {
                 let fps = 100/self.record_frames.value_as_int();
                 let scale = self.height.unwrap();
-                Command::new("ffmpeg").arg("-i")
-                                      .arg(format!("file:{}", video_filename.as_str()))
-                                      .arg("-filter_complex")
-                                      .arg(format!("fps={},scale={}:-1:flags=lanczos,[0]split[s0][s1]; [s0]palettegen[p]; [s1][p]paletteuse",
-                                                   fps,scale))
-                                      .args(["-loop", "0"])
-                                      .arg(self.saved_filename.as_ref().unwrap())
-                                      .status()
-                                      .unwrap();
-                //let mut ffmpeg_command = FfmpegCommand::new();
-                /*ffmpeg_command.input(format!("file:{}", video_filename.as_str()))
+                let mut ffmpeg_command = FfmpegCommand::new();
+                ffmpeg_command.input(format!("file:{}", video_filename.as_str()))
                               .filter_complex(
                                   format!("fps={},scale={}:-1:flags=lanczos,[0]split[s0][s1]; [s0]palettegen[p]; [s1][p]paletteuse",
                                   fps,scale)
                               )
                               .args(["-loop", "0"])
                               .output(self.saved_filename.as_ref().unwrap())
-                              .overwrite().spawn().unwrap().wait().expect("failed to convert video to gif");*/
+                              .overwrite().spawn().unwrap().wait().expect("failed to convert video to gif");
                 if is_audio_record {
                     std::fs::remove_file(audio_filename.clone()).unwrap();
                 }
