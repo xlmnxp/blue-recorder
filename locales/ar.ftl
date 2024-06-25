@@ -10,6 +10,7 @@ address-alessandro-toia = Alessandro Toia <gort818@gmail.com>
 address-alex-benishek = Alex Benishek
 address-amerey = Amerey https://github.com/Amereyeu
 address-chibani = O.Chibani <11yzyv86j@relay.firefox.com>
+address-hamir-mahal = Hamir Mahal https://github.com/hamirmahal
 address-hanny-sabbagh = M.Hanny Sabbagh <mhsabbagh@outlook.com>
 address-gmou3 = gmou3 https://github.com/gmou3
 address-larry-wei = Larry Wei https://github.com/larryw3i
@@ -34,6 +35,9 @@ apply = طبق
 
 # Area select button
 area-chooser = محدد المنطقة
+
+# Audio bitrate label
+audio-bitrate = B/Audio:
 
 # Audio source input
 audio-input = مصدر الصوت الافتراضي
@@ -138,6 +142,7 @@ website = الموقع
 # Tooltip
 about-tooltip = ما يُستَحسَنُ أن تعلمه عن المسجل الأزرق
 area-tooltip = يحدد المنطقة المُراد تسجيلها
+audio-bitrate-tooltip = Set audio bitrate in KB/s
 audio-source-tooltip = لاختيار مدخل الصوت
 audio-tooltip = Mic audio recording
 delay-tooltip = مُهلة قبل بدء التسجيل

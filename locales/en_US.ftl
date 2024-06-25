@@ -10,6 +10,7 @@ address-alessandro-toia = Alessandro Toia <gort818@gmail.com>
 address-alex-benishek = Alex Benishek
 address-amerey = Amerey https://github.com/Amereyeu
 address-chibani = O.Chibani <11yzyv86j@relay.firefox.com>
+address-hamir-mahal = Hamir Mahal https://github.com/hamirmahal
 address-hanny-sabbagh = M.Hanny Sabbagh <mhsabbagh@outlook.com>
 address-gmou3 = gmou3 https://github.com/gmou3
 address-larry-wei = Larry Wei https://github.com/larryw3i
@@ -34,6 +35,9 @@ apply = Apply
 
 # Area select button
 area-chooser = Area Chooser
+
+# Audio bitrate label
+audio-bitrate = B/Audio:
 
 # Audio source input
 audio-input = Default Input Source
@@ -134,13 +138,14 @@ website = Website
 # Tooltip
 about-tooltip = Information about Blue Recorder
 area-tooltip = Select area to record
+audio-bitrate-tooltip = Set audio bitrate in KB/s
 audio-source-tooltip = Select audio source
 audio-tooltip = Mic audio recording
 delay-tooltip = Delay time before starting record
 folder-tooltip = Select storage location
 follow-mouse-tooltip = Make the grabbed area follow the mouse
 format-tooltip = Select file format
-frames-tooltip = Frames rate
+frames-tooltip = Set frames rate
 hide-tooltip = Hide window when start recording
 mouse-tooltip = Mouse appears in video recording
 video-bitrate-tooltip = Set video bitrate in KB/s
