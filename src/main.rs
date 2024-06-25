@@ -89,6 +89,8 @@ pub fn build_ui(application: &Application) {
     let area_set_button: Button = builder.object("area_set_button").unwrap();
     let about_button: Button = builder.object("aboutbutton").unwrap();
     let about_dialog: AboutDialog = builder.object("about_dialog").unwrap();
+    let audio_bitrate_label: Label = builder.object("audio_bitrate_label").unwrap();
+    let audio_bitrate_spin: SpinButton = builder.object("audio_bitrate").unwrap();
     let audio_source_combobox: ComboBoxText = builder.object("audiosource").unwrap();
     let audio_source_label: Label = builder.object("audio_source_label").unwrap();
     let audio_switch: CheckButton = builder.object("audioswitch").unwrap();
@@ -397,6 +399,8 @@ pub fn build_ui(application: &Application) {
                                                              .value().unwrap(), None, &mut vec![]).to_string()));
     video_bitrate_spin.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("video-bitrate-tooltip").unwrap()
                                                               .value().unwrap(), None, &mut vec![]).to_string()));
+    audio_bitrate_spin.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("audio-bitrate-tooltip").unwrap()
+                                                              .value().unwrap(), None, &mut vec![]).to_string()));
     frames_spin.set_value(
         config_management::get("default",
                                &format!
@@ -415,6 +419,11 @@ pub fn build_ui(application: &Application) {
                                &format!
                                ("videobitrate-{}",
                                 &format_chooser_combobox.active().unwrap().to_string()))
+            .parse::<f64>()
+            .unwrap(),
+    );
+    audio_bitrate_spin.set_value(
+        config_management::get("default", "audiobitrate")
             .parse::<f64>()
             .unwrap(),
     );
@@ -473,6 +482,12 @@ pub fn build_ui(application: &Application) {
                                 &_format_chooser_combobox.active().unwrap().to_string()),
                                _video_bitrate_spin.value().to_string().as_str());
      });
+    let _audio_bitrate_spin = audio_bitrate_spin.to_owned();
+    audio_bitrate_spin.connect_value_changed(move |_| {
+        config_management::set("default",
+                               "audio_bitrate",
+                               _audio_bitrate_spin.value().to_string().as_str());
+    });
 
     // Labels
     command_label.set_label(&bundle.format_pattern(bundle.get_message("run-command").unwrap()
@@ -482,6 +497,8 @@ pub fn build_ui(application: &Application) {
     delay_label.set_label(&bundle.format_pattern(bundle.get_message("delay").unwrap()
                                                  .value().unwrap(), None, &mut vec![]).to_string());
     video_bitrate_label.set_label(&bundle.format_pattern(bundle.get_message("video-bitrate").unwrap()
+                                                 .value().unwrap(), None, &mut vec![]).to_string());
+    audio_bitrate_label.set_label(&bundle.format_pattern(bundle.get_message("audio-bitrate").unwrap()
                                                  .value().unwrap(), None, &mut vec![]).to_string());
     audio_source_label.set_label(&bundle.format_pattern(bundle.get_message("audio-source").unwrap()
                                                         .value().unwrap(), None, &mut vec![]).to_string());
@@ -628,6 +645,7 @@ pub fn build_ui(application: &Application) {
         temp_video_filename: String::new(),
         bundle: bundle_msg,
         video_record_bitrate: video_bitrate_spin,
+        audio_record_bitrate: audio_bitrate_spin,
     }));
 
     // Record Button
@@ -731,7 +749,7 @@ pub fn build_ui(application: &Application) {
     about_dialog.set_transient_for(Some(&main_window));
     about_dialog.set_program_name(Some(&bundle.format_pattern(bundle.get_message("blue-recorder").unwrap()
                                                               .value().unwrap(), None, &mut vec![]).to_string()));
-    about_dialog.set_version(Some("0.2.0"));
+    about_dialog.set_version(Some("0.3.0"));
     about_dialog.set_copyright(Some(&bundle.format_pattern(bundle.get_message("copy-right").unwrap()
                                                            .value().unwrap(), None, &mut vec![]).to_string()));
     about_dialog.set_wrap_license(true);
@@ -749,13 +767,15 @@ pub fn build_ui(application: &Application) {
                                  .value().unwrap(), None, &mut vec![]).to_string(),
           &bundle.format_pattern(bundle.get_message("address-chibani").unwrap()
                                  .value().unwrap(), None, &mut vec![]).to_string(),
+          &bundle.format_pattern(bundle.get_message("address-hamir-mahal").unwrap()
+                                 .value().unwrap(), None, &mut vec![]).to_string(),
           &bundle.format_pattern(bundle.get_message("address-hanny-sabbagh").unwrap()
                                  .value().unwrap(), None, &mut vec![]).to_string(),
           &bundle.format_pattern(bundle.get_message("address-salem-yaslem").unwrap()
                                  .value().unwrap(), None, &mut vec![]).to_string(),
           &bundle.format_pattern(bundle.get_message("address-suliman-altassan").unwrap()
                                  .value().unwrap(), None, &mut vec![]).to_string(),
-       ]
+        ]
     );
     // Patreon suppoters
     about_dialog.add_credit_section(

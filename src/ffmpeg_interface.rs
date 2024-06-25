@@ -41,6 +41,7 @@ pub struct Ffmpeg {
     pub temp_video_filename: String,
     pub bundle: String,
     pub video_record_bitrate: SpinButton,
+    pub audio_record_bitrate: SpinButton,
 }
 
 impl Ffmpeg {

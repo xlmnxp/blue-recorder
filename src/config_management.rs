@@ -60,6 +60,7 @@ fn default() {
     set("default", "hidecheck", "0");
     set("default", "speakercheck", "0");
     set("default", "mode", "screen");
+    set("default", "audiobitrate", "0");
 }
 
 fn merge_previous_version() -> Option<PathBuf> {
