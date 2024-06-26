@@ -9,8 +9,6 @@ mod wayland_record;
 mod utils;
 
 use ffmpeg_interface::Ffmpeg;
-use fluent_bundle::bundle::FluentBundle;
-use fluent_bundle::FluentResource;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::{
@@ -18,7 +16,7 @@ use gtk::{
     FileChooserAction, FileChooserNative, Image, Label, SpinButton,
     ToggleButton, Window,
 };
-use utils::is_wayland;
+use utils::{get_bundle, is_wayland};
 use std::cell::RefCell;
 use std::ops::Add;
 use std::path::Path;
@@ -45,37 +43,6 @@ pub fn build_ui(application: &Application) {
 
     // Init audio source
     let host_audio_device = cpal::default_host();
-
-    // Translate
-    let mut ftl_path = {
-        let mut current_exec_dir = std::env::current_exe().unwrap();
-        current_exec_dir.pop();
-        current_exec_dir
-    }.join(Path::new("locales"));
-    if !ftl_path.exists() {
-        ftl_path = std::fs::canonicalize(Path::new(
-            &std::env::var("LC_DIR").unwrap_or_else(|_| String::from("locales")),
-        )).unwrap();
-    }
-    let supported_lang: Vec<String> = std::fs::read_dir(&ftl_path)
-        .unwrap()
-        .map(|entry| {
-            let path = entry.unwrap().path();
-            path.file_stem().unwrap().to_string_lossy().to_string()
-        }).collect();
-    let mut locale = std::env::var("LANG").unwrap_or("en_US".to_string());
-    if !supported_lang.contains(&locale) {
-        locale = locale.split('_').next().unwrap().to_string();
-        if !supported_lang.contains(&locale) {
-            locale = String::from("en_US");
-        }
-    }
-    let ftl_file = std::fs::read_to_string(
-        format!("{}/{}.ftl", ftl_path.to_str().unwrap(),locale.split('.').next().unwrap())
-    ).unwrap();
-    let res = FluentResource::try_new(ftl_file).unwrap();
-    let mut bundle = FluentBundle::default();
-    bundle.add_resource(res).expect("Failed to add localization resources to the bundle.");
 
     // Config initialize
     config_management::initialize();
@@ -132,11 +99,9 @@ pub fn build_ui(application: &Application) {
 
     // --- default properties
     // Windows
-    main_window.set_title(Some(&bundle.format_pattern(bundle.get_message("blue-recorder").unwrap()
-                                                      .value().unwrap(), None, &mut vec![]).to_string()));
+    main_window.set_title(Some(&get_bundle("blue-recorder", None)));
     main_window.set_application(Some(application));
-    area_chooser_window.set_title(Some(&bundle.format_pattern(bundle.get_message("area-chooser").unwrap()
-                                                              .value().unwrap(), None, &mut vec![]).to_string())); // Title is hidden
+    area_chooser_window.set_title(Some(&get_bundle("area-chooser", None))); // Title is hidden
     
     // Hide stop & play buttons
     stop_button.hide();
@@ -147,13 +112,9 @@ pub fn build_ui(application: &Application) {
     screen_grab_button.set_active(true);
 
     // Comboboxs tooltip
-    audio_source_combobox.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("audio-source-tooltip").unwrap()
-                                                                       .value().unwrap(), None, &mut vec![]).to_string()));
-    format_chooser_combobox.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("format-tooltip").unwrap()
-                                                                         .value().unwrap(), None, &mut vec![]).to_string()));
-
-    area_grab_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("area-tooltip").unwrap()
-                                                                  .value().unwrap(), None, &mut vec![]).to_string()));
+    audio_source_combobox.set_tooltip_text(Some(&get_bundle("audio-source-tooltip", None)));
+    format_chooser_combobox.set_tooltip_text(Some(&get_bundle("format-tooltip", None)));
+    area_grab_button.set_tooltip_text(Some(&get_bundle("area-tooltip", None)));
     // Temporary solution
     if is_wayland() {
         // Disabled for the tooltip
@@ -162,36 +123,26 @@ pub fn build_ui(application: &Application) {
         //area_grab_button.add_css_class("disabled");
         area_grab_button.set_sensitive(false);
         // Hide window grab button in Wayland
-        area_grab_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("wayland-tooltip").unwrap()
-                                                                      .value().unwrap(), None, &mut vec![]).to_string()));
+        area_grab_button.set_tooltip_text(Some(&get_bundle("wayland-tooltip", None)));
     }
 
     // Entries
-    filename_entry.set_placeholder_text(Some(&bundle.format_pattern(bundle.get_message("file-name").unwrap()
-                                                                    .value().unwrap(), None, &mut vec![]).to_string()));
-    command_entry.set_placeholder_text(Some(&bundle.format_pattern(bundle.get_message("default-command").unwrap()
-                                                                   .value().unwrap(), None, &mut vec![]).to_string()));
+    filename_entry.set_placeholder_text(Some(&get_bundle("file-name", None)));
+    command_entry.set_placeholder_text(Some(&get_bundle("default-command", None)));
     filename_entry.set_text(&config_management::get("default", "filename"));
     command_entry.set_text(&config_management::get("default", "command"));
 
     // Format combobox
-    format_chooser_combobox.append(Some("mp4"), &bundle.format_pattern(bundle.get_message("mp4-format").unwrap()
-                                                                       .value().unwrap(), None, &mut vec![]).to_string());
+    format_chooser_combobox.append(Some("mp4"), &get_bundle("mp4-format", None));
     format_chooser_combobox.append(
         Some("mkv"),
-        &bundle.format_pattern(bundle.get_message("mkv-format").unwrap()
-                               .value().unwrap(), None, &mut vec![]).to_string(),
+        &get_bundle("mkv-format", None),
     );
-    format_chooser_combobox.append(Some("webm"), &bundle.format_pattern(bundle.get_message("webm-format").unwrap()
-                                                                        .value().unwrap(), None, &mut vec![]).to_string());
-    format_chooser_combobox.append(Some("gif"), &bundle.format_pattern(bundle.get_message("gif-format").unwrap()
-                                                                       .value().unwrap(), None, &mut vec![]).to_string());
-    format_chooser_combobox.append(Some("avi"), &bundle.format_pattern(bundle.get_message("avi-format").unwrap()
-                                                                       .value().unwrap(), None, &mut vec![]).to_string());
-    format_chooser_combobox.append(Some("wmv"), &bundle.format_pattern(bundle.get_message("wmv-format").unwrap()
-                                                                       .value().unwrap(), None, &mut vec![]).to_string());
-    format_chooser_combobox.append(Some("nut"), &bundle.format_pattern(bundle.get_message("nut-format").unwrap()
-                                                                       .value().unwrap(), None, &mut vec![]).to_string());
+    format_chooser_combobox.append(Some("webm"), &get_bundle("webm-format", None));
+    format_chooser_combobox.append(Some("gif"), &get_bundle("gif-format", None));
+    format_chooser_combobox.append(Some("avi"), &get_bundle("avi-format", None));
+    format_chooser_combobox.append(Some("wmv"), &get_bundle("wmv-format", None));
+    format_chooser_combobox.append(Some("nut"), &get_bundle("nut-format", None));
     format_chooser_combobox.set_active(Some(config_management::get("default", "format").parse::<u32>().unwrap()));
 
     // Get audio sources
@@ -200,38 +151,25 @@ pub fn build_ui(application: &Application) {
         .filter_map(|device| device.name().ok())
         .collect();
 
-    audio_source_combobox.append(Some("default"), &bundle.format_pattern(bundle.get_message("audio-input").unwrap()
-                                                                         .value().unwrap(), None, &mut vec![]).to_string());
+    audio_source_combobox.append(Some("default"), &get_bundle("audio-input", None));
     for (id, audio_source) in sources_descriptions.iter().enumerate() {
         audio_source_combobox.append(Some(id.to_string().as_str()), audio_source);
     }
     audio_source_combobox.set_active(Some(0));
 
     // Switchs
-    video_switch.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("video-tooltip").unwrap()
-                                                              .value().unwrap(), None, &mut vec![]).to_string()));
-    video_switch.set_label(Some(&bundle.format_pattern(bundle.get_message("record-video").unwrap()
-                                                       .value().unwrap(), None, &mut vec![]).to_string()));
-    audio_switch.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("audio-tooltip").unwrap()
-                                                              .value().unwrap(), None, &mut vec![]).to_string()));
-    audio_switch.set_label(Some(&bundle.format_pattern(bundle.get_message("record-audio").unwrap()
-                                                       .value().unwrap(), None, &mut vec![]).to_string()));
-    mouse_switch.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("mouse-tooltip").unwrap()
-                                                              .value().unwrap(), None, &mut vec![]).to_string()));
-    mouse_switch.set_label(Some(&bundle.format_pattern(bundle.get_message("show-mouse").unwrap()
-                                                       .value().unwrap(), None, &mut vec![]).to_string()));
-    follow_mouse_switch.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("follow-mouse-tooltip").unwrap()
-                                                              .value().unwrap(), None, &mut vec![]).to_string()));
-    follow_mouse_switch.set_label(Some(&bundle.format_pattern(bundle.get_message("follow-mouse").unwrap()
-                                                              .value().unwrap(), None, &mut vec![]).to_string()));
-    hide_switch.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("hide-tooltip").unwrap()
-                                                             .value().unwrap(), None, &mut vec![]).to_string()));
-    hide_switch.set_label(Some(&bundle.format_pattern(bundle.get_message("auto-hide").unwrap()
-                                                      .value().unwrap(), None, &mut vec![]).to_string()));
-    speaker_switch.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("speaker-tooltip").unwrap()
-                                                             .value().unwrap(), None, &mut vec![]).to_string()));
-    speaker_switch.set_label(Some(&bundle.format_pattern(bundle.get_message("record-speaker").unwrap()
-                                                      .value().unwrap(), None, &mut vec![]).to_string()));
+    video_switch.set_tooltip_text(Some(&get_bundle("video-tooltip", None)));
+    video_switch.set_label(Some(&get_bundle("record-video", None)));
+    audio_switch.set_tooltip_text(Some(&get_bundle("audio-tooltip", None)));
+    audio_switch.set_label(Some(&get_bundle("record-audio", None)));
+    mouse_switch.set_tooltip_text(Some(&get_bundle("mouse-tooltip", None)));
+    mouse_switch.set_label(Some(&get_bundle("show-mouse", None)));
+    follow_mouse_switch.set_tooltip_text(Some(&get_bundle("follow-mouse-tooltip", None)));
+    follow_mouse_switch.set_label(Some(&get_bundle("follow-mouse", None)));
+    hide_switch.set_tooltip_text(Some(&get_bundle("hide-tooltip", None)));
+    hide_switch.set_label(Some(&get_bundle("auto-hide", None)));
+    speaker_switch.set_tooltip_text(Some(&get_bundle("speaker-tooltip", None)));
+    speaker_switch.set_label(Some(&get_bundle("record-speaker", None)));
     video_switch.set_active(config_management::get_bool("default", "videocheck"));
     audio_switch.set_active(config_management::get_bool("default", "audiocheck"));
     mouse_switch.set_active(config_management::get_bool("default", "mousecheck"));
@@ -393,14 +331,10 @@ pub fn build_ui(application: &Application) {
     }
 
     // Spin
-    frames_spin.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("frames-tooltip").unwrap()
-                                                            .value().unwrap(), None, &mut vec![]).to_string()));
-    delay_spin.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("delay-tooltip").unwrap()
-                                                             .value().unwrap(), None, &mut vec![]).to_string()));
-    video_bitrate_spin.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("video-bitrate-tooltip").unwrap()
-                                                              .value().unwrap(), None, &mut vec![]).to_string()));
-    audio_bitrate_spin.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("audio-bitrate-tooltip").unwrap()
-                                                              .value().unwrap(), None, &mut vec![]).to_string()));
+    frames_spin.set_tooltip_text(Some(&get_bundle("frames-tooltip", None)));
+    delay_spin.set_tooltip_text(Some(&get_bundle("delay-tooltip", None)));
+    video_bitrate_spin.set_tooltip_text(Some(&get_bundle("video-bitrate-tooltip", None)));
+    audio_bitrate_spin.set_tooltip_text(Some(&get_bundle("audio-bitrate-tooltip", None)));
     frames_spin.set_value(
         config_management::get("default",
                                &format!
@@ -490,18 +424,12 @@ pub fn build_ui(application: &Application) {
     });
 
     // Labels
-    command_label.set_label(&bundle.format_pattern(bundle.get_message("run-command").unwrap()
-                                                   .value().unwrap(), None, &mut vec![]).to_string());
-    frames_label.set_label(&bundle.format_pattern(bundle.get_message("frames").unwrap()
-                                                  .value().unwrap(), None, &mut vec![]).to_string());
-    delay_label.set_label(&bundle.format_pattern(bundle.get_message("delay").unwrap()
-                                                 .value().unwrap(), None, &mut vec![]).to_string());
-    video_bitrate_label.set_label(&bundle.format_pattern(bundle.get_message("video-bitrate").unwrap()
-                                                 .value().unwrap(), None, &mut vec![]).to_string());
-    audio_bitrate_label.set_label(&bundle.format_pattern(bundle.get_message("audio-bitrate").unwrap()
-                                                 .value().unwrap(), None, &mut vec![]).to_string());
-    audio_source_label.set_label(&bundle.format_pattern(bundle.get_message("audio-source").unwrap()
-                                                        .value().unwrap(), None, &mut vec![]).to_string());
+    command_label.set_label(&get_bundle("run-command", None));
+    frames_label.set_label(&get_bundle("frames", None));
+    delay_label.set_label(&get_bundle("delay", None));
+    video_bitrate_label.set_label(&get_bundle("video-bitrate", None));
+    audio_bitrate_label.set_label(&get_bundle("audio-bitrate", None));
+    audio_source_label.set_label(&get_bundle("audio-source", None));
 
     // FileChooser
     let folder_chooser_native = FileChooserNative::new(
@@ -526,8 +454,7 @@ pub fn build_ui(application: &Application) {
     folder_chooser_label.set_label(&folder_chooser_name.to_string_lossy());
     let folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
     folder_chooser_image.set_icon_name(Some(folder_chooser_icon));
-    folder_chooser_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("folder-tooltip").unwrap()
-                                                                       .value().unwrap(), None, &mut vec![]).to_string()));
+    folder_chooser_button.set_tooltip_text(Some(&get_bundle("folder-tooltip", None)));
     // Show file chooser dialog
     folder_chooser_button.connect_clicked(glib::clone!(@strong folder_chooser_native => move |_| {
             folder_chooser_native.connect_response(glib::clone!(@strong folder_chooser_native, @strong folder_chooser_label, @strong folder_chooser_image => move |_, response| {
@@ -547,10 +474,8 @@ pub fn build_ui(application: &Application) {
     // --- connections
     // Show dialog window when about button clicked then hide it after close
     let _about_dialog: AboutDialog = about_dialog.to_owned();
-    about_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("about-tooltip").unwrap()
-                                                              .value().unwrap(), None, &mut vec![]).to_string()));
-    about_button.set_label(&bundle.format_pattern(bundle.get_message("about").unwrap()
-                                                  .value().unwrap(), None, &mut vec![]).to_string());
+    about_button.set_tooltip_text(Some(&get_bundle("about-tooltip", None)));
+    about_button.set_label(&get_bundle("about", None));
     about_button.connect_clicked(move |_| {
         _about_dialog.show();
         _about_dialog.set_hide_on_close(true);
@@ -562,8 +487,7 @@ pub fn build_ui(application: &Application) {
 
     let _area_chooser_window = area_chooser_window.clone();
     let mut _area_capture = area_capture.clone();
-    area_grab_label.set_label(&bundle.format_pattern(bundle.get_message("select-area").unwrap()
-                                                  .value().unwrap(), None, &mut vec![]).to_string());
+    area_grab_label.set_label(&get_bundle("select-area", None));
     area_grab_button.connect_clicked(move |_| {
         config_management::set("default", "mode", "area");
         _area_chooser_window.show();
@@ -571,8 +495,7 @@ pub fn build_ui(application: &Application) {
 
     let _area_chooser_window = area_chooser_window.clone();
     let mut _area_capture = area_capture.clone();
-    area_apply_label.set_label(&bundle.format_pattern(bundle.get_message("apply").unwrap()
-                                                      .value().unwrap(), None, &mut vec![]).to_string());
+    area_apply_label.set_label(&get_bundle("apply", None));
     area_set_button.connect_clicked(move |_| {
         _area_capture
             .borrow_mut()
@@ -585,10 +508,8 @@ pub fn build_ui(application: &Application) {
     let record_window: Rc<RefCell<bool>> = Rc::new(RefCell::new(false));
     let window_grab_button_record_window: Rc<RefCell<bool>> = record_window.clone();
     let screen_grab_button_record_window: Rc<RefCell<bool>> = record_window.clone();
-    screen_grab_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("screen-tooltip").unwrap()
-                                                                       .value().unwrap(), None, &mut vec![]).to_string()));
-    screen_grab_label.set_label(&bundle.format_pattern(bundle.get_message("select-screen").unwrap()
-                                                      .value().unwrap(), None, &mut vec![]).to_string());
+    screen_grab_button.set_tooltip_text(Some(&get_bundle("screen-tooltip", None)));
+    screen_grab_label.set_label(&get_bundle("select-screen", None));
     screen_grab_button.connect_clicked(move |_| {
         config_management::set("default", "mode", "screen");
         screen_grab_button_record_window.replace(false);
@@ -598,10 +519,8 @@ pub fn build_ui(application: &Application) {
 
     let _area_chooser_window: Window = area_chooser_window.clone();
     let mut _area_capture: Rc<RefCell<area_capture::AreaCapture>> = area_capture.clone();
-    window_grab_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("window-tooltip").unwrap()
-                                                                       .value().unwrap(), None, &mut vec![]).to_string()));
-    window_grab_label.set_label(&bundle.format_pattern(bundle.get_message("select-window").unwrap()
-                                                       .value().unwrap(), None, &mut vec![]).to_string());
+    window_grab_button.set_tooltip_text(Some(&get_bundle("window-tooltip", None)));
+    window_grab_label.set_label(&get_bundle("select-window", None));
     window_grab_button.connect_clicked(move |_| {
         config_management::set("default", "mode", "window");
         _area_chooser_window.hide();
@@ -616,8 +535,7 @@ pub fn build_ui(application: &Application) {
 
     let main_context = glib::MainContext::default();
     let wayland_record = main_context.block_on(WaylandRecorder::new());
-    let bundle_msg = bundle.format_pattern(bundle.get_message("already-exist").unwrap()
-                                            .value().unwrap(), None, &mut vec![]).to_string();
+    let bundle_msg = get_bundle("already-exist", None);
     // Init record struct
     let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
         filename: (
@@ -657,14 +575,10 @@ pub fn build_ui(application: &Application) {
     let _record_button = record_button.clone();
     let _record_time_label = record_time_label.clone();
     let _stop_button = stop_button.clone();
-    record_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("record-tooltip").unwrap()
-                                                               .value().unwrap(), None, &mut vec![]).to_string()));
-    record_label.set_label(&bundle.format_pattern(bundle.get_message("record").unwrap()
-                                                   .value().unwrap(), None, &mut vec![]).to_string());
-    delay_window_title.set_label(&bundle.format_pattern(bundle.get_message("delay-title").unwrap()
-                                                        .value().unwrap(), None, &mut vec![]).to_string());
-    delay_window_button.set_label(&bundle.format_pattern(bundle.get_message("delay-window-stop").unwrap()
-                                                        .value().unwrap(), None, &mut vec![]).to_string());
+    record_button.set_tooltip_text(Some(&get_bundle("record-tooltip", None)));
+    record_label.set_label(&get_bundle("record", None));
+    delay_window_title.set_label(&get_bundle("delay-title", None));
+    delay_window_button.set_label(&get_bundle("delay-window-stop", None));
     record_button.connect_clicked(move |_| {
         _delay_window_button.set_active(false);
         if _delay_spin.value() as u64 > 0 {
@@ -705,10 +619,8 @@ pub fn build_ui(application: &Application) {
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     let _play_button = play_button.clone();
     let _stop_button = stop_button.clone();
-    stop_button.set_tooltip_text(Some(&bundle.format_pattern(bundle.get_message("stop-tooltip").unwrap()
-                                                             .value().unwrap(), None, &mut vec![]).to_string()));
-    stop_label.set_label(&bundle.format_pattern(bundle.get_message("stop-recording").unwrap()
-                                                .value().unwrap(), None, &mut vec![]).to_string());
+    stop_button.set_tooltip_text(Some(&get_bundle("stop-tooltip", None)));
+    stop_label.set_label(&get_bundle("stop-recording", None));
     stop_button.connect_clicked(move |_| {
         _record_time_label.set_visible(false);
         stop_timer(_record_time_label.clone());
@@ -747,83 +659,54 @@ pub fn build_ui(application: &Application) {
 
     let logo = Image::from_file(&about_icon_path.to_str().unwrap());
     about_dialog.set_transient_for(Some(&main_window));
-    about_dialog.set_program_name(Some(&bundle.format_pattern(bundle.get_message("blue-recorder").unwrap()
-                                                              .value().unwrap(), None, &mut vec![]).to_string()));
+    about_dialog.set_program_name(Some(&get_bundle("blue-recorder", None)));
     about_dialog.set_version(Some("0.3.0"));
-    about_dialog.set_copyright(Some(&bundle.format_pattern(bundle.get_message("copy-right").unwrap()
-                                                           .value().unwrap(), None, &mut vec![]).to_string()));
+    about_dialog.set_copyright(Some(&get_bundle("copy-right", None)));
     about_dialog.set_wrap_license(true);
-    about_dialog.set_license(Some(&bundle.format_pattern(bundle.get_message("license").unwrap()
-                                                         .value().unwrap(), None, &mut vec![]).to_string()));
-    about_dialog.set_comments(Some(&bundle.format_pattern(bundle.get_message("dialog-comment").unwrap()
-                                                          .value().unwrap(), None, &mut vec![]).to_string()));
+    about_dialog.set_license(Some(&get_bundle("license", None)));
+    about_dialog.set_comments(Some(&get_bundle("dialog-comment", None)));
     // Authors
     about_dialog.add_credit_section(
-        &bundle.format_pattern(bundle.get_message("authors").unwrap()
-                               .value().unwrap(), None, &mut vec![]).to_string(),
-        &[&bundle.format_pattern(bundle.get_message("address-abdullah-al-baroty").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
-          &bundle.format_pattern(bundle.get_message("address-alessandro-toia").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
-          &bundle.format_pattern(bundle.get_message("address-chibani").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
-          &bundle.format_pattern(bundle.get_message("address-hamir-mahal").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
-          &bundle.format_pattern(bundle.get_message("address-hanny-sabbagh").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
-          &bundle.format_pattern(bundle.get_message("address-salem-yaslem").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
-          &bundle.format_pattern(bundle.get_message("address-suliman-altassan").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
+        &get_bundle("authors", None),
+        &[&get_bundle("address-abdullah-al-baroty", None),
+          &get_bundle("address-alessandro-toia", None),
+          &get_bundle("address-chibani", None),
+          &get_bundle("address-hamir-mahal", None),
+          &get_bundle("address-hanny-sabbagh", None),
+          &get_bundle("address-salem-yaslem", None),
+          &get_bundle("address-suliman-altassan", None),
         ]
     );
     // Patreon suppoters
     about_dialog.add_credit_section(
-        &bundle.format_pattern(bundle.get_message("patreon").unwrap()
-                               .value().unwrap(), None, &mut vec![]).to_string(),
-        &[&bundle.format_pattern(bundle.get_message("address-ahmad-gharib").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
-          &bundle.format_pattern(bundle.get_message("address-medium").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
-          &bundle.format_pattern(bundle.get_message("address-william-grunow").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
-          &bundle.format_pattern(bundle.get_message("address-alex-benishek").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
+        &get_bundle("patreon", None),
+        &[&get_bundle("address-ahmad-gharib", None),
+          &get_bundle("address-medium", None),
+          &get_bundle("address-william-grunow", None),
+          &get_bundle("address-alex-benishek", None),
         ]
     );
     // Designers
     about_dialog.add_credit_section(
-        &bundle.format_pattern(bundle.get_message("design").unwrap()
-                               .value().unwrap(), None, &mut vec![]).to_string(),
-        &[&bundle.format_pattern(bundle.get_message("address-abdullah-al-baroty").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
-          &bundle.format_pattern(bundle.get_message("address-mustapha-assabar").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
+        &get_bundle("design", None),
+        &[&get_bundle("address-abdullah-al-baroty", None),
+          &get_bundle("address-mustapha-assabar", None),
         ]
     );
     // Translators
     about_dialog.add_credit_section(
-        &bundle.format_pattern(bundle.get_message("translate").unwrap()
-                               .value().unwrap(), None, &mut vec![]).to_string(),
-        &[&bundle.format_pattern(bundle.get_message("address-ake-engelbrektson").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
-          &bundle.format_pattern(bundle.get_message("address-amerey").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
-          &bundle.format_pattern(bundle.get_message("address-gmou3").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
-          &bundle.format_pattern(bundle.get_message("address-larry-wei").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
-          &bundle.format_pattern(bundle.get_message("address-mark-wagie").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
-          &bundle.format_pattern(bundle.get_message("address-albanobattistella").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
-          &bundle.format_pattern(bundle.get_message("address-mr-Narsus").unwrap()
-                                 .value().unwrap(), None, &mut vec![]).to_string(),
+        &get_bundle("translate", None),
+        &[&get_bundle("address-ake-engelbrektson", None),
+          &get_bundle("address-amerey", None),
+          &get_bundle("address-gmou3", None),
+          &get_bundle("address-larry-wei", None),
+          &get_bundle("address-mark-wagie", None),
+          &get_bundle("address-albanobattistella", None),
+          &get_bundle("address-mr-Narsus", None),
        ]
     );
     about_dialog.set_website(Some("https://github.com/xlmnxp/blue-recorder/"));
-    about_dialog.set_website_label(&bundle.format_pattern(bundle.get_message("website").unwrap()
-                                                          .value().unwrap(), None, &mut vec![]).to_string());
+    about_dialog.set_website_label(&get_bundle("website", None));
     about_dialog.set_logo_icon_name(Some("blue-recorder"));
     about_dialog.set_logo(logo.paintable().as_ref());
     about_dialog.set_modal(true);

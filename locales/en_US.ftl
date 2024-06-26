@@ -81,6 +81,9 @@ delay-window-stop = Stop
 # About message
 dialog-comment =  A simple screen recorder for Linux desktop. Supports Wayland & Xorg.
 
+# Details button
+details-button = Details
+
 # Run command input
 enter-command = Enter your command here..
 
@@ -103,8 +106,8 @@ license =
  Blue Recorder is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with Blue Recorder. If not, see { license-website }.
 
-# Video bitrate label
-video-bitrate = B/Video:
+# Play error
+play-error = Cannot play the video file
 
 # Recording button
 record = Record
@@ -126,11 +129,20 @@ select-area = Select an Area
 select-screen = Select a Screen
 select-window = Select a Window
 
+# Start error
+start-error = Blue Recorder unable to start recording
+
+# Stop error
+stop-error = Unfortunately, the recording process was not successful
+
 # Stop recording button
 stop-recording = Stop recording
 
 # Show mouse label
 show-mouse = Show Mouse
+
+# Video bitrate label
+video-bitrate = B/Video:
 
 # Website link
 website = Website
