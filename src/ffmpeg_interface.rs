@@ -312,7 +312,7 @@ impl Ffmpeg {
         let is_audio_record = std::path::Path::new(audio_filename.as_str()).exists();
 
         if is_video_record {
-            if is_wayland() {
+            if is_wayland() && self.filename.2.active_id().unwrap().as_str() != "gif" {
                 // convert webm to specified format
                 let mut ffmpeg_command = FfmpegCommand::new();
                 ffmpeg_command.input(self.temp_video_filename.as_str());
@@ -329,7 +329,31 @@ impl Ffmpeg {
                 ]).overwrite()
                   .spawn()
                   .unwrap().wait().unwrap();
+            } else if is_wayland() && self.filename.2.active_id().unwrap().as_str() == "gif" {
+                let fps = 100/self.record_frames.value_as_int();
+                let scale = self.height.unwrap();
+                let mut ffmpeg_command = FfmpegCommand::new();
+                ffmpeg_command.input(self.temp_video_filename.as_str())
+                              .filter_complex(
+                                  format!("fps={},scale={}:-1:flags=lanczos,[0]split[s0][s1]; [s0]palettegen[p]; [s1][p]paletteuse",
+                                  fps,scale));
+                if self.video_record_bitrate.value() > 0.0 {
+                    ffmpeg_command.args([
+                        "-b:v",
+                        &format!("{}K", self.video_record_bitrate.value()),
+                    ]);
+                }
+                ffmpeg_command.args(["-loop", "0"])
+                              .args([
+                                  self.filename.2.active_id().unwrap().as_str(),
+                                  self.saved_filename.as_ref().unwrap(),
+                              ])
+                              .overwrite().spawn().unwrap().wait().expect("failed to convert video to gif");
+                if is_audio_record {
+                    std::fs::remove_file(audio_filename.clone()).unwrap();
+                }
             } else if !is_wayland() && self.filename.2.active_id().unwrap().as_str() == "gif" {
+                // convert mp4 to gif
                 let fps = 100/self.record_frames.value_as_int();
                 let scale = self.height.unwrap();
                 let mut ffmpeg_command = FfmpegCommand::new();

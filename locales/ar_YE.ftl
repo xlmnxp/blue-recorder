@@ -81,6 +81,9 @@ delay-window-stop = إيقاف
 # About message
 dialog-comment =  مسجّل شاشة لسطح مكتب لينكس، يدعم إكس ووايلاند.
 
+# Details button
+details-button = Details
+
 # Run command input
 enter-command = اكتب الأمر هنا..
 
@@ -106,9 +109,8 @@ license =
 
  لمزيد تفاصيل راجع رخصة جنو العمومية. إن لم تكن حصلت على نسخة من رخصة جنو العمومية مع المسجل الأزرق فانظر { license-website }.
 
-# Video bitrate label
-video-bitrate = B/Video:
-
+# Play error
+play-error = Cannot play the video file
 
 # Recording button
 record = سجل
@@ -135,6 +137,9 @@ stop-recording = إيقاف التسجيل
 
 # Show mouse label
 show-mouse = إظهار مؤشر الفأرة
+
+# Video bitrate label
+video-bitrate = B/Video:
 
 # Website link
 website = الموقع
