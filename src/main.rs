@@ -11,6 +11,7 @@ mod utils;
 use ffmpeg_interface::Ffmpeg;
 use gtk::glib;
 use gtk::prelude::*;
+use gtk::TextBuffer;
 use gtk::{
     AboutDialog, Application, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry,
     FileChooserAction, FileChooserNative, Image, Label, MessageDialog, SpinButton,
@@ -18,6 +19,7 @@ use gtk::{
 };
 use utils::{get_bundle, is_wayland};
 use std::cell::RefCell;
+use std::io::ErrorKind;
 use std::ops::Add;
 use std::path::Path;
 use std::rc::Rc;
@@ -597,14 +599,22 @@ pub fn build_ui(application: &Application) {
             );
         } else if _delay_spin.value() as u64 == 0 {
             let _area_capture = area_capture.borrow_mut();
-            match _ffmpeg_record_interface.borrow_mut().start_record(
+            let start_record = _ffmpeg_record_interface.borrow_mut().start_record(
                 _area_capture.x,
                 _area_capture.y,
                 _area_capture.width,
                 _area_capture.height,
-            ) {
-                None => {
-                    // Do nothing if the start_record function return nothing
+            );
+            match start_record {
+                Err(ref error) => {
+                    if error.kind() == ErrorKind::Interrupted {
+                        // Do nothing if the start_record function interrupted
+                    } else {
+                        error_dialog_label.set_label(&get_bundle("start-error", None));
+                        let text_buffer = TextBuffer::new(None);
+                        text_buffer.set_text(&error.to_string());
+                        error_message.set_buffer(Some(&text_buffer));
+                    }
                 }
                 _ => {
                     start_timer(record_time_label.clone());
@@ -644,6 +654,11 @@ pub fn build_ui(application: &Application) {
     play_button.connect_clicked(move |_| {
         _ffmpeg_record_interface.borrow_mut().clone().play_record();
     });
+
+    // Error Dialog
+    error_dialog.set_title(Some(&get_bundle("error-dialog", None)));
+    error_dialog_button.set_label(&get_bundle("close-error-dialog", None));
+    error_expander_label.set_label(&get_bundle("details-button", None));
 
     // About Dialog
     let mut about_icon_path = {
