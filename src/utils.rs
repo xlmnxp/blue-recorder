@@ -1,7 +1,5 @@
 use fluent_bundle::bundle::FluentBundle;
 use fluent_bundle::{FluentArgs, FluentResource};
-use gtk::prelude::{ButtonExt, GtkWindowExt, WidgetExt};
-use gtk::{Box, Button, ButtonsType, DialogFlags, MessageDialog, MessageType, Orientation, Window};
 use std::path::Path;
 
 pub fn is_wayland() -> bool {
@@ -12,21 +10,6 @@ pub fn is_wayland() -> bool {
 
 pub fn is_snap() -> bool {
     !std::env::var("SNAP").unwrap_or_default().is_empty()
-}
-
-pub enum BlueRecorderError {
-    Start,
-    Stop,
-    Play,
-}
-
-pub fn error_message(error_type: BlueRecorderError) -> String {
-    let error_message = match error_type {
-        BlueRecorderError::Start => get_bundle("start-error", None),
-        BlueRecorderError::Stop => get_bundle("stop-error", None),
-        BlueRecorderError::Play => get_bundle("play-error", None),
-    };
-    error_message
 }
 
 // Translate
@@ -62,19 +45,4 @@ pub fn get_bundle(message_id: &str, arg: Option<&FluentArgs>) -> String {
     bundle.add_resource(res).expect("Failed to add localization resources to the bundle.");
     bundle.format_pattern(bundle.get_message(message_id)
                           .unwrap().value().unwrap(), arg, &mut vec![]).to_string()
-}
-
-pub fn show_error_dialog(message: String, window: Window) {
-    let error_dialog = MessageDialog::new(
-        Some(&window),
-        DialogFlags::all(),
-        MessageType::Error,
-        ButtonsType::Close,
-        &message,
-    );
-    let dialog_box = Box::new(Orientation::Horizontal, 10);
-    let details_button = Button::new();
-    details_button.set_label(&get_bundle("details-button", None));
-    error_dialog.set_child(Some(&details_button));
-    error_dialog.show();
 }

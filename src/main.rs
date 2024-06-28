@@ -13,8 +13,8 @@ use gtk::glib;
 use gtk::prelude::*;
 use gtk::{
     AboutDialog, Application, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry,
-    FileChooserAction, FileChooserNative, Image, Label, SpinButton,
-    ToggleButton, Window,
+    FileChooserAction, FileChooserNative, Image, Label, MessageDialog, SpinButton,
+    ToggleButton, TextView, Window,
 };
 use utils::{get_bundle, is_wayland};
 use std::cell::RefCell;
@@ -69,6 +69,11 @@ pub fn build_ui(application: &Application) {
     let delay_window_button: ToggleButton = builder.object("delay_window_stopbutton").unwrap();
     let delay_window_label: Label = builder.object("delay_window_label").unwrap();
     let delay_window_title: Label = builder.object("delay_window_title").unwrap();
+    let error_dialog: MessageDialog = builder.object("error_dialog").unwrap();
+    let error_dialog_button: Button = builder.object("error_button").unwrap();
+    let error_dialog_label: Label = builder.object("error_text").unwrap();
+    let error_expander_label: Label = builder.object("expander_label").unwrap();
+    let error_message: TextView = builder.object("error_details").unwrap();
     let filename_entry: Entry = builder.object("filename").unwrap();
     let folder_chooser_button: Button = builder.object("folder_chooser").unwrap();
     let folder_chooser_image: Image = builder.object("folder_chooser_image").unwrap();
