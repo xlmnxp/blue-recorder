@@ -63,6 +63,9 @@ blue-recorder = Blue Recorder
 # Copy right
 copy-right = © 2021 Salem Yaslem
 
+# Close error dialog
+close-error-dialog = Close
+
 # Run command label
 default-command = Default command:
 
@@ -78,14 +81,17 @@ delay-title = Start Recording in…
 # Stop delay timer
 delay-window-stop = Stop
 
-# About message
-dialog-comment =  A simple screen recorder for Linux desktop. Supports Wayland & Xorg.
-
 # Details button
 details-button = Details
 
+# About message
+dialog-comment =  A simple screen recorder for Linux desktop. Supports Wayland & Xorg.
+
 # Run command input
 enter-command = Enter your command here..
+
+# Error dialog
+error-dialog = Error
 
 # Frames label
 file-name = Default filename:

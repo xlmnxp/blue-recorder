@@ -17,6 +17,7 @@ use std::thread::sleep;
 use std::time::Duration;
 use subprocess::Exec;
 use filename::Filename;
+use std::io::{Error, ErrorKind};
 
 #[derive(Clone)]
 pub struct Ffmpeg {
@@ -45,7 +46,7 @@ pub struct Ffmpeg {
 }
 
 impl Ffmpeg {
-    pub fn start_record(&mut self, x: u16, y: u16, width: u16, height: u16) -> Option<()> {
+    pub fn start_record(&mut self, x: u16, y: u16, width: u16, height: u16) -> Result<(), Error> {
         self.saved_filename = Some(
             self.filename
                 .0
@@ -83,7 +84,7 @@ impl Ffmpeg {
             message_dialog.close();
 
             if answer != ResponseType::Yes {
-                return None;
+                return Err(Error::new(ErrorKind::Interrupted, "failed to overwrite file"));
             }
         }
 
@@ -247,8 +248,7 @@ impl Ffmpeg {
                     }
                 },
             )) {
-                println!("failed to start recording");
-                return None;
+                return Err(Error::new(ErrorKind::Interrupted,"failed to start recording"));
             }
         }
 
@@ -265,7 +265,7 @@ impl Ffmpeg {
             self.audio_process = Some(Rc::new(RefCell::new(ffmpeg_command.spawn().unwrap())));
         }
 
-        Some(())
+        Ok(())
     }
 
     pub fn stop_record(&mut self) {
