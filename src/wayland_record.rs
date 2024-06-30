@@ -5,7 +5,7 @@ use zbus::{
     dbus_proxy,
     export::futures_util::TryStreamExt,
     zvariant::{ObjectPath, OwnedObjectPath, Structure, Value},
-    Connection, MessageStream, MessageType, Result
+    Connection, MessageStream, MessageType, Result,
 };
 
 #[derive(Clone, Copy)]
@@ -20,7 +20,7 @@ pub enum RecordTypes {
 pub enum CursorModeTypes {
     Default,
     Hidden,
-    Show
+    Show,
 }
 
 #[dbus_proxy(
@@ -54,8 +54,12 @@ pub struct WaylandRecorder {
 
 impl WaylandRecorder {
     pub async fn new() -> Self {
-        let connection = Connection::session().await.expect("failed to connect to session bus");
-        let screen_cast_proxy = ScreenCastProxy::new(&connection).await.expect("failed to create dbus proxy for screen-cast");
+        let connection = Connection::session()
+            .await
+            .expect("failed to connect to session bus");
+        let screen_cast_proxy = ScreenCastProxy::new(&connection)
+            .await
+            .expect("failed to create dbus proxy for screen-cast");
         gst::init().expect("failed to initialize gstreamer");
 
         WaylandRecorder {
@@ -67,24 +71,37 @@ impl WaylandRecorder {
         }
     }
 
-    pub async fn start(&mut self, filename: String, record_type: RecordTypes, cursor_mode_type: CursorModeTypes) -> bool {
-        self.screen_cast_proxy.create_session(HashMap::from([
-            ("handle_token", Value::from("blue_recorder_1")),
-            ("session_handle_token", Value::from("blue_recorder_1")),
-        ]))
-        .await.expect("failed to create session");
+    pub async fn start(
+        &mut self,
+        filename: String,
+        record_type: RecordTypes,
+        cursor_mode_type: CursorModeTypes,
+    ) -> bool {
+        self.screen_cast_proxy
+            .create_session(HashMap::from([
+                ("handle_token", Value::from("blue_recorder_1")),
+                ("session_handle_token", Value::from("blue_recorder_1")),
+            ]))
+            .await
+            .expect("failed to create session");
 
         let mut message_stream = MessageStream::from(self.connection.clone());
-        
+
         self.filename = filename.clone();
 
-        while let Some(msg) = message_stream.try_next().await.expect("failed to get message") {
+        while let Some(msg) = message_stream
+            .try_next()
+            .await
+            .expect("failed to get message")
+        {
             match msg.message_type() {
                 MessageType::Signal => {
-                    let (response_num, response) = msg.body::<(u32, HashMap<&str, Value>)>().expect("failed to get body");
-                    
+                    let (response_num, response) = msg
+                        .body::<(u32, HashMap<&str, Value>)>()
+                        .expect("failed to get body");
+
                     if response_num > 0 {
-                        return  false;
+                        return false;
                     }
 
                     if response.len() == 0 {
@@ -96,14 +113,17 @@ impl WaylandRecorder {
                             self.screen_cast_proxy.clone(),
                             response.clone(),
                             record_type,
-                            cursor_mode_type
+                            cursor_mode_type,
                         )
-                        .await.expect("failed to handle session");
+                        .await
+                        .expect("failed to handle session");
                         continue;
                     }
 
                     if response.contains_key("streams") {
-                        self.record_screen_cast(response.clone()).await.expect("failed to record screen cast");
+                        self.record_screen_cast(response.clone())
+                            .await
+                            .expect("failed to record screen cast");
                         break;
                     }
                 }
@@ -124,8 +144,21 @@ impl WaylandRecorder {
         }
 
         if self.session_path.len() > 0 {
-            println!("Closing session...: {:?}", self.session_path.replace("request", "session"));
-            self.connection.clone().call_method(Some("org.freedesktop.portal.Desktop"), self.session_path.clone().replace("request", "session"), Some("org.freedesktop.portal.Session"), "Close", &()).await.expect("failed to close session");
+            println!(
+                "Closing session...: {:?}",
+                self.session_path.replace("request", "session")
+            );
+            self.connection
+                .clone()
+                .call_method(
+                    Some("org.freedesktop.portal.Desktop"),
+                    self.session_path.clone().replace("request", "session"),
+                    Some("org.freedesktop.portal.Session"),
+                    "Close",
+                    &(),
+                )
+                .await
+                .expect("failed to close session");
             self.session_path = String::new();
         }
     }
@@ -135,7 +168,7 @@ impl WaylandRecorder {
         screen_cast_proxy: ScreenCastProxy<'_>,
         response: HashMap<&str, Value<'_>>,
         record_type: RecordTypes,
-        cursor_mode_type: CursorModeTypes
+        cursor_mode_type: CursorModeTypes,
     ) -> Result<()> {
         let response_session_handle = response
             .get("session_handle")
@@ -191,13 +224,13 @@ impl WaylandRecorder {
             .clone()
             .downcast::<Vec<Value>>()
             .expect("cannot down cast streams to vec array")
-            .get(0)
+            .first()
             .expect("cannot get first object from streams array")
             .clone()
             .downcast::<Structure>()
             .expect("cannot down cast first object to structure")
             .fields()
-            .get(0)
+            .first()
             .expect("cannot get first field from structure")
             .clone()
             .downcast::<u32>()
@@ -206,7 +239,7 @@ impl WaylandRecorder {
         // launch gstreamer pipeline
         let gst_element: gst::Element = gst::parse_launch(&format!(
                 "pipewiresrc path={stream_node_id} ! videorate ! video/x-raw,framerate=30/1 ! videoconvert chroma-mode=none dither=none matrix-mode=output-only ! vp8enc max-quantizer=17 deadline=1 keyframe-mode=disabled buffer-size=20000 ! webmmux ! filesink location={filename}",
-                filename = self.filename 
+                filename = self.filename
             )).expect("failed to launch gstreamer pipeline");
 
         // start pipeline
