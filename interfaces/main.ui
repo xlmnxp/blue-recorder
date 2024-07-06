@@ -10,6 +10,7 @@
 	<object class="GtkMessageDialog" id="error_dialog">
 		<property name="can-focus">True</property>
 		<property name="destroy-with-parent">True</property>
+		<property name="resizable">False</property>
 		<property name="modal">True</property>
 		<child>
 			<object class="GtkBox">
@@ -20,7 +21,7 @@
 					<object class="GtkImage" id="error_image">
 						<property name="visible">True</property>
 						<property name="can-focus">True</property>
-						<property name="pixel-size">32</property>
+						<property name="pixel-size">48</property>
 						<property name="icon-name">dialog-error-symbolic</property>
 					</object>
 				</child>
@@ -37,10 +38,20 @@
 					<object class="GtkExpander" id="error_expander">
 						<property name="label-widget">expander_label</property>
 						<child>
-							<object class="GtkTextView" id="error_details">
-								<property name="receives-default">False</property>
-								<property name="can-focus">False</property>
-								<property name="editable">False</property>
+							<object class="GtkScrolledWindow">
+								<property name="visible">True</property>
+								<property name="can-focus">True</property>
+								<property name="hscrollbar-policy">never</property>
+								<child>
+									<object class="GtkTextView" id="error_details">
+										<property name="receives-default">False</property>
+										<property name="can-focus">False</property>
+										<property name="editable">False</property>
+										<property name="wrap-mode">word-char</property>
+										<property name="vexpand">True</property>
+										<property name="hexpand">True</property>
+									</object>
+								</child>
 							</object>
 						</child>
 					</object>

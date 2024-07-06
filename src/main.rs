@@ -112,6 +112,14 @@ pub fn build_ui(application: &Application) {
     stop_button.hide();
     play_button.hide();
 
+    // Error dialog
+    error_dialog_button.set_label(&get_bundle("close", None));
+    error_expander_label.set_label(&get_bundle("details-button", None));
+    let _error_dialog = error_dialog.clone();
+    error_dialog_button.connect_clicked(move |_|{
+        _error_dialog.close();
+    });
+
     // Toggle button
     config_management::set("default", "mode", "screen");
     screen_grab_button.set_active(true);
@@ -569,9 +577,12 @@ pub fn build_ui(application: &Application) {
         bundle: bundle_msg,
         video_record_bitrate: video_bitrate_spin,
         audio_record_bitrate: audio_bitrate_spin,
+        error_window: error_dialog,
+        error_window_text: error_dialog_label,
+        error_details: error_message,
     }));
 
-    // Record Button
+    // Record button
     let _delay_window = delay_window.clone();
     let _delay_window_button = delay_window_button.clone();
     let _ffmpeg_record_interface = ffmpeg_record_interface.clone();
@@ -620,7 +631,7 @@ pub fn build_ui(application: &Application) {
         }
     });
 
-    // Stop Record Button
+    // Stop record button
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     let _play_button = play_button.clone();
     let _stop_button = stop_button.clone();
@@ -635,17 +646,17 @@ pub fn build_ui(application: &Application) {
         _play_button.show();
     });
 
-    // Delay Window Button
+    // Delay window button
     let _delay_window_button = delay_window_button.clone();
     delay_window_button.connect_clicked(move |_| {});
 
-    // Play Button
+    // Play button
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     play_button.connect_clicked(move |_| {
         _ffmpeg_record_interface.borrow_mut().clone().play_record();
     });
 
-    // About Dialog
+    // About dialog
     let mut about_icon_path = {
         let mut current_exec_dir = std::env::current_exe().unwrap();
         current_exec_dir.pop();
