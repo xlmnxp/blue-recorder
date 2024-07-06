@@ -24,15 +24,12 @@ ffmpeg
 gtk
 gdk
 gio
-gettext
-libappindicator3
 x11-utils
-pulseaudio
 ```
 
 Install dependencies Ubuntu and Debian based distros:
 ```
-sudo apt install build-essential clang cargo libappindicator3-1 x11-utils gettext pulseaudio ffmpeg
+sudo apt install build-essential clang cargo x11-utils ffmpeg libgtk-3-dev libgtk-4-dev libatk1.0-dev librust-alsa-dev librust-gstreamer-dev
 ```
 Then use `Cargo` to build it:
 ```

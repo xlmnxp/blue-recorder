@@ -60,6 +60,9 @@ wmv-format = WMV (Windows Media Video)
 # Name
 blue-recorder = المسجّل الأزرق
 
+# Close error dialog
+close = Close
+
 # Copy right
 copy-right = © 2021 Salem Yaslem
 
@@ -86,6 +89,9 @@ details-button = Details
 
 # Run command input
 enter-command = اكتب الأمر هنا..
+
+# Error dialog title
+error-title = Error
 
 # Frames label
 file-name = اسم الملفّ الافتراضي:

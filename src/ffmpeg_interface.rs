@@ -1,13 +1,13 @@
 extern crate subprocess;
 use crate::config_management;
-use crate::utils::{is_snap, is_wayland};
+use crate::utils::{get_bundle, is_snap, is_wayland};
 use crate::wayland_record::{CursorModeTypes, RecordTypes, WaylandRecorder};
 use chrono::prelude::*;
 use ffmpeg_sidecar::child::FfmpegChild;
 use ffmpeg_sidecar::command::FfmpegCommand;
-use gtk::{prelude::*, ResponseType};
+use gtk::{prelude::*, ResponseType, TextBuffer, TextView};
 use gtk::{ButtonsType, DialogFlags, MessageDialog, MessageType};
-use gtk::{CheckButton, ComboBoxText, Entry, FileChooserNative, SpinButton, Window};
+use gtk::{CheckButton, ComboBoxText, Entry, FileChooserNative, Label, SpinButton, Window};
 use std::cell::RefCell;
 use std::path::PathBuf;
 use std::process::Command;
@@ -42,6 +42,9 @@ pub struct Ffmpeg {
     pub bundle: String,
     pub video_record_bitrate: SpinButton,
     pub audio_record_bitrate: SpinButton,
+    pub error_window: MessageDialog,
+    pub error_window_text: Label,
+    pub error_details: TextView,
 }
 
 impl Ffmpeg {
@@ -425,13 +428,42 @@ impl Ffmpeg {
         if self.saved_filename.is_some() {
             if is_snap() {
                 // open the video using snapctrl for snap package
-                Command::new("snapctl")
+                let snapctl = Command::new("snapctl")
                     .arg("user-open")
                     .arg(self.saved_filename.unwrap())
-                    .spawn()
-                    .unwrap();
+                    .spawn();
+                match snapctl {
+                    Ok(_) => {
+                        // Continue
+                    },
+                    Err(error) => {
+                        let text_buffer = TextBuffer::new(None);
+                        text_buffer.set_text(&error.to_string());
+                        self.error_window.set_title(Some(&get_bundle("error-title", None)));
+                        self.error_window_text.set_label(&get_bundle("play-error", None));
+                        self.error_details.set_buffer(Some(&text_buffer));
+                        self.error_window.set_transient_for(Some(&self.window));
+                        self.error_window.show();
+                        self.error_window.set_hide_on_close(true);
+                    },
+                }
             } else {
-                open::that(self.saved_filename.unwrap()).unwrap();
+                let open_file = open::that(self.saved_filename.unwrap());
+                match open_file {
+                    Ok(_) => {
+                        // Continue
+                    },
+                    Err(error) => {
+                        let text_buffer = TextBuffer::new(None);
+                        text_buffer.set_text(&error.to_string());
+                        self.error_window.set_title(Some(&get_bundle("error-title", None)));
+                        self.error_window_text.set_label(&get_bundle("play-error", None));
+                        self.error_details.set_buffer(Some(&text_buffer));
+                        self.error_window.set_transient_for(Some(&self.window));
+                        self.error_window.show();
+                        self.error_window.set_hide_on_close(true);
+                    },
+                }
             }
         }
     }
