@@ -1,0 +1,135 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2019-04-05 20:09+0800\n"
+"Last-Translator: Dmitry Chumak <mega.venik@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+msgid ""
+"There seems to be a problem in recording. Try running 'blue-recorder' from "
+"the command line to see the issue."
+msgstr ""
+"Похоже, при записи возникла проблема. Попробуйте запустить 'blue-recorder' "
+"из командной строки, чтобы узнать больше деталей."
+
+msgid "Stop Recording"
+msgstr "Остановить запись"
+
+msgid "Recording has started!"
+msgstr "Запись начата!"
+
+msgid "Recording has stopped!"
+msgstr "Запись остановлена!"
+
+msgid ""
+"Your GIF image is currently being processed, this may take a while according"
+" to your PC's resources."
+msgstr ""
+"Создание GIF-анимации в процессе. Это может занять некоторое время, в "
+"зависимости от имеющихся ресурсов вашего компьютера."
+
+msgid "File already exists!"
+msgstr "Файл уже существует!"
+
+msgid "Would you like to overwrite this file?"
+msgstr "Вы хотите перезаписать этот файл?"
+
+msgid "Sorry Jim, looks like you are using something we don't support"
+msgstr ""
+"Прости, Вася, похоже, что ты пользуешься чем-то, что мы пока не "
+"поддерживаем."
+
+msgid "About"
+msgstr "О программе"
+
+msgid "Blue Recorder"
+msgstr ""
+
+msgid "AreaChooser"
+msgstr "Выбираем область"
+
+msgid "File Name.."
+msgstr "Имя файла"
+
+msgid "Enter your command here.."
+msgstr "Введите вашу команду здесь"
+
+msgid "MKV (Matroska multimedia container format)"
+msgstr ""
+
+msgid "AVI (Audio Video Interleaved)"
+msgstr ""
+
+msgid "MP4 (MPEG-4 Part 14)"
+msgstr ""
+
+msgid "WMV (Windows Media Video)"
+msgstr ""
+
+msgid "GIF (Graphics Interchange Format)"
+msgstr ""
+
+msgid "NUT (NUT Recording Format)"
+msgstr ""
+
+msgid "Record Video"
+msgstr "Записывать видео"
+
+msgid "Record Audio"
+msgstr "Записывать аудио"
+
+msgid "Show Mouse"
+msgstr "Записывать курсор"
+
+msgid "Follow Mouse"
+msgstr "Следовать за курсором"
+
+msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
+msgstr ""
+"Простой инструмент записи рабочего стола для Linux. С поддержкой Wayland и "
+"Xorg."
+
+msgid "Select a Window"
+msgstr "Выбрать окно"
+
+msgid "Select an Area"
+msgstr "Выбрать область"
+
+msgid "Frames:"
+msgstr "Кадров/сек:"
+
+msgid "Delay:"
+msgstr "Задержка:"
+
+msgid "Run Command After Recording:"
+msgstr "После записи выполнить команду:"
+
+msgid "Audio Input Source:"
+msgstr "Источник входного аудио-сигнала:"
+
+msgid "Default PulseAudio Input Source"
+msgstr "Источник входного сигнала PulseAudio по умолчанию"
+
+msgid ""
+"You didn't run the program using the application icon (desktop file). This "
+"will cause the program not to work. Run it using the icon from the menus "
+"only. (Need to export GDK_BACKEND=x11 first)"
+msgstr ""
+"Вы запустили приложение не через ярлык рабочего стола (файл .desktop). Это "
+"помешает корректной работе приложения. Запускайте его исключительно через "
+"ярлык. (Необходимо предварительно экспортировать в окружение "
+"GDK_BACKEND=x11)"
+
+msgid "Your window position has been saved!"
+msgstr "Позиция окна сохранена!"
+
+msgid "Area Chooser"
+msgstr "Выбираем область"
+
+msgid "Your area position has been saved!"
+msgstr "Позиция области сохранена!"

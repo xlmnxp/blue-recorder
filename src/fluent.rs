@@ -2,16 +2,6 @@ use fluent_bundle::bundle::FluentBundle;
 use fluent_bundle::{FluentArgs, FluentResource};
 use std::path::Path;
 
-pub fn is_wayland() -> bool {
-    std::env::var("XDG_SESSION_TYPE")
-        .unwrap_or_default()
-        .eq_ignore_ascii_case("wayland")
-}
-
-pub fn is_snap() -> bool {
-    !std::env::var("SNAP").unwrap_or_default().is_empty()
-}
-
 // Translate
 pub fn get_bundle(message_id: &str, arg: Option<&FluentArgs>) -> String {
     let mut ftl_path = {

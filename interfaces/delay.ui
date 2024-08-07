@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+	<requires lib="gtk" version="4.0"/>
+	<requires lib="libadwaita" version="1.0"/>
+	<object class="AdwWindow" id="delay_window">
+		<property name="name">delay_window</property>
+		<property name="can-focus">True</property>
+		<property name="transient-for">main_window</property>
+		<property name="resizable">False</property>
+		<property name="modal">True</property>
+		<property name="default-height">200</property>
+		<property name="default-width">200</property>
+		<property name="decorated">False</property>
+		<property name="deletable">False</property>
+		<child>
+			<object class="GtkBox">
+				<property name="orientation">vertical</property>
+				<child type="top">
+					<object class="GtkLabel" id="delay_window_title">
+						<property name="name">delay_window_title</property>
+						<property name="visible">True</property>
+						<property name="label" translatable="yes">label</property>
+						<property name="margin-top">10</property>
+					</object>
+				</child>
+				<child type="center">
+					<object class="GtkLabel" id="delay_window_label">
+						<property name="name">delay_window_label</property>
+						<property name="vexpand">True</property>
+						<property name="hexpand">True</property>
+						<property name="visible">True</property>
+					</object>
+				</child>
+				<child type="bottom">
+					<object class="GtkToggleButton" id="delay_window_stopbutton">
+						<property name="name">delay_window_stop_button</property>
+						<property name="visible">True</property>
+						<property name="can-focus">True</property>
+						<property name="receives-default">True</property>
+						<property name="margin-start">10</property>
+						<property name="margin-end">10</property>
+						<property name="margin-bottom">10</property>
+						<property name="label" translatable="yes">label</property>
+					</object>
+				</child>
+			</object>
+		</child>
+	</object>
+</interface>

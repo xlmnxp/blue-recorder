@@ -1,73 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
 	<requires lib="gtk" version="4.0"/>
-	<object class="GtkAboutDialog" id="about_dialog">
-		<property name="can-focus">True</property>
-		<property name="destroy-with-parent">True</property>
-		<property name="logo-icon-name">blue-recorder</property>
-		<property name="modal">True</property>
-	</object>
-	<object class="GtkMessageDialog" id="error_dialog">
-		<property name="can-focus">True</property>
-		<property name="destroy-with-parent">True</property>
-		<property name="resizable">False</property>
-		<property name="modal">True</property>
-		<child>
-			<object class="GtkBox">
-				<property name="visible">True</property>
-				<property name="can-focus">True</property>
-				<property name="orientation">vertical</property>
-				<child type="top">
-					<object class="GtkImage" id="error_image">
-						<property name="visible">True</property>
-						<property name="can-focus">True</property>
-						<property name="pixel-size">48</property>
-						<property name="icon-name">dialog-error-symbolic</property>
-					</object>
-				</child>
-				<child type="center">
-					<object class="GtkLabel" id="error_text">
-						<property name="visible">True</property>
-						<property name="can-focus">True</property>
-						<property name="label" translatable="yes">label</property>
-						<property name="margin-start">10</property>
-						<property name="margin-end">10</property>
-					</object>
-				</child>
-				<child type="start">
-					<object class="GtkExpander" id="error_expander">
-						<property name="label-widget">expander_label</property>
-						<child>
-							<object class="GtkScrolledWindow">
-								<property name="visible">True</property>
-								<property name="can-focus">True</property>
-								<property name="hscrollbar-policy">never</property>
-								<child>
-									<object class="GtkTextView" id="error_details">
-										<property name="receives-default">False</property>
-										<property name="can-focus">False</property>
-										<property name="editable">False</property>
-										<property name="wrap-mode">word-char</property>
-										<property name="vexpand">True</property>
-										<property name="hexpand">True</property>
-									</object>
-								</child>
-							</object>
-						</child>
-					</object>
-				</child>
-				<child type="bottom">
-					<object class="GtkButton" id="error_button">
-						<property name="visible">True</property>
-						<property name="can-focus">True</property>
-						<property name="receives-default">True</property>
-						<property name="label" translatable="yes">label</property>
-						<property name="hexpand">True</property>
-					</object>
-				</child>
-			</object>
-		</child>
-	</object>
+	<requires lib="libadwaita" version="1.0"/>
 	<object class="GtkAdjustment" id="adjustment_delay">
 		<property name="upper">10</property>
 		<property name="step-increment">1</property>
@@ -91,107 +25,6 @@
 		<property name="step-increment">1</property>
 		<property name="page-increment">10</property>
 	</object>
-	<object class="GtkLabel" id="expander_label">
-		<property name="visible">True</property>
-		<property name="can-focus">True</property>
-		<property name="label" translatable="yes">label</property>
-	</object>
-	<object class="GtkWindow" id="area_chooser_window">
-		<property name="name">area_chooser_window</property>
-		<property name="can-focus">True</property>
-		<property name="default-height">412</property>
-		<property name="default-width">584</property>
-		<property name="decorated">False</property>
-		<property name="deletable">False</property>
-		<property name="hexpand">True</property>
-		<property name="vexpand">True</property>
-		<child type="titlebar">
-			<object class="GtkHeaderBar" id="headerbar2">
-				<property name="visible">True</property>
-				<property name="can-focus">False</property>
-			</object>
-		</child>
-		<child>
-			<object class="GtkWindowHandle">
-				<child>
-					<object class="GtkButton" id="area_set_button">
-						<property name="name">area_set_button</property>
-						<property name="visible">True</property>
-						<property name="can-focus">True</property>
-						<property name="receives-default">True</property>
-						<property name="halign">center</property>
-						<property name="valign">center</property>
-						<child>
-							<object class="GtkGrid">
-								<property name="visible">True</property>
-								<property name="can-focus">True</property>
-								<property name="column-spacing">3</property>
-								<property name="row-homogeneous">True</property>
-								<child>
-									<object class="GtkImage">
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="icon-name">object-select-symbolic</property>
-									</object>
-								</child>
-								<child>
-									<object class="GtkLabel" id="area_apply">
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="label" translatable="yes">label</property>
-									</object>
-								</child>
-							</object>
-						</child>
-					</object>
-				</child>
-			</object>
-		</child>
-	</object>
-	<object class="GtkWindow" id="delay_window">
-		<property name="name">delay_window</property>
-		<property name="can-focus">True</property>
-		<property name="transient-for">main_window</property>
-		<property name="resizable">False</property>
-		<property name="modal">True</property>
-		<property name="default-height">200</property>
-		<property name="default-width">200</property>
-		<property name="decorated">False</property>
-		<property name="deletable">False</property>
-		<child>
-			<object class="GtkBox">
-				<property name="orientation">vertical</property>
-				<child type="top">
-					<object class="GtkLabel" id="delay_window_title">
-						<property name="name">delay_window_title</property>
-						<property name="visible">True</property>
-						<property name="label" translatable="yes">label</property>
-						<property name="margin-top">10</property>
-					</object>
-				</child>
-				<child type="center">
-					<object class="GtkLabel" id="delay_window_label">
-						<property name="name">delay_window_label</property>
-						<property name="vexpand">True</property>
-						<property name="hexpand">True</property>
-						<property name="visible">True</property>
-					</object>
-				</child>
-				<child type="bottom">
-					<object class="GtkToggleButton" id="delay_window_stopbutton">
-						<property name="name">delay_window_stop_button</property>
-						<property name="visible">True</property>
-						<property name="can-focus">True</property>
-						<property name="receives-default">True</property>
-						<property name="margin-start">10</property>
-						<property name="margin-end">10</property>
-						<property name="margin-bottom">10</property>
-						<property name="label" translatable="yes">label</property>
-					</object>
-				</child>
-			</object>
-		</child>
-	</object>
 	<object class="GtkImage" id="image3">
 		<property name="visible">True</property>
 		<property name="can-focus">True</property>
@@ -202,17 +35,123 @@
 		<property name="can-focus">True</property>
 		<property name="icon-name">gtk-media-stop</property>
 	</object>
-	<object class="GtkWindow" id="main_window">
+	<object class="AdwWindow" id="main_window">
 		<property name="visible">True</property>
 		<property name="can-focus">True</property>
 		<property name="resizable">False</property>
 		<child>
-			<object class="GtkBox" id="box3">
+			<object class="GtkBox">
 				<property name="visible">True</property>
 				<property name="can-focus">True</property>
 				<property name="orientation">vertical</property>
 				<child>
-					<object class="GtkBox" id="box4">
+					<object class="GtkBox">
+						<property name="visible">True</property>
+						<property name="can-focus">True</property>
+						<child>
+							<object class="AdwHeaderBar">
+								<property name="visible">True</property>
+								<property name="can-focus">True</property>
+								<property name="hexpand">True</property>
+								<child>
+									<object class="GtkButton" id="recordbutton">
+										<property name="visible">True</property>
+										<property name="can-focus">True</property>
+										<property name="receives-default">True</property>
+										<property name="has-tooltip">True</property>
+										<child>
+											<object class="GtkGrid">
+												<property name="visible">True</property>
+												<property name="can-focus">True</property>
+												<property name="column-spacing">2</property>
+												<property name="row-homogeneous">True</property>
+												<child>
+													<object class="GtkImage">
+														<property name="name">record_image</property>
+														<property name="visible">True</property>
+														<property name="can-focus">True</property>
+														<property name="icon-name">media-record</property>
+													</object>
+												</child>
+												<child>
+													<object class="GtkLabel" id="record_label">
+														<property name="name">record_label</property>
+														<property name="visible">True</property>
+														<property name="can-focus">True</property>
+														<property name="label" translatable="yes">label</property>
+													</object>
+												</child>
+											</object>
+										</child>
+									</object>
+								</child>
+								<child>
+									<object class="GtkButton" id="stopbutton">
+										<property name="name">stop_button</property>
+										<property name="visible">True</property>
+										<property name="can-focus">True</property>
+										<property name="receives-default">True</property>
+										<property name="has-tooltip">True</property>
+										<child>
+											<object class="GtkGrid">
+												<property name="visible">True</property>
+												<property name="can-focus">True</property>
+												<property name="column-spacing">2</property>
+												<property name="row-homogeneous">True</property>
+												<child>
+													<object class="GtkImage">
+														<property name="visible">True</property>
+														<property name="can-focus">True</property>
+														<property name="icon-name">media-playback-stop</property>
+													</object>
+												</child>
+												<child>
+													<object class="GtkLabel" id="stop_label">
+														<property name="visible">True</property>
+														<property name="can-focus">True</property>
+														<property name="label" translatable="yes">label</property>
+													</object>
+												</child>
+											</object>
+										</child>
+									</object>
+								</child>
+								<child>
+									<object class="GtkSeparator" id="record_button_separator">
+										<property name="visible">True</property>
+										<property name="opacity">0.0</property>
+									</object>
+								</child>
+								<child>
+									<object class="GtkLabel" id="record_time_label">
+										<property name="name">record_time_label</property>
+										<property name="visible">False</property>
+										<property name="can-focus">True</property>
+									</object>
+								</child>
+								<child>
+									<object class="GtkButton" id="playbutton">
+										<property name="icon_name">media-playback-start</property>
+										<property name="visible">True</property>
+										<property name="can-focus">True</property>
+										<property name="receives-default">True</property>
+									</object>
+								</child>
+								<child type="end">
+									<object class="GtkButton" id="aboutbutton">
+										<property name="label" translatable="yes">button</property>
+										<property name="visible">True</property>
+										<property name="can-focus">True</property>
+										<property name="receives-default">True</property>
+										<property name="has-tooltip">True</property>
+									</object>
+								</child>
+							</object>
+						</child>
+					</object>
+				</child>
+				<child>
+					<object class="GtkBox">
 						<property name="visible">True</property>
 						<property name="can-focus">True</property>
 						<property name="margin-start">5</property>
@@ -418,7 +357,7 @@
 									</object>
 								</child>
 								<child>
-									<object class="GtkCheckButton" id="audioswitch">
+									<object class="GtkCheckButton" id="audio_input_switch">
 										<property name="label" translatable="yes">checkbutton</property>
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
@@ -470,16 +409,6 @@
 									</object>
 								</child>
 								<child>
-									<object class="GtkSeparator" id="hideswitch_separator">
-										<property name="visible">True</property>
-										<property name="opacity">0.0</property>
-										<layout>
-											<property name="column">0</property>
-											<property name="row">3</property>
-										</layout>
-									</object>
-								</child>
-								<child>
 									<object class="GtkCheckButton" id="speakerswitch">
 										<property name="label" translatable="yes">checkbutton</property>
 										<property name="visible">True</property>
@@ -490,6 +419,34 @@
 										<layout>
 											<property name="column">1</property>
 											<property name="row">2</property>
+										</layout>
+									</object>
+								</child>
+								<child>
+									<object class="GtkCheckButton" id="trayswitch">
+										<property name="label" translatable="yes">checkbutton</property>
+										<property name="visible">True</property>
+										<property name="can-focus">True</property>
+										<property name="receives-default">False</property>
+										<property name="active">True</property>
+										<property name="has-tooltip">True</property>
+										<layout>
+											<property name="column">0</property>
+											<property name="row">3</property>
+										</layout>
+									</object>
+								</child>
+								<child>
+									<object class="GtkCheckButton" id="areaswitch">
+										<property name="label" translatable="yes">checkbutton</property>
+										<property name="visible">True</property>
+										<property name="can-focus">True</property>
+										<property name="receives-default">False</property>
+										<property name="active">True</property>
+										<property name="has-tooltip">True</property>
+										<layout>
+											<property name="column">1</property>
+											<property name="row">3</property>
 										</layout>
 									</object>
 								</child>
@@ -552,6 +509,7 @@
 									<object class="GtkLabel" id="video_bitrate_label">
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
+										<property name="margin-start">2</property>
 										<property name="label" translatable="yes">label</property>
 										<layout>
 											<property name="column">0</property>
@@ -579,6 +537,7 @@
 									<object class="GtkLabel" id="audio_bitrate_label">
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
+										<property name="margin-start">2</property>
 										<property name="label" translatable="yes">label</property>
 										<layout>
 											<property name="column">0</property>
@@ -672,104 +631,6 @@
 								</layout>
 							</object>
 						</child>
-					</object>
-				</child>
-			</object>
-		</child>
-		<child type="titlebar">
-			<object class="GtkHeaderBar">
-				<property name="visible">True</property>
-				<property name="can-focus">True</property>
-				<child>
-					<object class="GtkButton" id="recordbutton">
-						<property name="name">record_button</property>
-						<property name="visible">True</property>
-						<property name="can-focus">True</property>
-						<property name="receives-default">True</property>
-						<property name="has-tooltip">True</property>
-						<child>
-							<object class="GtkGrid">
-								<property name="visible">True</property>
-								<property name="can-focus">True</property>
-								<property name="column-spacing">2</property>
-								<property name="row-homogeneous">True</property>
-								<child>
-									<object class="GtkImage">
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="icon-name">media-record</property>
-									</object>
-								</child>
-								<child>
-									<object class="GtkLabel" id="record_label">
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="label" translatable="yes">label</property>
-									</object>
-								</child>
-							</object>
-						</child>
-					</object>
-				</child>
-				<child>
-					<object class="GtkButton" id="stopbutton">
-						<property name="name">stop_button</property>
-						<property name="visible">True</property>
-						<property name="can-focus">True</property>
-						<property name="receives-default">True</property>
-						<property name="has-tooltip">True</property>
-						<child>
-							<object class="GtkGrid">
-								<property name="visible">True</property>
-								<property name="can-focus">True</property>
-								<property name="column-spacing">2</property>
-								<property name="row-homogeneous">True</property>
-								<child>
-									<object class="GtkImage">
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="icon-name">media-playback-stop</property>
-									</object>
-								</child>
-								<child>
-									<object class="GtkLabel" id="stop_label">
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="label" translatable="yes">label</property>
-									</object>
-								</child>
-							</object>
-						</child>
-					</object>
-				</child>
-				<child>
-					<object class="GtkSeparator" id="record_button_separator">
-						<property name="visible">True</property>
-						<property name="opacity">0.0</property>
-					</object>
-				</child>
-				<child>
-					<object class="GtkLabel" id="record_time_label">
-						<property name="name">record_time_label</property>
-						<property name="visible">False</property>
-						<property name="can-focus">True</property>
-					</object>
-				</child>
-				<child>
-					<object class="GtkButton" id="playbutton">
-						<property name="icon_name">media-playback-start</property>
-						<property name="visible">True</property>
-						<property name="can-focus">True</property>
-						<property name="receives-default">True</property>
-					</object>
-				</child>
-				<child type="end">
-					<object class="GtkButton" id="aboutbutton">
-						<property name="label" translatable="yes">button</property>
-						<property name="visible">True</property>
-						<property name="can-focus">True</property>
-						<property name="receives-default">True</property>
-						<property name="has-tooltip">True</property>
 					</object>
 				</child>
 			</object>

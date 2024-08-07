@@ -1,0 +1,140 @@
+# Blue Recorder
+# Copyright (C) 2017, FOSS Project
+# This file is distributed under the same license as the Blue Recorder package.
+# Åke Engelbrektson <eson@svenskasprakfiler.se>, 2021
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2017-08-08 10:53+0300\n"
+"PO-Revision-Date: 2021-05-01 22:17+0200\n"
+"Language-Team: Svenska Språkfiler <contactform@svenskasprakfiler.se>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+"X-Generator: Poedit 2.3\n"
+"Last-Translator: Åke Engelbrektson <eson@svenskasprakfiler.se>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: sv\n"
+
+msgid ""
+"There seems to be a problem in recording. Try running 'blue-recorder' from "
+"the command line to see the issue."
+msgstr ""
+"Det verkar vara problem med inspelning. Försök starta blue-recorder från "
+"terminal, för att se problemet."
+
+msgid "Stop Recording"
+msgstr "Stoppa inspelningen"
+
+msgid "Recording has started!"
+msgstr "Inspelningen har startat!"
+
+msgid "Recording has stopped!"
+msgstr "Inspelningen har stoppats!"
+
+msgid ""
+"Your GIF image is currently being processed, this may take a while according "
+"to your PC's resources."
+msgstr ""
+"Din GIF-fil bearbetas just nu, detta kan ta en stund beroende på din dators "
+"resurser."
+
+msgid "File already exists!"
+msgstr "Filen finns redan!"
+
+msgid "Would you like to overwrite this file?"
+msgstr "Vill du skriva över den här filen?"
+
+msgid "Sorry Jim, looks like you are using something we don't support"
+msgstr "Sorry, det verkar som om du använder något vi inte stödjer."
+
+msgid "About"
+msgstr "Om"
+
+msgid "Blue Recorder"
+msgstr "Blue Recorder"
+
+msgid "AreaChooser"
+msgstr "Områdesväljare"
+
+msgid "File Name.."
+msgstr "Filnamn..."
+
+msgid "Enter your command here.."
+msgstr "Ange ditt kommando här..."
+
+msgid "MKV (Matroska multimedia container format)"
+msgstr "MKV (Matroska multimediabehållarformat)"
+
+msgid "AVI (Audio Video Interleaved)"
+msgstr "AVI (Audio Video Interleaved)"
+
+msgid "MP4 (MPEG-4 Part 14)"
+msgstr "MP4 (MPEG-4 Part 14)"
+
+msgid "WMV (Windows Media Video)"
+msgstr "WMV (Windows Media Video)"
+
+msgid "GIF (Graphics Interchange Format)"
+msgstr "GIF (Graphics Interchange Format)"
+
+msgid "NUT (NUT Recording Format)"
+msgstr "NUT (NUT Recording Format)"
+
+msgid "Record Video"
+msgstr "Spela in video"
+
+msgid "Record Audio"
+msgstr "Spela in ljud"
+
+msgid "Show Mouse"
+msgstr "Visa muspekaren"
+
+msgid "Follow Mouse"
+msgstr "Följ muspekaren"
+
+msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
+msgstr "En enkel skärminspelare för Linux-skrivbord. Stödjer Wayland & Xorg."
+
+msgid "Select a Window"
+msgstr "Välj ett fönster"
+
+msgid "Select an Area"
+msgstr "Välj ett område"
+
+msgid "Frames:"
+msgstr "Bildrutor:"
+
+msgid "Delay:"
+msgstr "Fördröjning:"
+
+msgid "Run Command After Recording:"
+msgstr "Körkommando efter inspelning:"
+
+msgid "Audio Input Source:"
+msgstr "Ljudinmatningskälla:"
+
+msgid "Default PulseAudio Input Source"
+msgstr "Standard PulseAudio indatakälla"
+
+msgid ""
+"You didn't run the program using the application icon (desktop file). This "
+"will cause the program not to work. Run it using the icon from the menus "
+"only. (Need to export GDK_BACKEND=x11 first)"
+msgstr ""
+"Du startade inte programmet med programikonen (desktop-fil). Detta medför "
+"att programmet inte fungerar. Starta det endast med ikonen från menyn. "
+"(Måste exportera GDK_BACKEND=x11 först)"
+
+msgid "Your window position has been saved!"
+msgstr "Din fönsterposition har sparats!"
+
+msgid "Area Chooser"
+msgstr "Områdesväljare"
+
+msgid "Your area position has been saved!"
+msgstr "Din områdesposition har sparats!"
+
+msgid "stop recording"
+msgstr "Stoppa inspelningen"
