@@ -1,0 +1,123 @@
+# Italian translation for Blue Recorder
+# Copyright (C) 2017, FOSS Project
+# This file is distributed under the same license as the Blue Recorder package.
+# Albano Battistella <albano_battistella@hotmail.com>, 2021,2022,2023.
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2017-08-08 10:53+0300\n"
+"PO-Revision-Date: 2023-01-01 16:35+0100\n"
+"Last-Translator: Albano Battistella <albano_battistella@hotmail.com>\n"
+"Language-Team: ITALIAN <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+
+msgid "There seems to be a problem in recording. Try running 'blue-recorder' from the command line to see the issue."
+msgstr "Sembra esserci un problema nella registrazione. Prova a eseguire 'blue-recorder' dalla riga di comando per vedere il problema."
+
+msgid "Stop Recording"
+msgstr "Interrompi la registrazione"
+
+msgid "Recording has started!"
+msgstr "La registrazione è iniziata!"
+
+msgid "Recording has stopped!"
+msgstr "La registrazione è stata interrotta!"
+
+msgid "Your GIF image is currently being processed, this may take a while according to your PC's resources."
+msgstr "La tua immagine GIF è attualmente in fase di elaborazione, questa operazione potrebbe richiedere del tempo in base alle risorse del tuo PC."
+
+msgid "File already exists!"
+msgstr "Il file esiste già!"
+
+msgid "Would you like to overwrite this file?"
+msgstr "Vuoi sovrascrivere questo file?"
+
+msgid "Sorry Jim, looks like you are using something we don't support"
+msgstr "Mi spiace Jim, sembra che tu stia usando qualcosa che non supportiamo"
+
+msgid "About"
+msgstr "Informazioni"
+
+msgid "Blue Recorder"
+msgstr "Blue Recorder"
+
+msgid "AreaChooser"
+msgstr "Scelta Area"
+
+msgid "File Name.."
+msgstr "Nome File.."
+
+msgid "Enter your command here.."
+msgstr "Inserisci qui il tuo comando.."
+
+msgid "MKV (Matroska multimedia container format)"
+msgstr "MKV (Formato contenitore multimediale Matroska)"
+
+msgid "AVI (Audio Video Interleaved)"
+msgstr "AVI (Audio Video Interleaved)"
+
+msgid "MP4 (MPEG-4 Part 14)"
+msgstr "MP4 (MPEG-4 Part 14)"
+
+msgid "WMV (Windows Media Video)"
+msgstr "WMV (Windows Media Video)"
+
+msgid "GIF (Graphics Interchange Format)"
+msgstr "GIF (Graphics Interchange Format)"
+
+msgid "NUT (NUT Recording Format)"
+msgstr "NUT (Formato di registrazione NUT)"
+
+msgid "Record Video"
+msgstr "Registra Video"
+
+msgid "Record Audio"
+msgstr "Registra Audio"
+
+msgid "Show Mouse"
+msgstr "Mostra il Mouse"
+
+msgid "Follow Mouse"
+msgstr "Segui il mouse"
+
+msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
+msgstr "Un semplice registratore dello schermo per desktop Linux. Supporta Wayland e Xorg."
+
+msgid "Select a Window"
+msgstr "Seleziona una Finestra"
+
+msgid "Select an Area"
+msgstr "Seleziona un'Area"
+
+msgid "Frames:"
+msgstr "Frame:"
+
+msgid "Delay:"
+msgstr "Ritardo:"
+
+msgid "Run Command After Recording:"
+msgstr "Esegui comando dopo la registrazione:"
+
+msgid "Audio Input Source:"
+msgstr "Sorgente di ingresso audio"
+
+msgid "Default PulseAudio Input Source"
+msgstr "Sorgente di ingresso PulseAudio predefinita"
+
+msgid "You didn't run the program using the application icon (desktop file). This will cause the program not to work. Run it using the icon from the menus only. (Need to export GDK_BACKEND=x11 first)"
+msgstr "Non hai eseguito il programma utilizzando l'icona dell'applicazione (file desktop). Ciò farà sì che il programma non funzioni. Eseguilo utilizzando solo l'icona dai menu. (Prima è necessario esportare GDK_BACKEND = x11)"
+
+msgid "Your window position has been saved!"
+msgstr "La posizione della finestra è stata salvata!"
+
+msgid "Area Chooser"
+msgstr "Scelta Area"
+
+msgid "Your area position has been saved!"
+msgstr "La tua posizione nell'area è stata salvata!"
+
+msgid "stop recording"
+msgstr "interrompi la registrazione"

@@ -1,0 +1,124 @@
+# Blue Recorder
+# Copyright (C) 2017, FOSS Project
+# This file is distributed under the same license as the Blue Recorder package.
+# M.Hanny Sabbagh <mhsabbagh@outlook.com>, 2017
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2017-08-08 10:53+0300\n"
+"PO-Revision-Date: 2023-11-30 19:35+0800\n"
+"Last-Translator: Giorgos Mousa <gmousa@proton.me>\n"
+"Language-Team: Greek\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+
+
+msgid "There seems to be a problem in recording. Try running 'blue-recorder' from the command line to see the issue."
+msgstr "Μοιάζει να υπάρχει πρόβλημα στην εγγραφή. Εκτελέστε 'blue-recorder' από το τερματικό για να δείτε το πρόβλημα."
+
+msgid "Stop Recording"
+msgstr "Διακοπή Εγγραφής"
+
+msgid "Recording has started!"
+msgstr "Η εγγραφή ξεκίνησε!"
+
+msgid "Recording has stopped!"
+msgstr "Η εγγραφή σταμάτησε!"
+
+msgid "Your GIF image is currently being processed, this may take a while according to your PC's resources."
+msgstr "Η GIF εικόνα σας είναι υπό επεξεργασία. Αυτό μπορεί να καθυστερήσει, ανάλογα με τους υπολογιστικούς σας πόρους."
+
+msgid "File already exists!"
+msgstr "Το αρχείο προϋπάρχει!"
+
+msgid "Would you like to overwrite this file?"
+msgstr "Επιθυμείτε να αντικαταστήσετε αυτό το αρχείο;"
+
+msgid "Sorry Jim, looks like you are using something we don't support"
+msgstr "Συγγνώμη, αλλά φαίνεται να χρησιμοποιείς κάτι που δεν υποστηρίζουμε"
+
+msgid "About"
+msgstr "Περί"
+
+msgid "Blue Recorder"
+msgstr "Κυανός Εγγραφέας"
+
+msgid "AreaChooser"
+msgstr "ΕπιλογήΠεριοχής"
+
+msgid "File Name.."
+msgstr "Όνομα Αρχείου…"
+
+msgid "Enter your command here.."
+msgstr "Προσθέστε την εντολή σας εδώ…"
+
+msgid "MKV (Matroska multimedia container format)"
+msgstr ""
+
+msgid "AVI (Audio Video Interleaved)"
+msgstr ""
+
+msgid "MP4 (MPEG-4 Part 14)"
+msgstr ""
+
+msgid "WMV (Windows Media Video)"
+msgstr ""
+
+msgid "GIF (Graphics Interchange Format)"
+msgstr ""
+
+msgid "NUT (NUT Recording Format)"
+msgstr ""
+
+msgid "Record Video"
+msgstr "Εγγραφή Εικόνας"
+
+msgid "Record Audio"
+msgstr "Εγγραφή Ήχου"
+
+msgid "Show Mouse"
+msgstr "Δείκτης Ποντικιού"
+
+msgid "Follow Mouse"
+msgstr "Ακόλουθος Ποντικιού"
+
+msgid "A simple screen recorder for Linux desktop. Supports Wayland & Xorg."
+msgstr "Ένας απλός εγγραφέας οθόνης για την επιφάνεια εργασίας Λίνουξ. Υποστηρίζει Wayland & Xorg."
+
+msgid "Select a Window"
+msgstr "Επιλογή Παραθύρου"
+
+msgid "Select an Area"
+msgstr "Επιλογή Περιοχής"
+
+msgid "Frames:"
+msgstr "Καρέ:"
+
+msgid "Delay:"
+msgstr "Καθυστέρηση:"
+
+msgid "Run Command After Recording:"
+msgstr "Εκτέλεση Εντολής μετά την Εγγραφή:"
+
+msgid "Audio Input Source:"
+msgstr "Πηγή Εισόδου Ήχου:"
+
+msgid "Default PulseAudio Input Source"
+msgstr "Προκαθορισμένη Πηγή Εισόδου PulseAudio"
+
+msgid "You didn't run the program using the application icon (desktop file). This will cause the program not to work. Run it using the icon from the menus only. (Need to export GDK_BACKEND=x11 first)"
+msgstr "Δεν εκτελέσατε το πρόγραμμα από το εικονίδιο της εφαρμογής (αρχείο desktop). Αυτό θα προκαλέσει δυσλειτουργία της εφαρμογής. Παρακαλώ τρέξτε το μόνο από τα μενού με χρήση του εικονιδίου. (Χρειάζεται export GDK_BACKEND=x11 πρώτα)"
+
+msgid "Your window position has been saved!"
+msgstr "Η τοποθεσία του παραθύρου αποθηκεύτηκε!"
+
+msgid "Area Chooser"
+msgstr "Επιλογή Περιοχής"
+
+msgid "Your area position has been saved!"
+msgstr "Η τοποθεσία της περιοχής αποθηκεύτηκε!"
+
+msgid "stop recording"
+msgstr "διακοπή εγγραφής"

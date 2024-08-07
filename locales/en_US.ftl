@@ -60,6 +60,9 @@ wmv-format = WMV (Windows Media Video)
 # Name
 blue-recorder = Blue Recorder
 
+# Close error dialog
+close = Close
+
 # Copy right
 copy-right = © 2021 Salem Yaslem
 
@@ -87,6 +90,9 @@ details-button = Details
 # Run command input
 enter-command = Enter your command here..
 
+# Error dialog title
+error-title = Error
+
 # Frames label
 file-name = Default filename:
 
@@ -105,9 +111,6 @@ license =
  Blue Recorder is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
  Blue Recorder is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with Blue Recorder. If not, see { license-website }.
-
-# Play error
-play-error = Cannot play the video file
 
 # Recording button
 record = Record
@@ -129,17 +132,20 @@ select-area = Select an Area
 select-screen = Select a Screen
 select-window = Select a Window
 
-# Start error
-start-error = Blue Recorder unable to start recording
-
-# Stop error
-stop-error = Unfortunately, the recording process was not successful
+# Error message
+some-error = Something went wrong
 
 # Stop recording button
 stop-recording = Stop recording
 
+# Show captured area
+show-area = Show Area
+
 # Show mouse label
 show-mouse = Show Mouse
+
+# Show tray icon
+show-tray = Show Tray
 
 # Video bitrate label
 video-bitrate = B/Video:
@@ -152,7 +158,7 @@ about-tooltip = Information about Blue Recorder
 area-tooltip = Select area to record
 audio-bitrate-tooltip = Set audio bitrate in KB/s
 audio-source-tooltip = Select audio source
-audio-tooltip = Mic audio recording
+audio-input-tooltip = Mic audio recording
 delay-tooltip = Delay time before starting record
 folder-tooltip = Select storage location
 follow-mouse-tooltip = Make the grabbed area follow the mouse
@@ -163,6 +169,8 @@ mouse-tooltip = Mouse appears in video recording
 video-bitrate-tooltip = Set video bitrate in KB/s
 record-tooltip = Start screen record
 screen-tooltip = Select screen to record
+show-area-tooltip = Show selected area during record
+show-tray-tooltip = Show tray icon
 speaker-tooltip = Speakr sound recording
 stop-tooltip = Stop screen recording
 video-tooltip = Video recording
