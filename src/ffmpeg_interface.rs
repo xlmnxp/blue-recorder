@@ -184,7 +184,7 @@ impl Ffmpeg {
             ffmpeg_command.arg("-f");
             ffmpeg_command.arg("pulse");
             ffmpeg_command.arg("-i");
-            ffmpeg_command.arg(&self.audio_id.active_id().unwrap());
+            ffmpeg_command.arg(self.audio_id.active_id().unwrap());
             ffmpeg_command.arg("-f");
             ffmpeg_command.arg("ogg");
             ffmpeg_command.arg(format!(
