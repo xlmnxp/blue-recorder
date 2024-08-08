@@ -16,7 +16,7 @@ pub fn initialize() -> PathBuf {
     if !&config_path.exists() {
         let config_directories = &mut config_path.to_owned();
         config_directories.pop();
-        std::fs::create_dir_all(&config_directories).unwrap_or_default();
+        std::fs::create_dir_all(config_directories).unwrap_or_default();
         std::fs::File::create(&config_path).unwrap();
         default();
     } else {

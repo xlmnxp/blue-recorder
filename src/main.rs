@@ -577,7 +577,7 @@ pub fn build_ui(application: &Application) {
         .unwrap();
     }
 
-    let logo = Image::from_file(&about_icon_path.to_str().unwrap());
+    let logo = Image::from_file(about_icon_path.to_str().unwrap());
     about_dialog.set_transient_for(Some(&main_window));
     about_dialog.set_program_name(Some(&gettext("Blue Recorder")));
     about_dialog.set_version(Some("0.2.0"));
