@@ -2,6 +2,7 @@ extern crate subprocess;
 use crate::utils::{is_snap, is_wayland};
 use crate::wayland_record::{CursorModeTypes, RecordTypes, WaylandRecorder};
 use chrono::prelude::*;
+use filename::Filename;
 use gettextrs::gettext;
 use gtk::{prelude::*, ResponseType};
 use gtk::{ButtonsType, DialogFlags, MessageDialog, MessageType};
@@ -14,7 +15,6 @@ use std::sync::mpsc::Sender;
 use std::thread::sleep;
 use std::time::Duration;
 use subprocess::Exec;
-use filename::Filename;
 
 #[derive(Clone)]
 pub struct Ffmpeg {
@@ -144,8 +144,17 @@ impl Ffmpeg {
         } else if self.record_video.is_active() && is_wayland() {
             sleep(Duration::from_secs(self.record_delay.value() as u64));
 
-            let tempfile = tempfile::NamedTempFile::new().expect("cannot create temp file").keep().expect("cannot keep temp file");
-            self.temp_video_filename = tempfile.0.file_name().expect("cannot get file name").to_str().unwrap().to_string();
+            let tempfile = tempfile::NamedTempFile::new()
+                .expect("cannot create temp file")
+                .keep()
+                .expect("cannot keep temp file");
+            self.temp_video_filename = tempfile
+                .0
+                .file_name()
+                .expect("cannot get file name")
+                .to_str()
+                .unwrap()
+                .to_string();
 
             let record_window = self.record_window.take();
             self.record_window.replace(record_window);
@@ -244,9 +253,7 @@ impl Ffmpeg {
 
         let audio_filename = format!("{}.temp.audio", self.saved_filename.as_ref().unwrap());
 
-        let is_video_record = {
-            std::path::Path::new(video_filename.as_str()).exists()
-        };
+        let is_video_record = { std::path::Path::new(video_filename.as_str()).exists() };
         let is_audio_record = std::path::Path::new(audio_filename.as_str()).exists();
 
         if is_video_record {
@@ -255,8 +262,7 @@ impl Ffmpeg {
                 Command::new("ffmpeg")
                     .args([
                         "-i",
-                        self.temp_video_filename
-                        .as_str(),
+                        self.temp_video_filename.as_str(),
                         "-crf",
                         "23", // default quality
                         "-c:a",
