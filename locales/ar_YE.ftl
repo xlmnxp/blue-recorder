@@ -60,6 +60,9 @@ wmv-format = WMV (Windows Media Video)
 # Name
 blue-recorder = المسجّل الأزرق
 
+# Close error dialog
+close = Close
+
 # Copy right
 copy-right = © 2021 Salem Yaslem
 
@@ -87,6 +90,9 @@ details-button = Details
 # Run command input
 enter-command = اكتب الأمر هنا..
 
+# Error dialog title
+error-title = Error
+
 # Frames label
 file-name = اسم الملفّ الافتراضي:
 
@@ -109,9 +115,6 @@ license =
 
  لمزيد تفاصيل راجع رخصة جنو العمومية. إن لم تكن حصلت على نسخة من رخصة جنو العمومية مع المسجل الأزرق فانظر { license-website }.
 
-# Play error
-play-error = Cannot play the video file
-
 # Recording button
 record = سجل
 
@@ -132,11 +135,20 @@ select-area = حدد منطقة
 select-screen = حدد شاشة
 select-window = حدد نافذة
 
+# Error message
+some-error = Something went wrong
+
 # Stop recording button
 stop-recording = إيقاف التسجيل
 
+# Show captured area
+show-area = Show Area
+
 # Show mouse label
 show-mouse = إظهار مؤشر الفأرة
+
+# Minimize to tray icon
+tray-minimize = Minimize to tray
 
 # Video bitrate label
 video-bitrate = B/Video:
@@ -149,7 +161,7 @@ about-tooltip = ما يُستَحسَنُ أن تعلمه عن المسجل ال
 area-tooltip = يحدد المنطقة المُراد تسجيلها
 audio-bitrate-tooltip = Set audio bitrate in KB/s
 audio-source-tooltip = لاختيار مدخل الصوت
-audio-tooltip = Mic audio recording
+audio-input-tooltip = Mic audio recording
 delay-tooltip = مُهلة قبل بدء التسجيل
 folder-tooltip = لاختيار مكان التخزين
 follow-mouse-tooltip = Make the grabbed area follow the mouse
@@ -160,8 +172,11 @@ mouse-tooltip = يظهر مؤشر الفأرة عند التسجيل
 video-bitrate-tooltip = Set video bitrate in KB/s
 record-tooltip = يبدأ تسجيل الشاشة
 screen-tooltip = يحدد الشاشة ليسجلها
+show-area-tooltip = Show selected area during record
 speaker-tooltip = Speakr sound recording
 stop-tooltip = وقف تسجيل الشاشة
+tray-minimize-tooltip = Minimize application to tray icon
 video-tooltip = يسجل الشاشة
 wayland-tooltip = غير مدعوم في وايلاند
 window-tooltip = يحدد نافذة ليسجلها
+windows-unsupported-tooltip = Not supported in windows platform
