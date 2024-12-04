@@ -150,7 +150,7 @@ pub fn build_ui(application: &Application) {
     format_chooser_combobox.append(Some("avi"), &get_bundle("avi-format", None));
     format_chooser_combobox.append(Some("wmv"), &get_bundle("wmv-format", None));
     format_chooser_combobox.append(Some("nut"), &get_bundle("nut-format", None));
-    format_chooser_combobox.set_active(Some(config_management::get("default", "format").parse::<u32>().unwrap()));
+    format_chooser_combobox.set_active(Some(config_management::get("default", "format").parse::<u32>().unwrap_or(0u32)));
 
     // Get audio sources
     let input_device = host_audio_device.input_devices().unwrap();
@@ -348,12 +348,12 @@ pub fn build_ui(application: &Application) {
                                ("frame-{}",
                                 &format_chooser_combobox.active().unwrap().to_string()))
             .parse::<f64>()
-            .unwrap(),
+            .unwrap_or(0f64),
     );
     delay_spin.set_value(
         config_management::get("default", "delay")
             .parse::<f64>()
-            .unwrap(),
+            .unwrap_or(0f64),
     );
     video_bitrate_spin.set_value(
         config_management::get("default",
@@ -361,12 +361,12 @@ pub fn build_ui(application: &Application) {
                                ("videobitrate-{}",
                                 &format_chooser_combobox.active().unwrap().to_string()))
             .parse::<f64>()
-            .unwrap(),
+            .unwrap_or(0f64),
     );
     audio_bitrate_spin.set_value(
         config_management::get("default", "audiobitrate")
             .parse::<f64>()
-            .unwrap(),
+            .unwrap_or(0f64),
     );
 
     let _format_chooser_combobox = format_chooser_combobox.clone();
