@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.86"
 async-std = {version = "1.12.0", features = ["attributes"]}
-blue-recorder-core = { git = "https://github.com/ochibani/blue-recorder-core.git", rev = "fb3ff78" }
+blue-recorder-core = { git = "https://github.com/ochibani/blue-recorder-core.git", rev = "85c9d8f" }
 cpal = "0.15.3"
 dark-light = "1.0.0"
 dirs = "4.0.0"

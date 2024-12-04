@@ -423,7 +423,7 @@
 									</object>
 								</child>
 								<child>
-									<object class="GtkCheckButton" id="trayswitch">
+									<object class="GtkCheckButton" id="areaswitch">
 										<property name="label" translatable="yes">checkbutton</property>
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
@@ -437,9 +437,9 @@
 									</object>
 								</child>
 								<child>
-									<object class="GtkCheckButton" id="areaswitch">
+									<object class="GtkCheckButton" id="trayswitch">
 										<property name="label" translatable="yes">checkbutton</property>
-										<property name="visible">True</property>
+										<property name="visible">False</property>
 										<property name="can-focus">True</property>
 										<property name="receives-default">False</property>
 										<property name="active">True</property>

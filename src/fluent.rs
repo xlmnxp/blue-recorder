@@ -10,8 +10,9 @@ pub fn get_bundle(message_id: &str, arg: Option<&FluentArgs>) -> String {
         current_exec_dir
     }.join(Path::new("locales"));
     if !ftl_path.exists() {
+        let var = std::env::var("LC_DIR");
         ftl_path = std::fs::canonicalize(Path::new(
-            &std::env::var("LC_DIR").unwrap_or_else(|_| String::from("locales")),
+            &var.unwrap_or_else(|_| String::from("locales")),
         )).unwrap();
     }
     let supported_lang: Vec<String> = std::fs::read_dir(&ftl_path)
@@ -27,8 +28,9 @@ pub fn get_bundle(message_id: &str, arg: Option<&FluentArgs>) -> String {
             locale = String::from("en_US");
         }
     }
+    let ftl_in_loacle = ftl_path.join(Path::new(&locale.split('.').next().unwrap()));
     let ftl_file = std::fs::read_to_string(
-        format!("{}/{}.ftl", ftl_path.to_str().unwrap(),locale.split('.').next().unwrap())
+        format!("{}.ftl", ftl_in_loacle.to_str().unwrap())
     ).unwrap();
     let res = FluentResource::try_new(ftl_file).unwrap();
     let mut bundle = FluentBundle::default();
