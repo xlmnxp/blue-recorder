@@ -1,5 +1,8 @@
 use anyhow::{anyhow, Result};
+#[cfg(any(target_os = "freebsd", target_os = "linux"))]
 use blue_recorder_core::ffmpeg_linux::Ffmpeg;
+#[cfg(target_os = "windows")]
+use blue_recorder_core::ffmpeg_windows::Ffmpeg;
 use blue_recorder_core::utils::is_wayland;
 use cpal::traits::{DeviceTrait, HostTrait};
 use libadwaita::{Application, Window};
@@ -12,7 +15,7 @@ use std::ops::Add;
 use std::path::Path;
 use std::rc::Rc;
 
-use crate::{area_capture, config_management, fluent::get_bundle};
+use crate::{/*area_capture,*/ config_management, fluent::get_bundle};
 use crate::timer::{recording_delay, start_timer, stop_timer};
 
 pub fn run_ui(application: &Application) {
@@ -196,7 +199,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     hide_switch.set_label(Some(&get_bundle("auto-hide", None)));
     mouse_switch.set_label(Some(&get_bundle("show-mouse", None)));
     speaker_switch.set_label(Some(&get_bundle("record-speaker", None)));
-    tray_switch.set_label(Some(&get_bundle("show-tray", None)));
+    tray_switch.set_label(Some(&get_bundle("tray-minimize", None)));
     video_switch.set_label(Some(&get_bundle("record-video", None)));
     area_switch.set_tooltip_text(Some(&get_bundle("show-area-tooltip", None)));
     audio_input_switch.set_tooltip_text(Some(&get_bundle("audio-input-tooltip", None)));
@@ -204,7 +207,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     hide_switch.set_tooltip_text(Some(&get_bundle("hide-tooltip", None)));
     mouse_switch.set_tooltip_text(Some(&get_bundle("mouse-tooltip", None)));
     speaker_switch.set_tooltip_text(Some(&get_bundle("speaker-tooltip", None)));
-    tray_switch.set_tooltip_text(Some(&get_bundle("show-tray-tooltip", None)));
+    tray_switch.set_tooltip_text(Some(&get_bundle("tray-minimize-tooltip", None)));
     video_switch.set_tooltip_text(Some(&get_bundle("video-tooltip", None)));
 
     let _mouse_switch = mouse_switch.clone();
@@ -526,12 +529,12 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     });
 
     // Buttons
-    let area_capture: Rc<RefCell<area_capture::AreaCapture>> =
-        Rc::new(RefCell::new(area_capture::AreaCapture::new()?));
+    //let area_capture: Rc<RefCell<area_capture::AreaCapture>> =
+        //Rc::new(RefCell::new(area_capture::AreaCapture::new()?));
 
     area_grab_label.set_label(&get_bundle("select-area", None));
     let _area_chooser_window = area_chooser_window.clone();
-    let mut _area_capture = area_capture.clone();
+    //let mut _area_capture = area_capture.clone();
     let _area_switch = area_switch.clone();
     area_grab_button.connect_clicked(move |_| {
         config_management::set("default", "mode", "area");
@@ -542,23 +545,23 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
 
     area_apply_label.set_label(&get_bundle("apply", None));
     let _area_chooser_window = area_chooser_window.clone();
-    let mut _area_capture = area_capture.clone();
+    //let mut _area_capture = area_capture.clone();
     let _error_dialog = error_dialog.clone();
     let _error_message = error_message.clone();
     area_set_button.connect_clicked(move |_| {
         let text_buffer = TextBuffer::new(None);
-        if _area_capture
+        /*if _area_capture
             .borrow_mut()
             .get_window_by_name(_area_chooser_window.title().unwrap().as_str()).is_err() {
                 text_buffer.set_text("failed to get area size value");
                 _error_message.set_buffer(Some(&text_buffer));
                 _error_dialog.show();
-            }
+            }*/
         _area_chooser_window.hide();
     });
 
     let _area_chooser_window = area_chooser_window.clone();
-    let mut _area_capture = area_capture.clone();
+    //let mut _area_capture = area_capture.clone();
     let _area_switch = area_switch.clone();
     let _error_dialog = error_dialog.clone();
     let _error_message = error_message.clone();
@@ -575,15 +578,15 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         config_management::set("default", "mode", "screen");
         screen_grab_button_record_window.replace(false);
         _area_chooser_window.hide();
-        if _area_capture.borrow_mut().reset().is_err() {
+        /*if _area_capture.borrow_mut().reset().is_err() {
             text_buffer.set_text("failed to get reset area_capture value");
             _error_message.set_buffer(Some(&text_buffer));
             _error_dialog.show();
-        }
+        }*/
     });
 
     let _area_chooser_window: Window = area_chooser_window.clone();
-    let mut _area_capture: Rc<RefCell<area_capture::AreaCapture>> = area_capture.clone();
+    //let mut _area_capture: Rc<RefCell<area_capture::AreaCapture>> = area_capture.clone();
     let _area_switch = area_switch.clone();
     let _error_dialog = error_dialog.clone();
     let _error_message = error_message.clone();
@@ -599,11 +602,11 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         if is_wayland() {
             window_grab_button_record_window.replace(true);
         } else {
-            if _area_capture.borrow_mut().get_area().is_err() {
+            /*if _area_capture.borrow_mut().get_area().is_err() {
                 text_buffer.set_text("failed to get window size value");
                 _error_message.set_buffer(Some(&text_buffer));
                 _error_dialog.show();
-            }
+            }*/
         }
     });
 

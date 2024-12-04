@@ -147,8 +147,8 @@ show-area = Show Area
 # Show mouse label
 show-mouse = إظهار مؤشر الفأرة
 
-# Show tray icon
-show-tray = Show Tray
+# Minimize to tray icon
+tray-minimize = Minimize to tray
 
 # Video bitrate label
 video-bitrate = B/Video:
@@ -173,9 +173,10 @@ video-bitrate-tooltip = Set video bitrate in KB/s
 record-tooltip = يبدأ تسجيل الشاشة
 screen-tooltip = يحدد الشاشة ليسجلها
 show-area-tooltip = Show selected area during record
-show-tray-tooltip = Show tray icon
 speaker-tooltip = Speakr sound recording
 stop-tooltip = وقف تسجيل الشاشة
+tray-minimize-tooltip = Minimize application to tray icon
 video-tooltip = يسجل الشاشة
 wayland-tooltip = غير مدعوم في وايلاند
 window-tooltip = يحدد نافذة ليسجلها
+windows-unsupported-tooltip = Not supported in windows platform
