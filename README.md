@@ -13,7 +13,7 @@ A simple desktop recorder for Linux systems. Built using GTK4 and ffmpeg.
 This project is based on [Green Recorder](https://github.com/mhsabbagh/green-recorder) and is rewritten in Rust with improvements.
 
 ## Installation
-Blue Recorder available as Snap and Flatpak package:
+Blue Recorder is available as a Snap and Flatpak package.
 
 <a href='https://snapcraft.io/blue-recorder'><img height='60' alt='Get it from the Snap Store' src='https://snapcraft.io/static/images/badges/en/snap-store-black.svg'/></a> <a href='https://flathub.org/apps/details/sa.sy.bluerecorder'><img height='60' alt='Download on Flathub' src='https://flathub.org/assets/badges/flathub-badge-en.png'/></a>
 
