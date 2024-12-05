@@ -10,7 +10,7 @@ A simple desktop recorder for Linux systems. Built using GTK4 and ffmpeg.
 - You can choose the audio input source you want from the list.
 - You can also set the default values you want by simply changing them in the interface, and the program will save them for you for the next time you open it. 
 
-It based on [Green Recorder](https://github.com/mhsabbagh/green-recorder) and rewritten in Rust with improvements.
+This project is based on [Green Recorder](https://github.com/mhsabbagh/green-recorder) and is rewritten in Rust with improvements.
 
 ## Installation
 Blue Recorder available as Snap and Flatpak package:
