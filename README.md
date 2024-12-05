@@ -2,11 +2,10 @@
 
 <img src="screenshots/screenshot1.png"/>
 
-A simple desktop recorder for Linux systems. Built using GTK4 and ffmpeg. 
+A simple desktop recorder built using GTK4 and FFmpeg. 
 
-- It supports recording audio and video on almost all Linux interfaces with support for Wayland display server on GNOME session.
-- The following formats are currently supported: mkv, avi, mp4, wmv, gif and nut.
-- You can stop the recording process easily by right-clicking the icon and choosing "Stop Record". Or middle-clicking the recording icon in the notifications area (but doesn't work on all interfaces).
+- It supports recording audio and video on Windows and almost all Linux and FreeBSD interfaces with support for Wayland display server on GNOME and KDE sessions.
+- The following formats are currently supported: avi, gif, mkv, mp4, nut, webm and wmv.
 - You can choose the audio input source you want from the list.
 - You can also set the default values you want by simply changing them in the interface, and the program will save them for you for the next time you open it. 
 
@@ -36,7 +35,7 @@ Then use `Cargo` to build it:
 git clone https://github.com/xlmnxp/blue-recorder
 cd <Project Directory>
 cargo build --release
-cp -a data interfaces po target/release
+cp -a data interfaces locales target/release
 ```
 Then you will find the executable file at: 
 `<Project Directory>/target/release/blue-recorder`
