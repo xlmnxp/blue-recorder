@@ -27,7 +27,7 @@ gio
 x11-utils
 ```
 
-Install dependencies Ubuntu and Debian based distros:
+Install dependencies for Ubuntu and Debian-based distros:
 ```
 sudo apt install build-essential clang cargo x11-utils ffmpeg libgtk-3-dev libgtk-4-dev libatk1.0-dev libasound2-dev libgstreamer1.0-dev
 ```
