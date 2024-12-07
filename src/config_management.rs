@@ -4,7 +4,6 @@ extern crate ini;
 
 use glib::get_user_data_dir;
 use ini::Ini;
-use std::ops::Add;
 use std::path::{Path, PathBuf};
 
 // Default values
@@ -24,8 +23,7 @@ fn default() {
     set(
         "default",
         "folder",
-        String::from("file://")
-            .add(
+        String::from(
                 glib::get_user_special_dir(glib::UserDirectory::Videos)
                     .unwrap_or_else(|| {
                         PathBuf::from(
