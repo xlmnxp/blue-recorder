@@ -12,6 +12,7 @@ fn default() {
         set_default_video_bitrate(&format.to_string());
         set_default_frame(&format.to_string());
     }
+
     set("default", "areacheck", "1");
     set("default", "audiobitrate", "0");
     set("default", "audio_input_check", "1");
@@ -20,22 +21,20 @@ fn default() {
     set("default", "filename", "");
     set("default", "followmousecheck", "0");
     set("default", "format", "0");
-    set(
-        "default",
+    set("default",
         "folder",
-        String::from(
-                glib::get_user_special_dir(glib::UserDirectory::Videos)
-                    .unwrap_or_else(|| {
-                        PathBuf::from(
-                            std::env::var("HOME")
-                                .unwrap_or_else(|_| "/".to_string())
-                                .as_str(),
-                        )
-                    })
-                    .to_str()
-                    .unwrap(),
-            )
-            .as_str(),
+        &String::from(
+            glib::get_user_special_dir(glib::UserDirectory::Videos)
+                .unwrap_or_else(|| {
+                    PathBuf::from(
+                        std::env::var("HOME")
+                            .unwrap_or_else(|_| "/".to_string())
+                            .as_str(),
+                    )
+                })
+                .to_str()
+                .unwrap(),
+        )
     );
     set("default", "hidecheck", "0");
     set("default", "mode", "screen");
