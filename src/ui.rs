@@ -474,11 +474,11 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     folder_chooser_native.set_transient_for(Some(&main_window));
     folder_chooser_native.set_modal(true);
     folder_chooser_native
-        .set_file(&File::for_uri(&config_management::get(
+        .set_file(&File::for_path(&config_management::get(
             "default", "folder",
         )))
         .unwrap();
-    let folder_chooser = Some(File::for_uri(&config_management::get(
+    let folder_chooser = Some(File::for_path(&config_management::get(
         "default", "folder",
     )))
     .unwrap();
