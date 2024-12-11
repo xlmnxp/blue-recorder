@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
 use blue_recorder_core::ffmpeg_linux::Ffmpeg;
 #[cfg(target_os = "windows")]
@@ -173,11 +173,16 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     format_chooser_combobox.set_active(Some(config_management::get("default", "format").parse::<u32>().unwrap_or(0u32)));
 
     // Get audio sources
-    let input_device = host_audio_device.input_devices().unwrap();
+    let input_device = host_audio_device.input_devices()?;
     let sources_descriptions: Vec<String> = input_device
         .filter_map(|device| device.name().ok())
         .collect();
-    let output_device = host_audio_device.default_output_device().unwrap().name().unwrap();
+    let host_output_device = host_audio_device.default_output_device();
+    let output_device = if host_output_device.is_some() {
+        host_output_device.unwrap().name()?
+    } else {
+      String::from("")
+    };
 
     audio_source_combobox.append(Some("default"), &get_bundle("audio-input", None));
     for (id, audio_source) in sources_descriptions.iter().enumerate() {
@@ -484,9 +489,13 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     .unwrap();
     let _error_dialog = error_dialog.clone();
     let _error_message = error_message.clone();
-    let folder_chooser_name = folder_chooser.basename().ok_or_else(|| anyhow!("failed to get save file basename"))?;
-    folder_chooser_label.set_label(&folder_chooser_name.to_string_lossy());
-    let folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
+    let folder_chooser_name = if folder_chooser.basename().is_some() {
+        folder_chooser.basename().unwrap().to_string_lossy().to_string()
+    } else {
+        String::from("")
+    };
+    folder_chooser_label.set_label(&folder_chooser_name);
+    let folder_chooser_icon = config_management::folder_icon(Some(folder_chooser_name.as_str()));
     folder_chooser_image.set_icon_name(Some(folder_chooser_icon));
     folder_chooser_button.set_tooltip_text(Some(&get_bundle("folder-tooltip", None)));
     // Show file chooser dialog
@@ -505,7 +514,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                                                        }
                     let folder_chooser = folder_chooser_native.file().unwrap_or_else
                                                            (||
-                                                            File::for_uri(&config_management::get(
+                                                            File::for_path(&config_management::get(
                                                                 "default", "folder",
                                                             ))); // Default
                     let folder_chooser_name = folder_chooser.basename().unwrap();
