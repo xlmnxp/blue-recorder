@@ -37,9 +37,10 @@
 								<property name="margin-start">5</property>
 								<child>
 									<object class="GtkLabel" id="area_size_top">
+										<property name="name">area_size_top</property>
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
-										<property name="label" translatable="yes">label</property>
+										<property name="label" translatable="yes">loading</property>
 									</object>
 								</child>
 							</object>
@@ -97,9 +98,10 @@
 								<property name="margin-end">5</property>
 								<child>
 									<object class="GtkLabel" id="area_size_bottom">
+										<property name="name">area_size_bottom</property>
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
-										<property name="label" translatable="yes">label</property>
+										<property name="label" translatable="yes">loading</property>
 									</object>
 								</child>
 							</object>

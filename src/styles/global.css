@@ -4,15 +4,25 @@
     border-radius: 0px;
 }
 
+#area_grab_button:checked, #screen_grab_button:checked, #window_grab_button:checked {
+    color: @theme_selected_fg_color;
+    background: alpha(@theme_selected_bg_color, 0.5);
+    border: 1px solid @theme_selected_bg_color;
+}
+
 #area_set_button {
     color: @theme_selected_fg_color;
     background: @theme_selected_bg_color;
 }
 
-#area_grab_button:checked, #screen_grab_button:checked, #window_grab_button:checked {
+#area_size_bottom {
     color: @theme_selected_fg_color;
-    background: alpha(@theme_selected_bg_color, 0.5);
-    border: 1px solid @theme_selected_bg_color;
+    font-weight: bold;
+}
+
+#area_size_top {
+    color: @theme_selected_fg_color;
+    font-weight: bold;
 }
 
 #delay_window {

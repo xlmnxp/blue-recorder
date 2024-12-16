@@ -15,7 +15,7 @@ use std::ops::Add;
 use std::path::Path;
 use std::rc::Rc;
 
-use crate::{/*area_capture,*/ config_management, fluent::get_bundle};
+use crate::{area_capture, config_management, fluent::get_bundle};
 use crate::timer::{recording_delay, start_timer, stop_timer};
 
 pub fn run_ui(application: &Application) {
@@ -131,7 +131,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     error_dialog.set_transient_for(Some(&main_window));
     select_window.set_transient_for(Some(&main_window));
     select_window.set_message_type(libadwaita::gtk::MessageType::Info);
-    select_window.set_text(Some(&get_bundle("click-window", None)));
+    select_window.set_secondary_text(Some(&get_bundle("click-window", None)));
     main_window.set_application(Some(application));
     main_window.set_title(Some(&get_bundle("blue-recorder", None)));
 
@@ -516,7 +516,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                                                    let text_buffer = TextBuffer::new(None);
                                                    if response == libadwaita::gtk::ResponseType::Accept {
                                                        if folder_chooser_native.file().is_none() {
-                                                           text_buffer.set_text("failed to get save file path");
+                                                           text_buffer.set_text("Failed to get save file path");
                                                            error_message.set_buffer(Some(&text_buffer));
                                                            error_dialog.show();
                                                        }
@@ -553,9 +553,21 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _area_chooser_window = area_chooser_window.clone();
     //let mut _area_capture = area_capture.clone();
     let _area_switch = area_switch.clone();
+    let _error_dialog = error_dialog.clone();
+    let _error_message = error_message.clone();
     area_grab_button.connect_clicked(move |_| {
         config_management::set("default", "mode", "area");
         _area_chooser_window.show();
+        if area_capture::show_size(
+            _area_chooser_window.clone(),
+            area_size_bottom_label.clone(),
+            area_size_top_label.clone(),
+        ).is_err() {
+            let text_buffer = TextBuffer::new(None);
+            text_buffer.set_text("Failed to get area size value");
+            _error_message.set_buffer(Some(&text_buffer));
+            _error_dialog.show();
+        }
         _area_switch.set_active(config_management::get_bool("default", "areacheck"));
         _area_switch.set_sensitive(true);
     });
@@ -570,7 +582,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         /*if _area_capture
             .borrow_mut()
             .get_window_by_name(_area_chooser_window.title().unwrap().as_str()).is_err() {
-                text_buffer.set_text("failed to get area size value");
+                text_buffer.set_text("Failed to get area size value");
                 _error_message.set_buffer(Some(&text_buffer));
                 _error_dialog.show();
             }*/
@@ -596,7 +608,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         screen_grab_button_record_window.replace(false);
         _area_chooser_window.hide();
         /*if _area_capture.borrow_mut().reset().is_err() {
-            text_buffer.set_text("failed to get reset area_capture value");
+            text_buffer.set_text("Failed to get reset area_capture value");
             _error_message.set_buffer(Some(&text_buffer));
             _error_dialog.show();
         }*/
@@ -610,8 +622,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     window_grab_button.set_tooltip_text(Some(&get_bundle("window-tooltip", None)));
     window_grab_label.set_label(&get_bundle("select-window", None));
     window_grab_button.connect_clicked(move |_| {
-        select_window.show();
-        select_window.set_hide_on_close(true);
         let text_buffer = TextBuffer::new(None);
         config_management::set_bool("default", "areacheck", _area_switch.is_active());
         _area_switch.set_active(false);
@@ -621,8 +631,10 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         if is_wayland() {
             window_grab_button_record_window.replace(true);
         } else {
+            select_window.show();
+            select_window.set_hide_on_close(true);
             /*if _area_capture.borrow_mut().get_area().is_err() {
-                text_buffer.set_text("failed to get window size value");
+                text_buffer.set_text("Failed to get window size value");
                 _error_message.set_buffer(Some(&text_buffer));
                 _error_dialog.show();
             }*/

@@ -2,8 +2,14 @@ extern crate regex;
 
 use anyhow::{anyhow, Result};
 use display_info::DisplayInfo;
+use glib::Continue;
+use libadwaita::gtk::Label;
+use libadwaita::Window;
+use libadwaita::prelude::*;
 use regex::Regex;
+use std::cell::RefCell;
 use std::process::Command;
+use std::rc::Rc;
 #[cfg(target_os = "windows")]
 use x_win::get_active_window;
 
@@ -142,4 +148,40 @@ fn xwininfo_to_coordinate(xwininfo_output: String) -> Result<(u16, u16, u16, u16
         .parse::<u16>()?;
 
     Ok((x, y, width, height))
+}
+
+// Display area chooser window size
+pub fn show_size(area_chooser_window: Window, area_size_bottom_label: Label, area_size_top_label: Label) -> Result<()> {
+    // Create a shared state for the area size
+    let size_labels = Rc::new(RefCell::new((area_size_top_label, area_size_bottom_label)));
+
+    // Use a timeout to periodically check the window size
+    glib::timeout_add_local(1000, {
+        let area_chooser_window = area_chooser_window.clone();
+        let size_labels = size_labels.clone();
+
+        move || {
+            if !area_chooser_window.is_active() {
+                return Continue(false); // Stop the timeout
+            }
+
+            let mut area_capture = AreaCapture::new().unwrap();
+            #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+            let size = area_capture.get_window_by_name(
+                area_chooser_window.title().unwrap().as_str()
+            ).unwrap();
+
+            #[cfg(target_os = "windows")]
+            let size = area_capture.get_active_window().unwrap();
+
+            // Update the labels
+            let (top_label, bottom_label) = size_labels.borrow_mut().to_owned();
+            top_label.set_text(&format!("{}x{}", size.width, size.height));
+            bottom_label.set_text(&format!("{}x{}", size.width, size.height));
+
+            Continue(true) // Continue the timeout
+        }
+    });
+
+    Ok(())
 }

@@ -7,6 +7,7 @@
 		<property name="destroy-with-parent">True</property>
 		<property name="deletable">False</property>
 		<property name="resizable">False</property>
+		<property name="decorated">False</property>
 		<property name="modal">True</property>
 	</object>
 </interface>
