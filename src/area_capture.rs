@@ -92,13 +92,17 @@ impl AreaCapture {
     }
 
     pub fn reset(&mut self) -> Result<Self> {
-        if cfg!(target_os = "windows") {
+        #[cfg(target_os = "windows")]
+        {
             let coordinate = DisplayInfo::all()?;
             self.x = coordinate[0].x as u16;
             self.y = coordinate[0].y as u16;
             self.width = coordinate[0].width as u16;
             self.height = coordinate[0].height as u16;
-        } else {
+        }
+
+        #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+        {
             let coordinate = xwininfo_to_coordinate(
                 String::from_utf8(Command::new("xwininfo").arg("-root").output()?.stdout)?
             )?;
@@ -108,8 +112,8 @@ impl AreaCapture {
             self.height = coordinate.3;
         }
 
-        Ok(*self)
-    }
+    Ok(*self)
+}
 }
 
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
