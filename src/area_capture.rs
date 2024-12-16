@@ -1,8 +1,11 @@
 extern crate regex;
 
 use anyhow::{anyhow, Result};
+use display_info::DisplayInfo;
 use regex::Regex;
 use std::process::Command;
+#[cfg(target_os = "windows")]
+use x_win::get_active_window;
 
 // This struct use "xwininfo" in linux & freebsd to get area x, y, width and height
 #[derive(Debug, Copy, Clone)]
@@ -13,22 +16,46 @@ pub struct AreaCapture {
     pub height: u16,
 }
 
-#[cfg(any(target_os = "freebsd", target_os = "linux"))]
 impl AreaCapture {
     pub fn new() -> Result<AreaCapture> {
+        #[cfg(any(target_os = "freebsd", target_os = "linux"))]
         let coordinate = xwininfo_to_coordinate(
             String::from_utf8(Command::new("xwininfo").arg("-root").output()?.stdout)?
         )?;
 
+        #[cfg(any(target_os = "freebsd", target_os = "linux"))]
         let area_capture = AreaCapture {
             x: coordinate.0,
             y: coordinate.1,
             width: coordinate.2,
             height: coordinate.3,
         };
+
+        #[cfg(target_os = "windows")]
+        let coordinate = DisplayInfo::all()?;
+
+        #[cfg(target_os = "windows")]
+        let area_capture = AreaCapture {
+            x: coordinate[0].x as u16,
+            y: coordinate[0].y as u16,
+            width: coordinate[0].width as u16,
+            height: coordinate[0].height as u16,
+        };
         Ok(area_capture)
     }
 
+    #[cfg(target_os = "windows")]
+    pub fn get_active_window(&mut self) -> Result<Self> {
+        let coordinate = get_active_window()?.position;
+
+        self.x = coordinate.x as u16;
+        self.y = coordinate.y as u16;
+        self.width = coordinate.width as u16;
+        self.height = coordinate.height as u16;
+        Ok(*self)
+    }
+
+    #[cfg(any(target_os = "freebsd", target_os = "linux"))]
     pub fn get_area(&mut self) -> Result<Self> {
         let coordinate = xwininfo_to_coordinate(
             String::from_utf8(Command::new("xwininfo").output()?.stdout)?
@@ -40,9 +67,16 @@ impl AreaCapture {
         Ok(*self)
     }
 
+    #[cfg(target_os = "windows")]
+    pub fn get_title(&mut self) -> Result<String> {
+        let title = get_active_window()?.title;
+        Ok(title)
+    }
+
+    #[cfg(any(target_os = "freebsd", target_os = "linux"))]
     pub fn get_window_by_name(&mut self, name: &str) -> Result<Self> {
         let coordinate = xwininfo_to_coordinate(
-            String::from_utf8(Command::new("xwininfo").arg("-name").arg(name).output().unwrap().stdout).unwrap(),
+            String::from_utf8(Command::new("xwininfo").arg("-name").arg(name).output()?.stdout)?,
         )?;
         self.x = coordinate.0;
         self.y = coordinate.1;
@@ -52,17 +86,27 @@ impl AreaCapture {
     }
 
     pub fn reset(&mut self) -> Result<Self> {
-        let coordinate = xwininfo_to_coordinate(
-            String::from_utf8(Command::new("xwininfo").arg("-root").output().unwrap().stdout).unwrap()
-        )?;
-        self.x = coordinate.0;
-        self.y = coordinate.1;
-        self.width = coordinate.2;
-        self.height = coordinate.3;
+        if cfg!(target_os = "windows") {
+            let coordinate = DisplayInfo::all()?;
+            self.x = coordinate[0].x as u16;
+            self.y = coordinate[0].y as u16;
+            self.width = coordinate[0].width as u16;
+            self.height = coordinate[0].height as u16;
+        } else {
+            let coordinate = xwininfo_to_coordinate(
+                String::from_utf8(Command::new("xwininfo").arg("-root").output()?.stdout)?
+            )?;
+            self.x = coordinate.0;
+            self.y = coordinate.1;
+            self.width = coordinate.2;
+            self.height = coordinate.3;
+        }
+
         Ok(*self)
     }
 }
 
+#[cfg(any(target_os = "freebsd", target_os = "linux"))]
 fn xwininfo_to_coordinate(xwininfo_output: String) -> Result<(u16, u16, u16, u16)> {
     let x: u16 = Regex::new(r"A.*X:\s+(\d+)\n")?
         .captures(xwininfo_output.as_str())

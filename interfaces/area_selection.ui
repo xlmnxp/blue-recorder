@@ -20,28 +20,83 @@
 		<child>
 			<object class="GtkWindowHandle">
 				<child>
-					<object class="GtkButton" id="area_set_button">
-						<property name="name">area_set_button</property>
+					<object class="GtkBox">
 						<property name="visible">True</property>
 						<property name="can-focus">True</property>
-						<property name="receives-default">True</property>
-						<property name="halign">center</property>
-						<property name="valign">center</property>
+						<property name="orientation">vertical</property>
+						<property name="halign">fill</property>
+						<property name="valign">filr</property>
 						<child>
-							<object class="GtkGrid">
+							<object class="GtkBox">
 								<property name="visible">True</property>
 								<property name="can-focus">True</property>
-								<property name="column-spacing">3</property>
-								<property name="row-homogeneous">True</property>
+								<property name="orientation">horizontal</property>
+								<property name="halign">fill</property>
+								<property name="valign">start</property>
+								<property name="margin-top">5</property>
+								<property name="margin-start">5</property>
 								<child>
-									<object class="GtkImage">
+									<object class="GtkLabel" id="area_size_top">
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
-										<property name="icon-name">object-select-symbolic</property>
+										<property name="label" translatable="yes">label</property>
 									</object>
 								</child>
+							</object>
+						</child>
+						<child>
+							<object class="GtkBox">
+								<property name="visible">True</property>
+								<property name="can-focus">True</property>
+								<property name="orientation">horizontal</property>
+								<property name="halign">center</property>
+								<property name="valign">center</property>
+								<property name="vexpand">True</property>
 								<child>
-									<object class="GtkLabel" id="area_apply">
+									<object class="GtkButton" id="area_set_button">
+										<property name="name">area_set_button</property>
+										<property name="visible">True</property>
+										<property name="can-focus">True</property>
+										<property name="receives-default">True</property>
+										<property name="halign">center</property>
+										<property name="valign">center</property>
+										<child>
+											<object class="GtkGrid">
+												<property name="visible">True</property>
+												<property name="can-focus">True</property>
+												<property name="column-spacing">3</property>
+												<property name="row-homogeneous">True</property>
+												<child>
+													<object class="GtkImage">
+														<property name="visible">True</property>
+														<property name="can-focus">True</property>
+														<property name="icon-name">object-select-symbolic</property>
+													</object>
+												</child>
+												<child>
+													<object class="GtkLabel" id="area_apply">
+														<property name="visible">True</property>
+														<property name="can-focus">True</property>
+														<property name="label" translatable="yes">label</property>
+													</object>
+												</child>
+											</object>
+										</child>
+									</object>
+								</child>
+							</object>
+						</child>
+						<child>
+							<object class="GtkBox">
+								<property name="visible">True</property>
+								<property name="can-focus">True</property>
+								<property name="orientation">horizontal</property>
+								<property name="halign">end</property>
+								<property name="valign">end</property>
+								<property name="margin-bottom">5</property>
+								<property name="margin-end">5</property>
+								<child>
+									<object class="GtkLabel" id="area_size_bottom">
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
 										<property name="label" translatable="yes">label</property>

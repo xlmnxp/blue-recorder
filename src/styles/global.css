@@ -91,6 +91,10 @@
     color: @theme_selected_bg_color;
 }
 
+#select_window {
+    font-weight: bold;
+}
+
 #stop_button {
     background: #ed333b;
     border: 1px solid #ed333b;

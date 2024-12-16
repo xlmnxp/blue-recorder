@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+	<requires lib="gtk" version="4.0"/>
+	<object class="GtkMessageDialog" id="select_window">
+		<property name="name">select_window</property>
+		<property name="can-focus">True</property>
+		<property name="destroy-with-parent">True</property>
+		<property name="deletable">False</property>
+		<property name="resizable">False</property>
+		<property name="modal">True</property>
+	</object>
+</interface>

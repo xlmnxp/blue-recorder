@@ -60,6 +60,9 @@ wmv-format = WMV (Windows Media Video)
 # Name
 blue-recorder = Blue Recorder
 
+# Click to select window
+click-window = Left click to select a window
+
 # Close error dialog
 close = Close
 

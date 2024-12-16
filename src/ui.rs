@@ -62,11 +62,13 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let area_selection_ui_src = include_str!("../interfaces/area_selection.ui").to_string();
     let delay_ui_src = include_str!("../interfaces/delay.ui").to_string();
     let main_ui_src = include_str!("../interfaces/main.ui").to_string();
+    let select_window_ui_src = include_str!("../interfaces/select_window.ui").to_string();
 
     let builder: Builder = Builder::from_string(main_ui_src.as_str());
     builder.add_from_string(about_dialog_ui_src.as_str()).unwrap();
     builder.add_from_string(area_selection_ui_src.as_str()).unwrap();
     builder.add_from_string(delay_ui_src.as_str()).unwrap();
+    builder.add_from_string(select_window_ui_src.as_str()).unwrap();
 
     // Get Objects from UI
     let area_apply_label: Label = builder.object("area_apply").unwrap();
@@ -75,6 +77,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let area_grab_icon: Image = builder.object("area_grab_icon").unwrap();
     let area_grab_label: Label = builder.object("area_grab_label").unwrap();
     let area_set_button: Button = builder.object("area_set_button").unwrap();
+    let area_size_bottom_label: Label = builder.object("area_size_bottom").unwrap();
+    let area_size_top_label: Label = builder.object("area_size_top").unwrap();
     let area_switch: CheckButton = builder.object("areaswitch").unwrap();
     let about_button: Button = builder.object("aboutbutton").unwrap();
     let about_dialog: AboutDialog = builder.object("about_dialog").unwrap();
@@ -110,6 +114,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let screen_grab_button: ToggleButton = builder.object("screen_grab_button").unwrap();
     let screen_grab_icon: Image = builder.object("screen_grab_icon").unwrap();
     let screen_grab_label: Label = builder.object("screen_grab_label").unwrap();
+    let select_window: MessageDialog = builder.object("select_window").unwrap();
     let speaker_switch: CheckButton = builder.object("speakerswitch").unwrap();
     let stop_button: Button = builder.object("stopbutton").unwrap();
     let stop_label: Label = builder.object("stop_label").unwrap();
@@ -124,6 +129,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     // Windows
     area_chooser_window.set_title(Some(&get_bundle("area-chooser", None))); // Title is hidden
     error_dialog.set_transient_for(Some(&main_window));
+    select_window.set_transient_for(Some(&main_window));
+    select_window.set_message_type(libadwaita::gtk::MessageType::Info);
+    select_window.set_text(Some(&get_bundle("click-window", None)));
     main_window.set_application(Some(application));
     main_window.set_title(Some(&get_bundle("blue-recorder", None)));
 
@@ -602,6 +610,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     window_grab_button.set_tooltip_text(Some(&get_bundle("window-tooltip", None)));
     window_grab_label.set_label(&get_bundle("select-window", None));
     window_grab_button.connect_clicked(move |_| {
+        select_window.show();
+        select_window.set_hide_on_close(true);
         let text_buffer = TextBuffer::new(None);
         config_management::set_bool("default", "areacheck", _area_switch.is_active());
         _area_switch.set_active(false);
