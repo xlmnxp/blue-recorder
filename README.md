@@ -19,10 +19,11 @@ Blue Recorder is available as a Snap and Flatpak package.
 ## Build from source
 Blue Recorder depends on the following dependencies:
 ```
+alsa
 ffmpeg
-gtk
 gdk
 gio
+gtk
 x11-utils
 ```
 
