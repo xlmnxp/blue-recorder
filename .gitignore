@@ -1,2 +1,5 @@
 /target
+**/target
 *.mo
+cargo.lock
+**/cargo.lock
