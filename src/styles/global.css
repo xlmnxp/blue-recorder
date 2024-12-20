@@ -102,7 +102,14 @@
 }
 
 #select_window {
+    background: none;
+    border: none;
+    border-radius: 0px;
     font-weight: bold;
+}
+
+#select_window_label {
+    color: @theme_selected_bg_color;
 }
 
 #stop_button {

@@ -1,13 +1,18 @@
 extern crate regex;
 
-use anyhow::{anyhow, Result};
+#[cfg(any(target_os = "freebsd", target_os = "linux"))]
+use anyhow::anyhow;
+use anyhow::Result;
+#[cfg(target_os = "windows")]
 use display_info::DisplayInfo;
 use glib::Continue;
 use libadwaita::gtk::Label;
 use libadwaita::Window;
 use libadwaita::prelude::*;
+#[cfg(any(target_os = "freebsd", target_os = "linux"))]
 use regex::Regex;
 use std::cell::RefCell;
+#[cfg(any(target_os = "freebsd", target_os = "linux"))]
 use std::process::Command;
 use std::rc::Rc;
 #[cfg(target_os = "windows")]
@@ -113,7 +118,7 @@ impl AreaCapture {
         }
 
     Ok(*self)
-}
+    }
 }
 
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
@@ -188,4 +193,24 @@ pub fn show_size(area_chooser_window: Window, area_size_bottom_label: Label, are
     });
 
     Ok(())
+}
+
+// Returns `true` if the left mouse button is clicked, and `false` if the `Esc` key is pressed.
+#[cfg(target_os = "windows")]
+pub fn check_input() -> bool {
+    use winapi::um::winuser::{GetAsyncKeyState, VK_LBUTTON, VK_ESCAPE};
+    loop {
+        // Check if the left mouse button (VK_LBUTTON) is pressed
+        if unsafe { GetAsyncKeyState(VK_LBUTTON) } & 0x8000u16 as i16 != 0 {
+            break true;
+        }
+
+        // Check if the Esc key is pressed
+        if unsafe { GetAsyncKeyState(VK_ESCAPE) } & 0x8000u16 as i16 != 0 {
+            break false;
+        }
+
+        // Add a small delay to avoid busy-waiting
+        std::thread::sleep(std::time::Duration::from_millis(10));
+    }
 }

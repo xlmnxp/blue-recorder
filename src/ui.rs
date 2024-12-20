@@ -30,7 +30,7 @@ pub fn run_ui(application: &Application) {
     error_dialog_button.set_label(&get_bundle("close", None));
     error_expander_label.set_label(&get_bundle("details-button", None));
     let _error_dialog = error_dialog.clone();
-    error_dialog_button.connect_clicked(move |_|{
+    error_dialog_button.connect_clicked(move |_| {
         _error_dialog.close();
     });
 
@@ -114,7 +114,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let screen_grab_button: ToggleButton = builder.object("screen_grab_button").unwrap();
     let screen_grab_icon: Image = builder.object("screen_grab_icon").unwrap();
     let screen_grab_label: Label = builder.object("screen_grab_label").unwrap();
-    let select_window: MessageDialog = builder.object("select_window").unwrap();
+    let select_window: Window = builder.object("select_window").unwrap();
+    let select_window_label: Label = builder.object("select_window_label").unwrap();
     let speaker_switch: CheckButton = builder.object("speakerswitch").unwrap();
     let stop_button: Button = builder.object("stopbutton").unwrap();
     let stop_label: Label = builder.object("stop_label").unwrap();
@@ -130,8 +131,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     area_chooser_window.set_title(Some(&get_bundle("area-chooser", None))); // Title is hidden
     error_dialog.set_transient_for(Some(&main_window));
     select_window.set_transient_for(Some(&main_window));
-    select_window.set_message_type(libadwaita::gtk::MessageType::Info);
-    select_window.set_secondary_text(Some(&get_bundle("click-window", None)));
     main_window.set_application(Some(application));
     main_window.set_title(Some(&get_bundle("blue-recorder", None)));
 
@@ -159,6 +158,12 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         // Hide window grab button in Wayland
         area_grab_button.set_sensitive(false);
         area_grab_button.set_tooltip_text(Some(&get_bundle("wayland-tooltip", None)));
+    }
+    // Disable follow mouse option
+    #[cfg(target_os = "windows")]
+    {
+        follow_mouse_switch.set_active(false);
+        follow_mouse_switch.set_sensitive(false);
     }
 
     // Entries
@@ -216,6 +221,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     video_switch.set_label(Some(&get_bundle("record-video", None)));
     area_switch.set_tooltip_text(Some(&get_bundle("show-area-tooltip", None)));
     audio_input_switch.set_tooltip_text(Some(&get_bundle("audio-input-tooltip", None)));
+    #[cfg(target_os = "windows")]
+    follow_mouse_switch.set_tooltip_text(Some(&get_bundle("windows-unsupported-tooltip", None)));
+    #[cfg(any(target_os = "freebsd", target_os = "linux"))]
     follow_mouse_switch.set_tooltip_text(Some(&get_bundle("follow-mouse-tooltip", None)));
     hide_switch.set_tooltip_text(Some(&get_bundle("hide-tooltip", None)));
     mouse_switch.set_tooltip_text(Some(&get_bundle("mouse-tooltip", None)));
@@ -546,12 +554,12 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     });
 
     // Buttons
-    //let area_capture: Rc<RefCell<area_capture::AreaCapture>> =
-        //Rc::new(RefCell::new(area_capture::AreaCapture::new()?));
+    let area_capture: Rc<RefCell<area_capture::AreaCapture>> =
+        Rc::new(RefCell::new(area_capture::AreaCapture::new()?));
 
     area_grab_label.set_label(&get_bundle("select-area", None));
     let _area_chooser_window = area_chooser_window.clone();
-    //let mut _area_capture = area_capture.clone();
+    let mut _area_capture = area_capture.clone();
     let _area_switch = area_switch.clone();
     let _error_dialog = error_dialog.clone();
     let _error_message = error_message.clone();
@@ -574,23 +582,32 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
 
     area_apply_label.set_label(&get_bundle("apply", None));
     let _area_chooser_window = area_chooser_window.clone();
-    //let mut _area_capture = area_capture.clone();
+    let mut _area_capture = area_capture.clone();
     let _error_dialog = error_dialog.clone();
     let _error_message = error_message.clone();
     area_set_button.connect_clicked(move |_| {
         let text_buffer = TextBuffer::new(None);
-        /*if _area_capture
+        #[cfg(target_os = "windows")]
+        if _area_capture
+            .borrow_mut()
+            .get_active_window().is_err() {
+                text_buffer.set_text("Failed to get area size value");
+                _error_message.set_buffer(Some(&text_buffer));
+                _error_dialog.show();
+            }
+        #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+        if _area_capture
             .borrow_mut()
             .get_window_by_name(_area_chooser_window.title().unwrap().as_str()).is_err() {
                 text_buffer.set_text("Failed to get area size value");
                 _error_message.set_buffer(Some(&text_buffer));
                 _error_dialog.show();
-            }*/
+            }
         _area_chooser_window.hide();
     });
 
     let _area_chooser_window = area_chooser_window.clone();
-    //let mut _area_capture = area_capture.clone();
+    let mut _area_capture = area_capture.clone();
     let _area_switch = area_switch.clone();
     let _error_dialog = error_dialog.clone();
     let _error_message = error_message.clone();
@@ -607,15 +624,15 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         config_management::set("default", "mode", "screen");
         screen_grab_button_record_window.replace(false);
         _area_chooser_window.hide();
-        /*if _area_capture.borrow_mut().reset().is_err() {
-            text_buffer.set_text("Failed to get reset area_capture value");
+        if _area_capture.borrow_mut().reset().is_err() {
+            text_buffer.set_text("Failed to reset area_capture value");
             _error_message.set_buffer(Some(&text_buffer));
             _error_dialog.show();
-        }*/
+        }
     });
 
     let _area_chooser_window: Window = area_chooser_window.clone();
-    //let mut _area_capture: Rc<RefCell<area_capture::AreaCapture>> = area_capture.clone();
+    let mut _area_capture: Rc<RefCell<area_capture::AreaCapture>> = area_capture.clone();
     let _area_switch = area_switch.clone();
     let _error_dialog = error_dialog.clone();
     let _error_message = error_message.clone();
@@ -631,21 +648,48 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         if is_wayland() {
             window_grab_button_record_window.replace(true);
         } else {
-            select_window.show();
-            select_window.set_hide_on_close(true);
-            /*if _area_capture.borrow_mut().get_area().is_err() {
-                text_buffer.set_text("Failed to get window size value");
-                _error_message.set_buffer(Some(&text_buffer));
-                _error_dialog.show();
-            }*/
-        }
+            #[cfg(target_os = "windows")]
+            {
+                select_window_label.set_label(&get_bundle("click-window", None));
+                select_window.show();
+
+                let area_capture = _area_capture.clone();
+                let error_message = _error_message.clone();
+                let error_dialog = error_dialog.clone();
+                let _select_window = select_window.clone();
+                glib::timeout_add_local(1000, move || {
+                    let clicked = area_capture::check_input();
+                    if clicked {
+                        _select_window.hide();
+                        if area_capture.borrow_mut().get_title().is_err() {
+                            text_buffer.set_text("Failed to get window info");
+                            error_message.set_buffer(Some(&text_buffer));
+                            error_dialog.show();
+                        }
+                        return glib::source::Continue(false);
+                    } else if !clicked {
+                        _select_window.hide();
+                        return glib::source::Continue(false);
+                    }
+                    glib::source::Continue(true)
+                });
+            }
+
+            #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+            {
+                if _area_capture.borrow_mut().get_area().is_err() {
+                    text_buffer.set_text("Failed to get window info");
+                    _error_message.set_buffer(Some(&text_buffer));
+                    _error_dialog.show();
+                }
+            }}
     });
 
     let _delay_spin = delay_spin.clone();
     //let bundle_msg = get_bundle("already-exist", None);
     //let main_context = glib::MainContext::default();
     //let wayland_record = main_context.block_on(WaylandRecorder::new());
-    // Init record struc
+    // Init record struct
     /*let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
         audio_input_id: String::new(),
         audio_output_id: String::new(),

@@ -61,7 +61,7 @@ wmv-format = WMV (Windows Media Video)
 blue-recorder = Blue Recorder
 
 # Click to select window
-click-window = Left click to select a window
+click-window = Left click to select window
 
 # Close error dialog
 close = Close
@@ -182,4 +182,4 @@ tray-minimize-tooltip = Minimize application to tray icon
 video-tooltip = Video recording
 wayland-tooltip = Not supported in Wayland
 window-tooltip = Select window to record
-windows-unsupported-tooltip = Not supported in windows platform
+windows-unsupported-tooltip = Not supported on windows platform

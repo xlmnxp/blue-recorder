@@ -10,7 +10,6 @@ blue-recorder-core = { git = "https://github.com/ochibani/blue-recorder-core.git
 cpal = "0.15.3"
 dark-light = "1.0.0"
 dirs = "4.0.0"
-display-info = "0.5.1"
 fluent-bundle = "0.15.3"
 glib = "0.10.3"
 libadwaita = { version = "0.1.1" }
@@ -18,4 +17,9 @@ rdev = "0.5"
 regex = "1.4.3"
 rust-ini = "0.16"
 secfmt = "0.1.1"
+
+# Windows-only dependency
+[target.'cfg(windows)'.dependencies]
+display-info = "0.5.1"
 x-win = "2.0.2"
+winapi = { version = "0.3", features = ["winuser"] }

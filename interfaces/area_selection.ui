@@ -25,7 +25,7 @@
 						<property name="can-focus">True</property>
 						<property name="orientation">vertical</property>
 						<property name="halign">fill</property>
-						<property name="valign">filr</property>
+						<property name="valign">fill</property>
 						<child>
 							<object class="GtkBox">
 								<property name="visible">True</property>
