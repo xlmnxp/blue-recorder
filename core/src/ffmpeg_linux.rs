@@ -29,6 +29,7 @@ pub struct Ffmpeg {
     pub video_record_bitrate: u16,
     pub follow_mouse: bool,
     pub record_mouse: bool,
+    pub show_area: bool,
 }
 
 impl Ffmpeg {
@@ -76,6 +77,11 @@ impl Ffmpeg {
             }
         } else {
             ffmpeg_command.size(width.into(), height.into());
+        }
+
+        // Show grabbed area
+        if self.show_area {
+            ffmpeg_command.args(["-show_region", "1"]);
         }
 
         // If show mouse switch is enabled, draw the mouse to video
@@ -148,7 +154,7 @@ impl Ffmpeg {
         if self.video_process.is_some() {
             self.video_process
                 .clone()
-                .ok_or_else(|| anyhow!("not exiting the video recording process successfully"))?
+                .ok_or_else(|| anyhow!("Not exiting the video recording process successfully"))?
                 .borrow_mut()
                 .quit()?;
         }
@@ -195,7 +201,7 @@ impl Ffmpeg {
         if self.input_audio_process.is_some() {
             self.input_audio_process
                 .clone()
-                .ok_or_else(|| anyhow!("not exiting the input audio recording process successfully"))?
+                .ok_or_else(|| anyhow!("Not exiting the input audio recording process successfully"))?
                 .borrow_mut()
                 .quit()?;
       }
@@ -235,7 +241,7 @@ impl Ffmpeg {
         if self.output_audio_process.is_some() {
             self.output_audio_process
                 .clone()
-                .ok_or_else(|| anyhow!("not exiting the output audio recording process successfully"))?
+                .ok_or_else(|| anyhow!("Not exiting the output audio recording process successfully"))?
                 .borrow_mut()
                 .quit()?;
         }
@@ -287,7 +293,7 @@ impl Ffmpeg {
                 // Convert MP4 to GIF
                 let filter = format!("fps={},scale={}:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse",
                                      self.record_frames,self.height.ok_or_else
-                                     (|| anyhow!("unable to get height value"))?);
+                                     (|| anyhow!("Unable to get height value"))?);
                 let ffmpeg_convert = format!("ffmpeg -i file:{} -filter_complex '{}' \
                                               -loop 0 {} -y", &self.temp_video_filename,filter,&self.filename);
                 std::process::Command::new("sh").arg("-c").arg(&ffmpeg_convert).output()?;
@@ -350,5 +356,4 @@ impl Ffmpeg {
         }
         Ok(())
     }
-
 }
