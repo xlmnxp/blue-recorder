@@ -125,33 +125,33 @@ impl AreaCapture {
 fn xwininfo_to_coordinate(xwininfo_output: String) -> Result<(u16, u16, u16, u16)> {
     let x: u16 = Regex::new(r"A.*X:\s+(\d+)\n")?
         .captures(xwininfo_output.as_str())
-        .ok_or_else(|| anyhow!("failed to capture string from xwininfo_output"))?
+        .ok_or_else(|| anyhow!("Failed to capture string from xwininfo_output."))?
         .get(1)
-        .ok_or_else(|| anyhow!("failed to get x value from xwininfo_output"))?
+        .ok_or_else(|| anyhow!("Failed to get x value from xwininfo_output."))?
         .as_str()
         .to_string()
         .parse::<u16>()?;
     let y: u16 = Regex::new(r"A.*Y:\s+(\d+)\n")?
         .captures(xwininfo_output.as_str())
-        .ok_or_else(|| anyhow!("failed to capture string from xwininfo_output"))?
+        .ok_or_else(|| anyhow!("Failed to capture string from xwininfo_output."))?
         .get(1)
-        .ok_or_else(|| anyhow!("failed to get y value from xwininfo_output"))?
+        .ok_or_else(|| anyhow!("Failed to get y value from xwininfo_output."))?
         .as_str()
         .to_string()
         .parse::<u16>()?;
     let width: u16 = Regex::new(r"Width:\s(\d+)\n")?
         .captures(xwininfo_output.as_str())
-        .ok_or_else(|| anyhow!("failed to capture string from xwininfo_output"))?
+        .ok_or_else(|| anyhow!("Failed to capture string from xwininfo_output."))?
         .get(1)
-        .ok_or_else(|| anyhow!("failed to get width value from xwininfo_output"))?
+        .ok_or_else(|| anyhow!("Failed to get width value from xwininfo_output."))?
         .as_str()
         .to_string()
         .parse::<u16>()?;
     let height: u16 = Regex::new(r"Height:\s(\d+)\n")?
         .captures(xwininfo_output.as_str())
-        .ok_or_else(|| anyhow!("failed to capture string from xwininfo_output"))?
+        .ok_or_else(|| anyhow!("Failed to capture string from xwininfo_output."))?
         .get(1)
-        .ok_or_else(|| anyhow!("failed to get height value from xwininfo_output"))?
+        .ok_or_else(|| anyhow!("Failed to get height value from xwininfo_output."))?
         .as_str()
         .to_string()
         .parse::<u16>()?;

@@ -524,7 +524,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                                                    let text_buffer = TextBuffer::new(None);
                                                    if response == libadwaita::gtk::ResponseType::Accept {
                                                        if folder_chooser_native.file().is_none() {
-                                                           text_buffer.set_text("Failed to get save file path");
+                                                           text_buffer.set_text("Failed to get save file path.");
                                                            error_message.set_buffer(Some(&text_buffer));
                                                            error_dialog.show();
                                                        }
@@ -572,7 +572,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
             area_size_top_label.clone(),
         ).is_err() {
             let text_buffer = TextBuffer::new(None);
-            text_buffer.set_text("Failed to get area size value");
+            text_buffer.set_text("Failed to get area size value.");
             _error_message.set_buffer(Some(&text_buffer));
             _error_dialog.show();
         }
@@ -591,7 +591,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         if _area_capture
             .borrow_mut()
             .get_active_window().is_err() {
-                text_buffer.set_text("Failed to get area size value");
+                text_buffer.set_text("Failed to get area size value.");
                 _error_message.set_buffer(Some(&text_buffer));
                 _error_dialog.show();
             }
@@ -599,7 +599,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         if _area_capture
             .borrow_mut()
             .get_window_by_name(_area_chooser_window.title().unwrap().as_str()).is_err() {
-                text_buffer.set_text("Failed to get area size value");
+                text_buffer.set_text("Failed to get area size value.");
                 _error_message.set_buffer(Some(&text_buffer));
                 _error_dialog.show();
             }
@@ -625,7 +625,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         screen_grab_button_record_window.replace(false);
         _area_chooser_window.hide();
         if _area_capture.borrow_mut().reset().is_err() {
-            text_buffer.set_text("Failed to reset area_capture value");
+            text_buffer.set_text("Failed to reset area_capture value.");
             _error_message.set_buffer(Some(&text_buffer));
             _error_dialog.show();
         }
@@ -662,7 +662,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     if clicked {
                         _select_window.hide();
                         if area_capture.borrow_mut().get_title().is_err() {
-                            text_buffer.set_text("Failed to get window info");
+                            text_buffer.set_text("Failed to get window info.");
                             error_message.set_buffer(Some(&text_buffer));
                             error_dialog.show();
                         }
@@ -678,12 +678,22 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
             #[cfg(any(target_os = "freebsd", target_os = "linux"))]
             {
                 if _area_capture.borrow_mut().get_area().is_err() {
-                    text_buffer.set_text("Failed to get window info");
+                    text_buffer.set_text("Failed to get window info.");
                     _error_message.set_buffer(Some(&text_buffer));
                     _error_dialog.show();
                 }
             }}
     });
+
+    // Record struct values
+    let audio_input_id = audio_source_combobox
+        .active_id()
+        .ok_or_else(|| anyhow!("Failed to get audio_input_id value from audio_source_combobox."))?;
+    let audio_output_id = output_device;
+    let filename = String::from("");
+    let output_file = Path::new(&filename)
+        .extension()
+        .ok_or_else(|| anyhow!("Failed to get output extension from filename."))?;
 
     // Init record struct
     /*let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {

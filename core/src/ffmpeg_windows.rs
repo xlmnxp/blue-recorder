@@ -141,7 +141,7 @@ impl Ffmpeg {
         if self.video_process.is_some() {
             self.video_process
                 .clone()
-                .ok_or_else(|| anyhow!("Not exiting the video recording process successfully"))?
+                .ok_or_else(|| anyhow!("Not exiting the video recording process successfully."))?
                 .borrow_mut()
                 .quit()?;
         }
@@ -188,7 +188,7 @@ impl Ffmpeg {
         if self.input_audio_process.is_some() {
             self.input_audio_process
                 .clone()
-                .ok_or_else(|| anyhow!("Not exiting the input audio recording process successfully"))?
+                .ok_or_else(|| anyhow!("Not exiting the input audio recording process successfully."))?
                 .borrow_mut()
                 .quit()?;
       }
@@ -228,7 +228,7 @@ impl Ffmpeg {
         if self.output_audio_process.is_some() {
             self.output_audio_process
                 .clone()
-                .ok_or_else(|| anyhow!("Not exiting the output audio recording process successfully"))?
+                .ok_or_else(|| anyhow!("Not exiting the output audio recording process successfully."))?
                 .borrow_mut()
                 .quit()?;
         }
@@ -246,7 +246,7 @@ impl Ffmpeg {
                     if is_valide(&self.temp_video_filename)? {
                         break;
                     } else if Instant::now().duration_since(start_time) >= duration {
-                        return Err(Error::msg("Unable to validate tmp video file"));
+                        return Err(Error::msg("Unable to validate tmp video file."));
                     }
                 }
                 let mut ffmpeg_command = FfmpegCommand::new();
@@ -274,7 +274,7 @@ impl Ffmpeg {
                     if is_valide(&self.temp_video_filename)? {
                         break;
                     } else if Instant::now().duration_since(start_time) >= duration {
-                        return Err(Error::msg("Unable to validate tmp video file"));
+                        return Err(Error::msg("Unable to validate tmp video file."));
                     }
                 }
                 // Convert MP4 to GIF
@@ -293,7 +293,7 @@ impl Ffmpeg {
                 if is_valide(&self.temp_input_audio_filename)? {
                     break;
                 } else if Instant::now().duration_since(start_time) >= duration {
-                    return Err(Error::msg("Unable to validate tmp video file"));
+                    return Err(Error::msg("Unable to validate tmp video file."));
                 }
             }
             // If only audio is recording then convert it to chosen format
@@ -318,7 +318,7 @@ impl Ffmpeg {
                 if is_valide(&self.temp_output_audio_filename)? {
                     break;
                 } else if Instant::now().duration_since(start_time) >= duration {
-                    return Err(Error::msg("Unable to validate tmp video file"));
+                    return Err(Error::msg("Unable to validate tmp video file."));
                 }
             }
             // If only output audio is recording then convert it to chosen format
