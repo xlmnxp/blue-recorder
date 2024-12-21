@@ -1,0 +1,10 @@
+[package]
+name = "blue-recorder-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.86"
+ffmpeg-sidecar = "1.1.0"
+open = "5.1.4"
+tempfile = "3.10.1"

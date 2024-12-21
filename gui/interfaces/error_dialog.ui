@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+	<requires lib="gtk" version="4.0"/>
+	<object class="GtkLabel" id="expander_label">
+		<property name="visible">True</property>
+		<property name="can-focus">True</property>
+		<property name="label" translatable="yes">label</property>
+	</object>
+	<object class="GtkMessageDialog" id="error_dialog">
+		<property name="can-focus">True</property>
+		<property name="destroy-with-parent">True</property>
+		<property name="resizable">False</property>
+		<property name="modal">True</property>
+		<child>
+			<object class="GtkBox">
+				<property name="visible">True</property>
+				<property name="can-focus">True</property>
+				<property name="orientation">vertical</property>
+				<child type="top">
+					<object class="GtkImage" id="error_image">
+						<property name="name">error_image</property>
+						<property name="visible">True</property>
+						<property name="can-focus">True</property>
+						<property name="pixel-size">48</property>
+						<property name="icon-name">dialog-warning-symbolic</property>
+					</object>
+				</child>
+				<child type="center">
+					<object class="GtkLabel" id="error_text">
+						<property name="visible">True</property>
+						<property name="can-focus">True</property>
+						<property name="label" translatable="yes">label</property>
+						<property name="margin-start">10</property>
+						<property name="margin-end">10</property>
+					</object>
+				</child>
+				<child type="start">
+					<object class="GtkExpander" id="error_expander">
+						<property name="label-widget">expander_label</property>
+						<child>
+							<object class="GtkScrolledWindow">
+								<property name="visible">True</property>
+								<property name="can-focus">True</property>
+								<property name="hscrollbar-policy">never</property>
+								<child>
+									<object class="GtkTextView" id="error_details">
+										<property name="receives-default">False</property>
+										<property name="can-focus">False</property>
+										<property name="editable">False</property>
+										<property name="wrap-mode">word-char</property>
+										<property name="vexpand">True</property>
+										<property name="hexpand">True</property>
+									</object>
+								</child>
+							</object>
+						</child>
+					</object>
+				</child>
+				<child type="bottom">
+					<object class="GtkButton" id="error_button">
+						<property name="visible">True</property>
+						<property name="can-focus">True</property>
+						<property name="receives-default">True</property>
+						<property name="label" translatable="yes">label</property>
+						<property name="hexpand">True</property>
+					</object>
+				</child>
+			</object>
+		</child>
+	</object>
+</interface>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+	<requires lib="gtk" version="4.0"/>
+	<object class="AdwWindow" id="select_window">
+		<property name="name">select_window</property>
+		<property name="can-focus">True</property>
+		<property name="destroy-with-parent">True</property>
+		<property name="deletable">False</property>
+		<property name="resizable">False</property>
+		<property name="decorated">False</property>
+		<property name="modal">True</property>
+		<child>
+			<object class="GtkBox">
+				<property name="visible">True</property>
+				<property name="can-focus">True</property>
+				<property name="orientation">vertical</property>
+				<child>
+					<object class="GtkBox">
+						<property name="visible">True</property>
+						<property name="can-focus">True</property>
+						<property name="orientation">horizontal</property>
+						<property name="halign">center</property>
+						<property name="valign">center</property>
+						<property name="vexpand">True</property>
+						<child>
+							<object class="GtkLabel" id="select_window_label">
+								<property name="name">select_window_label</property>
+								<property name="visible">True</property>
+								<property name="can-focus">True</property>
+								<property name="label" translatable="yes">label</property>
+								<property name="halign">center</property>
+								<property name="valign">center</property>
+							</object>
+						</child>
+					</object>
+				</child>
+			</object>
+		</child>
+	</object>
+</interface>

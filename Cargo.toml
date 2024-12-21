@@ -2,6 +2,6 @@
 resolver = "2"
 
 members = [
-    "blue-recorder-core",
-    "blue-recorder",
+    "core",
+    "gui",
 ]
