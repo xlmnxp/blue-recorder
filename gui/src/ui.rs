@@ -1,9 +1,10 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
 use blue_recorder_core::ffmpeg_linux::Ffmpeg;
 #[cfg(target_os = "windows")]
 use blue_recorder_core::ffmpeg_windows::Ffmpeg;
-use blue_recorder_core::utils::is_wayland;
+use blue_recorder_core::utils::{is_wayland, RecordMode};
+use chrono::Utc;
 use cpal::traits::{DeviceTrait, HostTrait};
 use libadwaita::{Application, Window};
 use libadwaita::gio::File;
@@ -12,7 +13,7 @@ use libadwaita::gtk::{AboutDialog, Builder, Button, CheckButton, ComboBoxText, C
 use libadwaita::prelude::*;
 use std::cell::RefCell;
 use std::ops::Add;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
 use crate::{area_capture, config_management, fluent::get_bundle};
@@ -556,6 +557,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     // Buttons
     let area_capture: Rc<RefCell<area_capture::AreaCapture>> =
         Rc::new(RefCell::new(area_capture::AreaCapture::new()?));
+    #[cfg(target_os = "windows")]
+    let window_title: Rc<RefCell<area_capture::Title>> =
+        Rc::new(RefCell::new(area_capture::Title::new()?));
 
     area_grab_label.set_label(&get_bundle("select-area", None));
     let _area_chooser_window = area_chooser_window.clone();
@@ -638,6 +642,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _error_message = error_message.clone();
     window_grab_button.set_tooltip_text(Some(&get_bundle("window-tooltip", None)));
     window_grab_label.set_label(&get_bundle("select-window", None));
+    #[cfg(target_os = "windows")]
+    let mut _window_title: Rc<RefCell<area_capture::Title>> = window_title.clone();
     window_grab_button.connect_clicked(move |_| {
         let text_buffer = TextBuffer::new(None);
         config_management::set_bool("default", "areacheck", _area_switch.is_active());
@@ -657,12 +663,13 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 let error_message = _error_message.clone();
                 let error_dialog = error_dialog.clone();
                 let _select_window = select_window.clone();
+                let window_title = _window_title.clone();
                 glib::timeout_add_local(1000, move || {
                     let clicked = area_capture::check_input();
                     if clicked {
                         _select_window.hide();
-                        if area_capture.borrow_mut().get_title().is_err() {
-                            text_buffer.set_text("Failed to get window info.");
+                        if window_title.borrow_mut().get_title().is_err() {
+                            text_buffer.set_text("Failed to get window title.");
                             error_message.set_buffer(Some(&text_buffer));
                             error_dialog.show();
                         }
@@ -686,21 +693,84 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     });
 
     // Record struct values
-    let audio_input_id = audio_source_combobox
-        .active_id()
-        .ok_or_else(|| anyhow!("Failed to get audio_input_id value from audio_source_combobox."))?;
+    let audio_input_id = audio_source_combobox.active_id().unwrap().to_string();
     let audio_output_id = output_device;
-    let filename = String::from("");
-    let output_file = Path::new(&filename)
-        .extension()
-        .ok_or_else(|| anyhow!("Failed to get output extension from filename."))?;
+    let audio_record_bitrate = audio_bitrate_spin.value() as u16;
+    #[derive(Debug, Clone)]
+    struct FileName {
+        filename: (FileChooserNative, Entry, ComboBoxText),
+    }
+    let struct_filename = FileName {
+        filename: (
+            folder_chooser_native,
+            filename_entry,
+            format_chooser_combobox,
+        )
+    };
+    let filename = struct_filename
+        .filename
+        .0
+        .file()
+        .unwrap()
+        .path()
+        .unwrap()
+        .join(PathBuf::from(format!(
+            "{}.{}",
+            if struct_filename.filename.1.text().to_string().trim().eq("") {
+                Utc::now().to_string().replace(" UTC", "").replace(' ', "-")
+            } else {
+                struct_filename.filename.1.text().to_string().trim().to_string()
+            },
+            struct_filename.filename.2.active_id().unwrap()
+        )))
+        .as_path()
+        .display().to_string();
+    let follow_mouse = follow_mouse_switch.is_active();
+    let mode = if area_grab_button.is_active() {
+        RecordMode::Area
+    } else if window_grab_button.is_active() {
+        RecordMode::Window
+    } else {
+        RecordMode::Screen
+    };
+    let output = Path::new(&filename).extension().unwrap().to_string_lossy().to_string();
+    let record_delay = delay_spin.value() as u16;
+    let record_frames = frames_spin.value() as u16;
+    let record_mouse = mouse_switch.is_active();
+    let show_area = area_switch.is_active();
+    let video_record_bitrate = video_bitrate_spin.value() as u16;
+    #[cfg(target_os = "windows")]
+    let window_title = window_title.borrow_mut().title.clone();
 
     // Init record struct
-    /*let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
-        audio_input_id: String::new(),
-        audio_output_id: String::new(),
-        filename: String::from("/home/chibani/test_record.mp4"),
-        output: String::from("mp4"),
+    #[cfg(target_os = "windows")]
+    let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
+        audio_input_id,
+        audio_output_id,
+        filename,
+        output,
+        temp_input_audio_filename: String::new(),
+        temp_output_audio_filename: String::new(),
+        temp_video_filename: String::new(),
+        window_title,
+        height: None,
+        input_audio_process: None,
+        output_audio_process: None,
+        video_process: None,
+        audio_record_bitrate,
+        record_delay,
+        record_frames,
+        video_record_bitrate,
+        follow_mouse,
+        record_mouse,
+        show_area,
+    }));
+    #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+    let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
+        audio_input_id,
+        audio_output_id,
+        filename,
+        output,
         temp_input_audio_filename: String::new(),
         temp_output_audio_filename: String::new(),
         temp_video_filename: String::new(),
@@ -708,45 +778,14 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         input_audio_process: None,
         output_audio_process: None,
         video_process: None,
-        audio_record_bitrate: 0,
-        record_delay: 0,
-        record_frames: 10,
-        video_record_bitrate: 0,
-        follow_mouse: false,
-        record_mouse: true,
-        show_area: false,
-    }*/
-    /*let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
-        filename: (
-            folder_chooser_native,
-            filename_entry,
-            format_chooser_combobox,
-        ),
-        record_video: video_switch,
-        record_audio: audio_input_switch,
-        audio_id: audio_source_combobox,
-        record_mouse: mouse_switch,
-        follow_mouse: follow_mouse_switch,
-        record_frames: frames_spin,
-        command: command_entry,
-        video_process: None,
-        audio_process: None,
-        saved_filename: None,
-        height: None,
-        unbound: None,
-        window: main_window.clone(),
-        record_delay: delay_spin,
-        record_wayland: wayland_record,
-        record_window,
-        main_context,
-        temp_video_filename: String::new(),
-        bundle: bundle_msg,
-        video_record_bitrate: video_bitrate_spin,
-        audio_record_bitrate: audio_bitrate_spin,
-        error_window: error_dialog,
-        error_window_text: error_dialog_label,
-        error_details: error_message,
-    }));*/
+        audio_record_bitrate,
+        record_delay,
+        record_frames,
+        video_record_bitrate,
+        follow_mouse,
+        record_mouse,
+        show_area,
+    }));
 
     // Record button
     //let bundle_msg = get_bundle("already-exist", None);
@@ -755,7 +794,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     delay_window_title.set_label(&get_bundle("delay-title", None));
     let _delay_window = delay_window.clone();
     let _delay_window_button = delay_window_button.clone();
-    //let _ffmpeg_record_interface = ffmpeg_record_interface.clone();
+    let _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     //let main_context = glib::MainContext::default();
     let _main_window = main_window.clone();
     let _play_button = play_button.clone();
@@ -777,13 +816,15 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 _record_button.clone(),
             );
         } else if _delay_spin.value() as u64 == 0 {
-            /*let _area_capture = area_capture.borrow_mut();
-            match _ffmpeg_record_interface.borrow_mut().start_record(
+            let _area_capture = area_capture.borrow_mut();
+            let start_video_record = _ffmpeg_record_interface.borrow_mut().start_video(
                 _area_capture.x,
                 _area_capture.y,
                 _area_capture.width,
                 _area_capture.height,
-            ) {
+                mode,
+            );
+            /*match start_video_record {
                 None => {
                     // Do nothing if the start_record function return nothing
                 }
@@ -802,7 +843,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     });
 
     // Stop record button
-    //let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
+    let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     let _play_button = play_button.clone();
     let _stop_button = stop_button.clone();
     stop_button.set_tooltip_text(Some(&get_bundle("stop-tooltip", None)));

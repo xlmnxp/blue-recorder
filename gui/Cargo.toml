@@ -7,6 +7,7 @@ edition = "2021"
 anyhow = "1.0.86"
 async-std = {version = "1.12.0", features = ["attributes"]}
 blue-recorder-core = { path = "../core" }
+chrono = "0.4.19"
 cpal = "0.15.3"
 dark-light = "1.0.0"
 dirs = "4.0.0"
@@ -21,5 +22,5 @@ secfmt = "0.1.1"
 # Windows-only dependency
 [target.'cfg(windows)'.dependencies]
 display-info = "0.5.1"
-x-win = "2.0.2"
 winapi = { version = "0.3", features = ["winuser"] }
+x-win = "2.0.2"

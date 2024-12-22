@@ -27,6 +27,11 @@ pub struct AreaCapture {
     pub height: u16,
 }
 
+#[derive(Debug, Clone)]
+pub struct Title {
+    pub title: String,
+}
+
 impl AreaCapture {
     pub fn new() -> Result<AreaCapture> {
         #[cfg(any(target_os = "freebsd", target_os = "linux"))]
@@ -78,12 +83,6 @@ impl AreaCapture {
         Ok(*self)
     }
 
-    #[cfg(target_os = "windows")]
-    pub fn get_title(&mut self) -> Result<String> {
-        let title = get_active_window()?.title;
-        Ok(title)
-    }
-
     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
     pub fn get_window_by_name(&mut self, name: &str) -> Result<Self> {
         let coordinate = xwininfo_to_coordinate(
@@ -118,6 +117,21 @@ impl AreaCapture {
         }
 
     Ok(*self)
+    }
+}
+
+#[cfg(target_os = "windows")]
+impl Title {
+    pub fn new() -> Result<Title> {
+        let title = Title {
+            title: String::new(),
+        };
+        Ok(title)
+    }
+
+    pub fn get_title(&mut self) -> Result<Self> {
+        self.title = get_active_window()?.title;
+        Ok(self.clone())
     }
 }
 
