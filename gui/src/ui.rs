@@ -506,11 +506,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     .unwrap();
     let _error_dialog = error_dialog.clone();
     let _error_message = error_message.clone();
-    let folder_chooser_name = if folder_chooser.basename().is_some() {
-        folder_chooser.basename().unwrap().to_string_lossy().to_string()
-    } else {
-        String::from("")
-    };
+    let folder_chooser_name = folder_chooser.basename().unwrap().to_string_lossy().to_string();
     folder_chooser_label.set_label(&folder_chooser_name);
     let folder_chooser_icon = config_management::folder_icon(Some(folder_chooser_name.as_str()));
     folder_chooser_image.set_icon_name(Some(folder_chooser_icon));
