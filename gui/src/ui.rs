@@ -692,32 +692,19 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let audio_input_id = audio_source_combobox.active_id().unwrap().to_string();
     let audio_output_id = output_device;
     let audio_record_bitrate = audio_bitrate_spin.value() as u16;
-    #[derive(Debug, Clone)]
-    struct FileName {
-        filename: (FileChooserNative, Entry, ComboBoxText),
-    }
-    let struct_filename = FileName {
-        filename: (
-            folder_chooser_native,
-            filename_entry,
-            format_chooser_combobox,
-        )
-    };
-    let filename = struct_filename
-        .filename
-        .0
+    let filename = folder_chooser_native
         .file()
         .unwrap()
         .path()
         .unwrap()
         .join(PathBuf::from(format!(
             "{}.{}",
-            if struct_filename.filename.1.text().to_string().trim().eq("") {
+            if filename_entry.text().to_string().trim().eq("") {
                 Utc::now().to_string().replace(" UTC", "").replace(' ', "-")
             } else {
-                struct_filename.filename.1.text().to_string().trim().to_string()
+                filename_entry.text().to_string().trim().to_string()
             },
-            struct_filename.filename.2.active_id().unwrap()
+            format_chooser_combobox.active_id().unwrap()
         )))
         .as_path()
         .display().to_string();
