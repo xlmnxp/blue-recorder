@@ -1,9 +1,9 @@
 extern crate secfmt;
 
-use libadwaita::gtk::glib;
-use libadwaita::gtk::{Button, ToggleButton, Label, SpinButton};
-use libadwaita::gtk::prelude::*;
-use libadwaita::Window;
+use adw::gtk::glib;
+use adw::gtk::{Button, ToggleButton, Label, SpinButton};
+use adw::gtk::prelude::*;
+use adw::Window;
 
 pub fn recording_delay(delay_spin: SpinButton, mut delay_time: u64, delay_window: Window, delay_window_button: ToggleButton,
                        delay_window_label: Label, record_button: Button) {

@@ -4,14 +4,14 @@ pub mod fluent;
 pub mod timer;
 mod ui;
 
-use libadwaita::Application;
-use libadwaita::prelude::{ApplicationExt, ApplicationExtManual};
+use adw::Application;
+use adw::prelude::{ApplicationExt, ApplicationExtManual};
 use ui::run_ui;
 
 #[async_std::main]
 async fn main() {
     // Init GTK
-    libadwaita::gtk::init().expect("Failed to initialize GTK.");
+    adw::gtk::init().expect("Failed to initialize GTK.");
 
     // Create new application
     let application = Application::new(None, Default::default());

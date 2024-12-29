@@ -6,9 +6,9 @@ use anyhow::Result;
 #[cfg(target_os = "windows")]
 use display_info::DisplayInfo;
 use glib::Continue;
-use libadwaita::gtk::Label;
-use libadwaita::Window;
-use libadwaita::prelude::*;
+use adw::gtk::Label;
+use adw::Window;
+use adw::prelude::*;
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
 use regex::Regex;
 use std::cell::RefCell;

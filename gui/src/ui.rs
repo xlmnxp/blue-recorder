@@ -6,11 +6,11 @@ use blue_recorder_core::ffmpeg_windows::Ffmpeg;
 use blue_recorder_core::utils::{is_wayland, play_record, RecordMode};
 use chrono::Utc;
 use cpal::traits::{DeviceTrait, HostTrait};
-use libadwaita::{Application, Window};
-use libadwaita::gio::File;
-use libadwaita::gtk::{AboutDialog, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry, FileChooserNative,
+use adw::{Application, Window};
+use adw::gio::File;
+use adw::gtk::{AboutDialog, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry, FileChooserNative,
                       FileChooserAction, Image, Label, MessageDialog, SpinButton, TextBuffer, TextView, ToggleButton};
-use libadwaita::prelude::*;
+use adw::prelude::*;
 use std::cell::RefCell;
 use std::ops::Add;
 use std::path::{Path, PathBuf};
@@ -520,7 +520,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                                  (glib::clone!(@strong folder_chooser_native, @strong folder_chooser_label,
                                                @strong folder_chooser_image => move |_, response| {
                                                    let text_buffer = TextBuffer::new(None);
-                                                   if response == libadwaita::gtk::ResponseType::Accept {
+                                                   if response == adw::gtk::ResponseType::Accept {
                                                        if folder_chooser_native.file().is_none() {
                                                            text_buffer.set_text("Failed to get save file path.");
                                                            error_message.set_buffer(Some(&text_buffer));
@@ -1066,7 +1066,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _area_chooser_window = area_chooser_window.clone();
     area_chooser_window.connect_close_request(move |_| {
         _area_chooser_window.hide();
-        libadwaita::gtk::Inhibit(true)
+        adw::gtk::Inhibit(true)
     });
 
     // Close the application when main window destroy
@@ -1078,12 +1078,13 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     });
 
     // Apply CSS
+    let display = adw::gdk::Display::default().unwrap();
     let provider = CssProvider::new();
     provider.load_from_data(include_str!("styles/global.css").as_bytes());
-    libadwaita::gtk::StyleContext::add_provider_for_display(
-        &area_chooser_window.display(),
+    adw::gtk::StyleContext::add_provider_for_display(
+        &display,
         &provider,
-        libadwaita::gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+        adw::gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
     );
 
     main_window.show();
