@@ -1,3 +1,8 @@
+use adw::{Application, Window};
+use adw::gio::File;
+use adw::gtk::{AboutDialog, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry, FileChooserNative,
+                      FileChooserAction, Image, Label, MessageDialog, SpinButton, TextBuffer, TextView, ToggleButton};
+use adw::prelude::*;
 use anyhow::Result;
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
 use blue_recorder_core::ffmpeg_linux::Ffmpeg;
@@ -6,11 +11,6 @@ use blue_recorder_core::ffmpeg_windows::Ffmpeg;
 use blue_recorder_core::utils::{is_wayland, play_record, RecordMode};
 use chrono::Utc;
 use cpal::traits::{DeviceTrait, HostTrait};
-use adw::{Application, Window};
-use adw::gio::File;
-use adw::gtk::{AboutDialog, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry, FileChooserNative,
-                      FileChooserAction, Image, Label, MessageDialog, SpinButton, TextBuffer, TextView, ToggleButton};
-use adw::prelude::*;
 use std::cell::RefCell;
 use std::ops::Add;
 use std::path::{Path, PathBuf};
@@ -516,28 +516,29 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     folder_chooser_button.connect_clicked(glib::clone!(@strong folder_chooser_native => move |_| {
         let error_dialog = _error_dialog.clone();
         let error_message = _error_message.clone();
-            folder_chooser_native.connect_response
-                                 (glib::clone!(@strong folder_chooser_native, @strong folder_chooser_label,
-                                               @strong folder_chooser_image => move |_, response| {
-                                                   let text_buffer = TextBuffer::new(None);
-                                                   if response == adw::gtk::ResponseType::Accept {
-                                                       if folder_chooser_native.file().is_none() {
-                                                           text_buffer.set_text("Failed to get save file path.");
-                                                           error_message.set_buffer(Some(&text_buffer));
-                                                           error_dialog.show();
-                                                       }
-                    let folder_chooser = folder_chooser_native.file().unwrap_or_else
-                                                           (||
-                                                            File::for_path(&config_management::get(
-                                                                "default", "folder",
-                                                            ))); // Default
-                    let folder_chooser_name = folder_chooser.basename().unwrap();
-                    folder_chooser_label.set_label(&folder_chooser_name.to_string_lossy());
-                    let folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
-                    folder_chooser_image.set_icon_name(Some(folder_chooser_icon));
-                };
-                folder_chooser_native.hide();
-            }));
+        folder_chooser_native.connect_response
+                             (glib::clone!(@strong folder_chooser_native, @strong folder_chooser_label,
+                                           @strong folder_chooser_image => move |_, response| {
+                                               let text_buffer = TextBuffer::new(None);
+                                               if response == adw::gtk::ResponseType::Accept {
+                                                   if folder_chooser_native.file().is_none() {
+                                                       text_buffer.set_text("Failed to get save file path.");
+                                                       error_message.set_buffer(Some(&text_buffer));
+                                                       error_dialog.show();
+                                                   }
+                                                   let folder_chooser = folder_chooser_native.file().unwrap_or_else
+                                                       (||
+                                                        File::for_path(&config_management::get(
+                                                            "default", "folder",
+                                                        ))); // Default
+
+                                                   let folder_chooser_name = folder_chooser.basename().unwrap();
+                                                   folder_chooser_label.set_label(&folder_chooser_name.to_string_lossy());
+                                                   let folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
+                                                   folder_chooser_image.set_icon_name(Some(folder_chooser_icon));
+                                               };
+                                               folder_chooser_native.hide();
+                                           }));
         folder_chooser_native.show();
     }));
 

@@ -1,7 +1,7 @@
 extern crate secfmt;
 
-use adw::gtk::glib;
 use adw::gtk::{Button, ToggleButton, Label, SpinButton};
+use adw::gtk::glib;
 use adw::gtk::prelude::*;
 use adw::Window;
 
