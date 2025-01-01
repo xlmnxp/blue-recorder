@@ -30,6 +30,8 @@ pub fn run_ui(application: &Application) {
     let error_message: TextView = builder.object("error_details").unwrap();
     error_dialog_button.set_label(&get_bundle("close", None));
     error_expander_label.set_label(&get_bundle("details-button", None));
+    error_dialog_label.set_label(&get_bundle("some-error", None));
+    error_dialog.set_title(Some(&get_bundle("error-title", None)));
     let _error_dialog = error_dialog.clone();
     error_dialog_button.connect_clicked(move |_| {
         _error_dialog.close();
@@ -42,8 +44,6 @@ pub fn run_ui(application: &Application) {
         Err(error) => {
             let text_buffer = TextBuffer::new(None);
             text_buffer.set_text(&error.to_string());
-            error_dialog.set_title(Some(&get_bundle("error-title", None)));
-            error_dialog_label.set_label(&get_bundle("some-error", None));
             error_message.set_buffer(Some(&text_buffer));
             error_dialog.show();
             error_dialog.set_hide_on_close(true);
