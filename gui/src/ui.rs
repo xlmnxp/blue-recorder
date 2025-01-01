@@ -240,7 +240,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         config_management::set_bool("default", "audio_input_check", switch.is_active());
         if !switch.is_active() && !_video_switch.is_active() {
             _mouse_switch.set_sensitive(true);
-            _video_switch.set_active(true);
         }
     });
     follow_mouse_switch.connect_toggled(|switch: &CheckButton| {
@@ -264,8 +263,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
             _follow_mouse_switch.set_sensitive(true);
             _mouse_switch.set_sensitive(true);
         } else {
-            _audio_input_switch.set_active(true);
-            _audio_input_switch.set_sensitive(true);
             _mouse_switch.set_active(false);
             _mouse_switch.set_sensitive(false);
             _follow_mouse_switch.set_active(false);
