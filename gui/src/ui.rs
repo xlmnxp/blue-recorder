@@ -34,6 +34,7 @@ pub fn run_ui(application: &Application) {
     error_dialog.set_title(Some(&get_bundle("error-title", None)));
     let _error_dialog = error_dialog.clone();
     error_dialog_button.connect_clicked(move |_| {
+        _error_dialog.set_hide_on_close(true);
         _error_dialog.close();
     });
 
@@ -694,7 +695,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let audio_input_id = audio_source_combobox.active_id().unwrap().to_string();
     let audio_output_id = output_device;
     let audio_record_bitrate = audio_bitrate_spin.value() as u16;
-    let filename = folder_chooser_native
+    let filename = "~/record.mp4".to_string();
+    /*let filename = folder_chooser_native
         .file()
         .unwrap()
         .path()
@@ -709,7 +711,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
             format_chooser_combobox.active_id().unwrap()
         )))
         .as_path()
-        .display().to_string();
+        .display().to_string();*/
     let follow_mouse = follow_mouse_switch.is_active();
     let mode = if area_grab_button.is_active() {
         RecordMode::Area
@@ -827,9 +829,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 if hide_switch.is_active() {
                     _main_window.minimize();
                 }
-                _audio_input_switch.set_sensitive(false);
-                _speaker_switch.set_sensitive(false);
-                _video_switch.set_sensitive(false);
                 _play_button.hide();
                 _record_button.hide();
                 _stop_button.show();
@@ -843,9 +842,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             text_buffer.set_text(&format!("{}", error));
                             _error_message.set_buffer(Some(&text_buffer));
                             _error_dialog.show();
-                            _audio_input_switch.set_sensitive(true);
-                            _speaker_switch.set_sensitive(true);
-                            _video_switch.set_sensitive(true);
                             _record_button.show();
                             _stop_button.hide();
                         },
@@ -861,9 +857,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             text_buffer.set_text(&format!("{}", error));
                             _error_message.set_buffer(Some(&text_buffer));
                             _error_dialog.show();
-                            _audio_input_switch.set_sensitive(true);
-                            _speaker_switch.set_sensitive(true);
-                            _video_switch.set_sensitive(true);
                             _record_button.show();
                             _stop_button.hide();
                         },
@@ -879,9 +872,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             text_buffer.set_text(&format!("{}", error));
                             _error_message.set_buffer(Some(&text_buffer));
                             _error_dialog.show();
-                            _audio_input_switch.set_sensitive(true);
-                            _speaker_switch.set_sensitive(true);
-                            _video_switch.set_sensitive(true);
                             _record_button.show();
                             _stop_button.hide();
                         },
@@ -915,9 +905,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     text_buffer.set_text(&format!("{}", error));
                     _error_message.set_buffer(Some(&text_buffer));
                     _error_dialog.show();
-                    _audio_input_switch.set_sensitive(true);
-                    _speaker_switch.set_sensitive(true);
-                    _video_switch.set_sensitive(true);
                     record_button.show();
                     _stop_button.hide();
                 },
@@ -933,9 +920,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     text_buffer.set_text(&format!("{}", error));
                     _error_message.set_buffer(Some(&text_buffer));
                     _error_dialog.show();
-                    _audio_input_switch.set_sensitive(true);
-                    _speaker_switch.set_sensitive(true);
-                    _video_switch.set_sensitive(true);
                     record_button.show();
                     _stop_button.hide();
                 },
@@ -951,9 +935,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     text_buffer.set_text(&format!("{}", error));
                     _error_message.set_buffer(Some(&text_buffer));
                     _error_dialog.show();
-                    _audio_input_switch.set_sensitive(true);
-                    _speaker_switch.set_sensitive(true);
-                    _video_switch.set_sensitive(true);
                     record_button.show();
                     _stop_button.hide();
                 },
