@@ -692,8 +692,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let audio_input_id = audio_source_combobox.active_id().unwrap().to_string();
     let audio_output_id = output_device;
     let audio_record_bitrate = audio_bitrate_spin.value() as u16;
-    let filename = "~/record.mp4".to_string();
-    /*let filename = folder_chooser_native
+    let filename = folder_chooser_native
         .file()
         .unwrap()
         .path()
@@ -708,7 +707,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
             format_chooser_combobox.active_id().unwrap()
         )))
         .as_path()
-        .display().to_string();*/
+        .display().to_string();
     let follow_mouse = follow_mouse_switch.is_active();
     let mode = if area_grab_button.is_active() {
         RecordMode::Area
