@@ -1,6 +1,7 @@
+use adw::{Application, Window};
 use adw::gio::File;
-use adw::gtk::{AboutDialog, Application, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry, FileChooserNative,
-               FileChooserAction, Image, Label, MessageDialog, SpinButton, TextBuffer, TextView, ToggleButton, Window};
+use adw::gtk::{AboutDialog, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry, FileChooserNative,
+               FileChooserAction, Image, Label, MessageDialog, SpinButton, TextBuffer, TextView, ToggleButton};
 use adw::prelude::*;
 use anyhow::Result;
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
