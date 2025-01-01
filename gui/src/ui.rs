@@ -496,10 +496,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     );
     folder_chooser_native.set_transient_for(Some(&main_window));
     folder_chooser_native.set_modal(true);
-    let file_gio = &File::for_path(&config_management::get(
-            "default", "folder",
-        ));
-    println!("{file_gio}");
     folder_chooser_native
         .set_file(&File::for_path(&config_management::get(
             "default", "folder",
