@@ -1048,10 +1048,12 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     });
 
     // Close the application when main window destroy
+    let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     main_window.connect_destroy(move |main_window| {
-        //let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
         // Stop recording before close the application
-        //_ffmpeg_record_interface.borrow_mut().clone().stop_record();
+        _ffmpeg_record_interface.borrow_mut().stop_input_audio().unwrap();
+        _ffmpeg_record_interface.borrow_mut().stop_output_audio().unwrap();
+        _ffmpeg_record_interface.borrow_mut().stop_video().unwrap();
         main_window.close();
     });
 
