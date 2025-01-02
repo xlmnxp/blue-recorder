@@ -34,7 +34,7 @@ pub struct Ffmpeg {
 
 impl Ffmpeg {
     // Start video recording
-    pub fn start_video(&mut self, width: u16, height: u16, x: u16, y: u16,  mode: RecordMode) -> Result<()> {
+    pub fn start_video(&mut self, x: u16, y: u16, width: u16, height: u16,  mode: RecordMode) -> Result<()> {
         let display = format!("{}+{},{}",
                 std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string())
                 .as_str(),

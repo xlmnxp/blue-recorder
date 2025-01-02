@@ -35,7 +35,7 @@ pub struct Ffmpeg {
 
 impl Ffmpeg {
     // Start video recording
-    pub fn start_video(&mut self, width: u16, height: u16, x: u16, y: u16,  mode: RecordMode) -> Result<()> {
+    pub fn start_video(&mut self, x: u16, y: u16, width: u16, height: u16,  mode: RecordMode) -> Result<()> {
         let display = match mode {
             RecordMode::Area => "desktop",
             RecordMode::Screen => "desktop",
