@@ -1086,10 +1086,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     // Stop recording before close the application
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     main_window.connect_close_request(move |main_window| {
-        let file_name = _ffmpeg_record_interface.borrow_mut().filename.clone();
-        if Path::new(&file_name).try_exists().is_ok() {
-            std::fs::remove_file(file_name).unwrap();
-        }
         if _ffmpeg_record_interface.borrow_mut().video_process.is_some() {
             std::process::Command::new("kill")
                 .arg(format!(
