@@ -1122,7 +1122,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                                             .as_inner().id()
                 )).output().unwrap();
         }
-        main_window.close();
+        main_window.destroy();
         adw::gtk::Inhibit(true)
     });
 
