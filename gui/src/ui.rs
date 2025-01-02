@@ -1,6 +1,6 @@
 use adw::{Application, Window};
 use adw::gio::File;
-use adw::gtk::{AboutDialog, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry, FileChooserNative,
+use adw::gtk::{AboutDialog, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry, Expander, FileChooserNative,
                FileChooserAction, Image, Label, MessageDialog, SpinButton, TextBuffer, TextView, ToggleButton};
 use adw::prelude::*;
 use anyhow::Result;
@@ -26,6 +26,7 @@ pub fn run_ui(application: &Application) {
     let error_dialog: MessageDialog = builder.object("error_dialog").unwrap();
     let error_dialog_button: Button = builder.object("error_button").unwrap();
     let error_dialog_label: Label = builder.object("error_text").unwrap();
+    let error_expander: Expander = builder.object("error_expander").unwrap();
     let error_expander_label: Label = builder.object("expander_label").unwrap();
     let error_message: TextView = builder.object("error_details").unwrap();
     error_dialog_button.set_label(&get_bundle("close", None));
@@ -33,7 +34,9 @@ pub fn run_ui(application: &Application) {
     error_dialog_label.set_label(&get_bundle("some-error", None));
     error_dialog.set_title(Some(&get_bundle("error-title", None)));
     let _error_dialog = error_dialog.clone();
+    let _error_expander = error_expander.clone();
     error_dialog_button.connect_clicked(move |_| {
+        _error_expander.set_expanded(false);
         _error_dialog.set_hide_on_close(true);
         _error_dialog.close();
     });
@@ -119,7 +122,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let select_window: Window = builder.object("select_window").unwrap();
     #[cfg(target_os = "windows")]
     let select_window_label: Label = builder.object("select_window_label").unwrap();
-    let speaker_switch: CheckButton = builder.object("speakerswitch").unwrap();
+    let aduio_output_switch: CheckButton = builder.object("speakerswitch").unwrap();
     let stop_button: Button = builder.object("stopbutton").unwrap();
     let stop_label: Label = builder.object("stop_label").unwrap();
     let video_bitrate_label: Label = builder.object("video_bitrate_label").unwrap();
@@ -211,7 +214,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     follow_mouse_switch.set_active(config_management::get_bool("default", "followmousecheck"));
     hide_switch.set_active(config_management::get_bool("default", "hidecheck"));
     mouse_switch.set_active(config_management::get_bool("default", "mousecheck"));
-    speaker_switch.set_active(config_management::get_bool("default", "speakercheck"));
+    aduio_output_switch.set_active(config_management::get_bool("default", "speakercheck"));
     tray_switch.set_active(config_management::get_bool("default", "traycheck"));
     video_switch.set_active(config_management::get_bool("default", "videocheck"));
     area_switch.set_label(Some(&get_bundle("show-area", None)));
@@ -219,7 +222,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     follow_mouse_switch.set_label(Some(&get_bundle("follow-mouse", None)));
     hide_switch.set_label(Some(&get_bundle("auto-hide", None)));
     mouse_switch.set_label(Some(&get_bundle("show-mouse", None)));
-    speaker_switch.set_label(Some(&get_bundle("record-speaker", None)));
+    aduio_output_switch.set_label(Some(&get_bundle("record-speaker", None)));
     tray_switch.set_label(Some(&get_bundle("tray-minimize", None)));
     video_switch.set_label(Some(&get_bundle("record-video", None)));
     area_switch.set_tooltip_text(Some(&get_bundle("show-area-tooltip", None)));
@@ -230,7 +233,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     follow_mouse_switch.set_tooltip_text(Some(&get_bundle("follow-mouse-tooltip", None)));
     hide_switch.set_tooltip_text(Some(&get_bundle("hide-tooltip", None)));
     mouse_switch.set_tooltip_text(Some(&get_bundle("mouse-tooltip", None)));
-    speaker_switch.set_tooltip_text(Some(&get_bundle("speaker-tooltip", None)));
+    aduio_output_switch.set_tooltip_text(Some(&get_bundle("speaker-tooltip", None)));
     tray_switch.set_tooltip_text(Some(&get_bundle("tray-minimize-tooltip", None)));
     video_switch.set_tooltip_text(Some(&get_bundle("video-tooltip", None)));
 
@@ -251,7 +254,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     mouse_switch.connect_toggled(move |switch: &CheckButton| {
         config_management::set_bool("default", "mousecheck", switch.is_active());
     });
-    speaker_switch.connect_toggled(|switch: &CheckButton| {
+    aduio_output_switch.connect_toggled(|switch: &CheckButton| {
         config_management::set_bool("default", "speakercheck", switch.is_active());
     });
     let _audio_input_switch = audio_input_switch.clone();
@@ -689,8 +692,16 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     });
 
     // Record struct values
-    let audio_input_id = audio_source_combobox.active_id().unwrap().to_string();
-    let audio_output_id = output_device;
+    let audio_input_id = if audio_input_switch.is_active() {
+        audio_source_combobox.active_id().unwrap().to_string()
+    } else {
+        String::new()
+    };
+    let audio_output_id = if aduio_output_switch.is_active() {
+        output_device
+    } else {
+        String::new()
+    };
     let audio_record_bitrate = audio_bitrate_spin.value() as u16;
     let filename = folder_chooser_native
         .file()
@@ -786,7 +797,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _play_button = play_button.clone();
     let _record_button = record_button.clone();
     let _record_time_label = record_time_label.clone();
-    let _speaker_switch = speaker_switch.clone();
+    let _aduio_output_switch = aduio_output_switch.clone();
     let _stop_button = stop_button.clone();
     let _video_switch = video_switch.clone();
     record_button.set_tooltip_text(Some(&get_bundle("record-tooltip", None)));
@@ -812,10 +823,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 _area_capture.height,
                 mode,
             );
-            let start_audio_input_record = _ffmpeg_record_interface.borrow_mut().start_input_audio();
-            let start_audio_output_record = _ffmpeg_record_interface.borrow_mut().start_output_audio();
             if !_audio_input_switch.is_active() &&
-                !_speaker_switch.is_active() &&
+                !_aduio_output_switch.is_active() &&
                 !_video_switch.is_active()
             {
                 // Do nothing
@@ -829,7 +838,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 _record_button.hide();
                 _stop_button.show();
                 if _audio_input_switch.is_active() {
-                    match start_audio_input_record {
+                    match _ffmpeg_record_interface.borrow_mut().start_input_audio() {
                         Ok(_) => {
                             // Do nothing
                             },
@@ -843,8 +852,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                         },
                     }
                 }
-                if _speaker_switch.is_active() {
-                    match start_audio_output_record {
+                if _aduio_output_switch.is_active() {
+                    match _ffmpeg_record_interface.borrow_mut().start_output_audio() {
                         Ok(_) => {
                             // Do nothing
                             },
@@ -883,7 +892,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _error_message = error_message.clone();
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     let _play_button = play_button.clone();
-    let _speaker_switch = speaker_switch.clone();
+    let _aduio_output_switch = aduio_output_switch.clone();
     let _stop_button = stop_button.clone();
     let _video_switch = video_switch.clone();
     stop_button.set_tooltip_text(Some(&get_bundle("stop-tooltip", None)));
@@ -906,7 +915,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 },
             }
         }
-        if _speaker_switch.is_active() {
+        if _aduio_output_switch.is_active() {
             match _ffmpeg_record_interface.borrow_mut().stop_output_audio() {
                 Ok(_) => {
                     // Do nothing
@@ -936,9 +945,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 },
             }
         }
-        _audio_input_switch.set_sensitive(true);
-        _speaker_switch.set_sensitive(true);
-        _video_switch.set_sensitive(true);
         record_button.show();
         _stop_button.hide();
         _play_button.show();

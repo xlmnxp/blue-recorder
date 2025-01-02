@@ -9,6 +9,8 @@
 	<object class="GtkMessageDialog" id="error_dialog">
 		<property name="can-focus">True</property>
 		<property name="destroy-with-parent">True</property>
+		<property name="resizable">False</property>
+		<property name="deletable">False</property>
 		<property name="modal">True</property>
 		<child>
 			<object class="GtkBox">
