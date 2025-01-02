@@ -703,8 +703,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         String::new()
     };
     let audio_record_bitrate = audio_bitrate_spin.value() as u16;
-    let filename = "/home/chibani/2025-01-01-23:04:36.532412898.mp4".to_string();
-    /*let filename = folder_chooser_native
+    let filename = folder_chooser_native
         .file()
         .unwrap()
         .path()
@@ -719,7 +718,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
             format_chooser_combobox.active_id().unwrap()
         )))
         .as_path()
-        .display().to_string();*/
+        .display().to_string();
     let follow_mouse = follow_mouse_switch.is_active();
     let mode = if area_grab_button.is_active() {
         RecordMode::Area
