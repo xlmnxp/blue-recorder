@@ -794,7 +794,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _delay_window_button = delay_window_button.clone();
     let _error_dialog = error_dialog.clone();
     let _error_message = error_message.clone();
-    let _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     //let main_context = glib::MainContext::default();
     let _main_window = main_window.clone();
     let _play_button = play_button.clone();
@@ -803,6 +802,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _stop_button = stop_button.clone();
     let _video_switch = video_switch.clone();
     //let wayland_record = main_context.block_on(WaylandRecorder::new());
+    let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     record_button.connect_clicked(move |_| {
         if !_audio_input_switch.is_active() &&
             !_audio_output_switch.is_active() &&
@@ -821,10 +821,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     _record_button.clone(),
                 );
             } else if _delay_spin.value() as u16 == 0 {
-                let file_name = _ffmpeg_record_interface.borrow_mut().filename.clone();
-                if !is_overwrite(&file_name, _main_window.clone()) {
-                    // Do nothing
-                } else {
                 let _area_capture = area_capture.borrow_mut();
                 let start_video_record = _ffmpeg_record_interface.borrow_mut().start_video(
                     _area_capture.x,
@@ -898,22 +894,21 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                         },
                     }
                 }
-                }
             }
         }
     });
 
     // Stop record button
+    stop_button.set_tooltip_text(Some(&get_bundle("stop-tooltip", None)));
+    stop_label.set_label(&get_bundle("stop-recording", None));
     let _audio_input_switch = audio_input_switch.clone();
     let _error_dialog = error_dialog.clone();
     let _error_message = error_message.clone();
-    let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     let _play_button = play_button.clone();
     let _audio_output_switch = audio_output_switch.clone();
     let _stop_button = stop_button.clone();
     let _video_switch = video_switch.clone();
-    stop_button.set_tooltip_text(Some(&get_bundle("stop-tooltip", None)));
-    stop_label.set_label(&get_bundle("stop-recording", None));
+    let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     stop_button.connect_clicked(move |_| {
         _record_time_label.set_visible(false);
         stop_timer(_record_time_label.clone());
@@ -1109,30 +1104,4 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     main_window.show();
 
     Ok(())
-}
-
-// Overwrite file if exists or not
-fn is_overwrite(filename: &str, window: Window) -> bool {
-    let is_file_already_exists = Path::new(filename).try_exists().unwrap();
-    if is_file_already_exists {
-        let message_dialog = adw::gtk::MessageDialog::new(
-                Some(&window),
-                adw::gtk::DialogFlags::all(),
-                adw::gtk::MessageType::Warning,
-                adw::gtk::ButtonsType::YesNo,
-                &&get_bundle("already-exist", None),
-        );
-
-        let main_context = glib::MainContext::default();
-        let answer = main_context.block_on(message_dialog.run_future());
-        message_dialog.close();
-
-        if answer != adw::gtk::ResponseType::Yes {
-            return false;
-        } else {
-            return true;
-        }
-    } else {
-        return true;
-    }
 }

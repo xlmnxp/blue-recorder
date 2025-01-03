@@ -3,7 +3,12 @@ name = "blue-recorder-core"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+cmd = []
+gtk = ["dep:adw"]
+
 [dependencies]
+adw = { version = "0.2.1", package = "libadwaita", features = ["gtk_v4_6"], optional = true }
 anyhow = "1.0.86"
 ffmpeg-sidecar = "1.1.0"
 open = "5.1.4"
