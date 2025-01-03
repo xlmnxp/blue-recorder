@@ -5,7 +5,7 @@ use adw::gtk::glib;
 use adw::gtk::prelude::*;
 use adw::Window;
 
-pub fn recording_delay(delay_spin: SpinButton, mut delay_time: u64, delay_window: Window, delay_window_button: ToggleButton,
+pub fn recording_delay(delay_spin: SpinButton, mut delay_time: u16, delay_window: Window, delay_window_button: ToggleButton,
                        delay_window_label: Label, record_button: Button) {
     // Keep time label alive and update every 1sec
     let default_value = delay_time;
@@ -55,12 +55,12 @@ pub fn stop_timer(record_time_label: Label) {
     record_time_label.set_text(&current_record_time(stop_time));
 }
 
-fn current_delay_time(delay_time: u64) -> String {
-    let delay = secfmt::from(delay_time);
+fn current_delay_time(delay_time: u16) -> String {
+    let delay = secfmt::from(delay_time as u64);
     format!("{:02}", delay.seconds)
 }
 
-fn current_record_time(start_time: u64) -> String {
-    let start = secfmt::from(start_time);
+fn current_record_time(start_time: u16) -> String {
+    let start = secfmt::from(start_time as u64);
     format!("{:02}:{:02}:{:02}", start.hours, start.minutes, start.seconds)
 }
