@@ -429,7 +429,7 @@
 										<property name="visible">True</property>
 										<property name="can-focus">True</property>
 										<property name="receives-default">False</property>
-										<property name="active">True</property>
+										<property name="active">False</property>
 										<property name="has-tooltip">True</property>
 										<layout>
 											<property name="column">0</property>

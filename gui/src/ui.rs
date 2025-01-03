@@ -1113,7 +1113,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
 
 // Overwrite file if exists or not
 fn is_overwrite(filename: &str, window: Window) -> bool {
-    let is_file_already_exists = Path::new(filename).try_exists().is_ok();
+    let is_file_already_exists = Path::new(filename).try_exists().unwrap();
     if is_file_already_exists {
         let message_dialog = adw::gtk::MessageDialog::new(
                 Some(&window),
