@@ -9,6 +9,15 @@ pub enum RecordMode {
     Window,
 }
 
+#[cfg(feature = "gtk")]
+// Execute command after finish recording
+pub fn exec(command: &str) -> Result<()> {
+    if !command.trim().is_empty() {
+        subprocess::Exec::shell(command.trim()).popen()?;
+    }
+    Ok(())
+}
+
 // Check if tmp input video file exist
 pub fn is_input_audio_record(audio_filename: &str) -> bool {
     std::path::Path::new(audio_filename).exists()
@@ -21,18 +30,19 @@ pub fn is_output_audio_record(audio_filename: &str) -> bool {
 
 #[cfg(feature = "gtk")]
 // Overwrite file if exists or not
-pub fn is_overwrite(filename: &str, window: Window) -> bool {
-    let is_file_already_exists = Path::new(filename).exists();
+pub fn is_overwrite(msg_bundle: &str, filename: &str, window: adw::Window) -> bool {
+    let is_file_already_exists = std::path::Path::new(filename).exists();
     if is_file_already_exists {
         let message_dialog = adw::gtk::MessageDialog::new(
                 Some(&window),
                 adw::gtk::DialogFlags::all(),
                 adw::gtk::MessageType::Warning,
                 adw::gtk::ButtonsType::YesNo,
-                &&get_bundle("already-exist", None),
+                msg_bundle,
         );
 
         let main_context = glib::MainContext::default();
+        use adw::prelude::*;
         let answer = main_context.block_on(message_dialog.run_future());
         message_dialog.close();
 
@@ -77,6 +87,7 @@ pub fn is_wayland() -> bool {
         .eq_ignore_ascii_case("wayland")
 }
 
+#[cfg(feature = "gtk")]
 // Play recorded file
 pub fn play_record(file_name: &str) -> Result<()> {
     if is_snap() {
