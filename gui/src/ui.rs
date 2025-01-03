@@ -918,6 +918,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     // Do nothing
                     },
                 Err(error) => {
+                    _ffmpeg_record_interface.borrow_mut().kill().unwrap();
                     _audio_input_switch.set_sensitive(true);
                     _audio_output_switch.set_sensitive(true);
                     _video_switch.set_sensitive(true);
@@ -936,6 +937,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     // Do nothing
                     },
                 Err(error) => {
+                    _ffmpeg_record_interface.borrow_mut().kill().unwrap();
                     _audio_input_switch.set_sensitive(true);
                     _audio_output_switch.set_sensitive(true);
                     _video_switch.set_sensitive(true);
@@ -954,6 +956,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     // Do nothing
                     },
                 Err(error) => {
+                    _ffmpeg_record_interface.borrow_mut().kill().unwrap();
                     _audio_input_switch.set_sensitive(true);
                     _audio_output_switch.set_sensitive(true);
                     _video_switch.set_sensitive(true);
@@ -1086,42 +1089,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     // Stop recording before close the application
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     main_window.connect_close_request(move |main_window| {
-        if _ffmpeg_record_interface.borrow_mut().video_process.is_some() {
-            std::process::Command::new("kill")
-                .arg(format!(
-                    "{}",
-                    _ffmpeg_record_interface.borrow_mut()
-                                            .video_process
-                                            .clone()
-                                            .unwrap()
-                                            .borrow_mut()
-                                            .as_inner().id()
-                )).output().unwrap();
-        }
-        if _ffmpeg_record_interface.borrow_mut().input_audio_process.is_some() {
-            std::process::Command::new("kill")
-                .arg(format!(
-                    "{}",
-                    _ffmpeg_record_interface.borrow_mut()
-                                            .input_audio_process
-                                            .clone()
-                                            .unwrap()
-                                            .borrow_mut()
-                                            .as_inner().id()
-                )).output().unwrap();
-        }
-        if _ffmpeg_record_interface.borrow_mut().output_audio_process.is_some() {
-            std::process::Command::new("kill")
-                .arg(format!(
-                    "{}",
-                    _ffmpeg_record_interface.borrow_mut()
-                                            .output_audio_process
-                                            .clone()
-                                            .unwrap()
-                                            .borrow_mut()
-                                            .as_inner().id()
-                )).output().unwrap();
-        }
+        _ffmpeg_record_interface.borrow_mut().kill().unwrap();
         main_window.destroy();
         adw::gtk::Inhibit(true)
     });

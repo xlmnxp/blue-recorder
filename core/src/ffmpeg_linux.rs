@@ -138,6 +138,7 @@ impl Ffmpeg {
             },
         ]);
         ffmpeg_command.overwrite();
+        ffmpeg_command.print_command();
 
         // Sleep for delay
         sleep(Duration::from_secs(self.record_delay as u64));
@@ -353,6 +354,44 @@ impl Ffmpeg {
             if Path::new(file).try_exists()? {
                 std::fs::remove_file(file)?;
             }
+        }
+        Ok(())
+    }
+
+    // Kill process
+    pub fn kill(&mut self) -> Result<()> {
+        if self.video_process.is_some() {
+            std::process::Command::new("kill")
+                .arg(format!(
+                    "{}",
+                    self.video_process
+                        .clone()
+                        .ok_or_else(|| anyhow!("Unable to kill the video recording process successfully."))?
+                        .borrow_mut()
+                        .as_inner().id()
+                )).output()?;
+        }
+        if self.input_audio_process.is_some() {
+            std::process::Command::new("kill")
+                .arg(format!(
+                    "{}",
+                    self.input_audio_process
+                        .clone()
+                        .ok_or_else(|| anyhow!("Unable to kill the intput audio recording process successfully."))?
+                        .borrow_mut()
+                        .as_inner().id()
+                )).output()?;
+        }
+        if self.output_audio_process.is_some() {
+            std::process::Command::new("kill")
+                .arg(format!(
+                    "{}",
+                    self.output_audio_process
+                        .clone()
+                        .ok_or_else(|| anyhow!("Unable to kill the output audio recording process successfully."))?
+                        .borrow_mut()
+                        .as_inner().id()
+                )).output()?;
         }
         Ok(())
     }

@@ -343,4 +343,45 @@ impl Ffmpeg {
         }
         Ok(())
     }
+
+    // Kill process
+    pub fn kill(&mut self) -> Result<()> {
+        if self.video_process.is_some() {
+            let pid = self.video_process
+                          .clone()
+                          .ok_or_else(|| anyhow!("Unable to kill the video recording process successfully."))?
+                          .borrow_mut()
+                          .as_inner().id();
+            std::process::Command::new("taskkill")
+                .arg("/PID")
+                .arg(pid.to_string())
+                .arg("/F")
+                .output()?;
+        }
+        if self.input_audio_process.is_some() {
+            let pid = self.input_audio_process
+                          .clone()
+                          .ok_or_else(|| anyhow!("Unable to kill the input audio recording process successfully."))?
+                          .borrow_mut()
+                          .as_inner().id();
+            std::process::Command::new("taskkill")
+                .arg("/PID")
+                .arg(pid.to_string())
+                .arg("/F")
+                .output()?;
+        }
+        if self.output_audio_process.is_some() {
+            let pid = self.output_audio_process
+                          .clone()
+                          .ok_or_else(|| anyhow!("Unable to kill the output audio recording process successfully."))?
+                          .borrow_mut()
+                          .as_inner().id();
+            std::process::Command::new("taskkill")
+                .arg("/PID")
+                .arg(pid.to_string())
+                .arg("/F")
+                .output()?;
+        }
+        Ok(())
+    }
 }
