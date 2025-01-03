@@ -804,94 +804,198 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     record_label.set_label(&get_bundle("record", None));
     //let wayland_record = main_context.block_on(WaylandRecorder::new());
     record_button.connect_clicked(move |_| {
-        _delay_window_button.set_active(false);
-        if _delay_spin.value() as u64 > 0 {
-            recording_delay(
-                _delay_spin.clone(),
-                _delay_spin.value() as u64,
-                delay_window.clone(),
-                _delay_window_button.clone(),
-                delay_window_label.clone(),
-                _record_button.clone(),
-            );
-        } else if _delay_spin.value() as u64 == 0 {
-            let _area_capture = area_capture.borrow_mut();
-            let start_video_record = _ffmpeg_record_interface.borrow_mut().start_video(
-                _area_capture.x,
-                _area_capture.y,
-                _area_capture.width,
-                _area_capture.height,
-                mode,
-            );
-            if !_audio_input_switch.is_active() &&
-                !_audio_output_switch.is_active() &&
-                !_video_switch.is_active()
-            {
-                // Do nothing
+        if !_audio_input_switch.is_active() &&
+            !_audio_output_switch.is_active() &&
+            !_video_switch.is_active()
+        {
+            // Do nothing
+        } else {
+            let file_name = _ffmpeg_record_interface.borrow_mut().filename.clone();
+            let is_file_already_exists = Path::new(&file_name).try_exists().is_ok();
+            if is_file_already_exists {
+                let message_dialog = MessageDialog::new(
+                    Some(&_main_window),
+                    adw::gtk::DialogFlags::all(),
+                    adw::gtk::MessageType::Warning,
+                    adw::gtk::ButtonsType::YesNo,
+                    &&get_bundle("already-exist", None),
+                );
+                let main_context = glib::MainContext::default();
+                let answer = main_context.block_on(message_dialog.run_future());
+                message_dialog.close();
+                if answer != adw::gtk::ResponseType::Yes {
+                    // Do nothing
+                } else {
+                    _delay_window_button.set_active(false);
+                    if _delay_spin.value() as u64 > 0 {
+                        recording_delay(
+                            _delay_spin.clone(),
+                            _delay_spin.value() as u64,
+                            delay_window.clone(),
+                            _delay_window_button.clone(),
+                            delay_window_label.clone(),
+                            _record_button.clone(),
+                        );
+                    } else if _delay_spin.value() as u64 == 0 {
+                        let _area_capture = area_capture.borrow_mut();
+                        let start_video_record = _ffmpeg_record_interface.borrow_mut().start_video(
+                            _area_capture.x,
+                            _area_capture.y,
+                            _area_capture.width,
+                            _area_capture.height,
+                            mode,
+                        );
+                        _audio_input_switch.set_sensitive(false);
+                        _audio_output_switch.set_sensitive(false);
+                        _video_switch.set_sensitive(false);
+                        start_timer(record_time_label.clone());
+                        record_time_label.set_visible(true);
+                        if hide_switch.is_active() {
+                            _main_window.minimize();
+                        }
+                        _play_button.hide();
+                        _record_button.hide();
+                        _stop_button.show();
+                        if _audio_input_switch.is_active() {
+                            match _ffmpeg_record_interface.borrow_mut().start_input_audio() {
+                                Ok(_) => {
+                                // Do nothing
+                                },
+                                Err(error) => {
+                                    _audio_input_switch.set_sensitive(true);
+                                    _audio_output_switch.set_sensitive(true);
+                                    _video_switch.set_sensitive(true);
+                                    _record_button.show();
+                                    _stop_button.hide();
+                                    let text_buffer = TextBuffer::new(None);
+                                    text_buffer.set_text(&format!("{}", error));
+                                    _error_message.set_buffer(Some(&text_buffer));
+                                    _error_dialog.show();
+                                },
+                            }
+                        }
+                        if _audio_output_switch.is_active() {
+                            match _ffmpeg_record_interface.borrow_mut().start_output_audio() {
+                                Ok(_) => {
+                                    // Do nothing
+                                },
+                                Err(error) => {
+                                    _audio_input_switch.set_sensitive(true);
+                                    _audio_output_switch.set_sensitive(true);
+                                    _video_switch.set_sensitive(true);
+                                    _record_button.show();
+                                    _stop_button.hide();
+                                    let text_buffer = TextBuffer::new(None);
+                                    text_buffer.set_text(&format!("{}", error));
+                                    _error_message.set_buffer(Some(&text_buffer));
+                                    _error_dialog.show();
+                                },
+                            }
+                        }
+                        if _video_switch.is_active() {
+                            match start_video_record {
+                                Ok(_) => {
+                                    // Do nothing
+                                },
+                                Err(error) => {
+                                    _audio_input_switch.set_sensitive(true);
+                                    _audio_output_switch.set_sensitive(true);
+                                    _video_switch.set_sensitive(true);
+                                    _record_button.show();
+                                    _stop_button.hide();
+                                    let text_buffer = TextBuffer::new(None);
+                                    text_buffer.set_text(&format!("{}", error));
+                                    _error_message.set_buffer(Some(&text_buffer));
+                                    _error_dialog.show();
+                                },
+                            }
+                        }
+                    }
+                }
             } else {
-                _audio_input_switch.set_sensitive(false);
-                _audio_output_switch.set_sensitive(false);
-                _video_switch.set_sensitive(false);
-                start_timer(record_time_label.clone());
-                record_time_label.set_visible(true);
-                if hide_switch.is_active() {
-                    _main_window.minimize();
-                }
-                _play_button.hide();
-                _record_button.hide();
-                _stop_button.show();
-                if _audio_input_switch.is_active() {
-                    match _ffmpeg_record_interface.borrow_mut().start_input_audio() {
-                        Ok(_) => {
-                            // Do nothing
-                            },
-                        Err(error) => {
-                            _audio_input_switch.set_sensitive(true);
-                            _audio_output_switch.set_sensitive(true);
-                            _video_switch.set_sensitive(true);
-                            _record_button.show();
-                            _stop_button.hide();
-                            let text_buffer = TextBuffer::new(None);
-                            text_buffer.set_text(&format!("{}", error));
-                            _error_message.set_buffer(Some(&text_buffer));
-                            _error_dialog.show();
-                        },
+                _delay_window_button.set_active(false);
+                if _delay_spin.value() as u64 > 0 {
+                    recording_delay(
+                        _delay_spin.clone(),
+                        _delay_spin.value() as u64,
+                        delay_window.clone(),
+                        _delay_window_button.clone(),
+                        delay_window_label.clone(),
+                        _record_button.clone(),
+                    );
+                } else if _delay_spin.value() as u64 == 0 {
+                    let _area_capture = area_capture.borrow_mut();
+                    let start_video_record = _ffmpeg_record_interface.borrow_mut().start_video(
+                        _area_capture.x,
+                        _area_capture.y,
+                        _area_capture.width,
+                        _area_capture.height,
+                        mode,
+                    );
+                    _audio_input_switch.set_sensitive(false);
+                    _audio_output_switch.set_sensitive(false);
+                    _video_switch.set_sensitive(false);
+                    start_timer(record_time_label.clone());
+                    record_time_label.set_visible(true);
+                    if hide_switch.is_active() {
+                        _main_window.minimize();
                     }
-                }
-                if _audio_output_switch.is_active() {
-                    match _ffmpeg_record_interface.borrow_mut().start_output_audio() {
-                        Ok(_) => {
-                            // Do nothing
+                    _play_button.hide();
+                    _record_button.hide();
+                    _stop_button.show();
+                    if _audio_input_switch.is_active() {
+                        match _ffmpeg_record_interface.borrow_mut().start_input_audio() {
+                            Ok(_) => {
+                                // Do nothing
                             },
-                        Err(error) => {
-                            _audio_input_switch.set_sensitive(true);
-                            _audio_output_switch.set_sensitive(true);
-                            _video_switch.set_sensitive(true);
-                            _record_button.show();
-                            _stop_button.hide();
-                            let text_buffer = TextBuffer::new(None);
-                            text_buffer.set_text(&format!("{}", error));
-                            _error_message.set_buffer(Some(&text_buffer));
-                            _error_dialog.show();
-                        },
+                            Err(error) => {
+                                _audio_input_switch.set_sensitive(true);
+                                _audio_output_switch.set_sensitive(true);
+                                _video_switch.set_sensitive(true);
+                                _record_button.show();
+                                _stop_button.hide();
+                                let text_buffer = TextBuffer::new(None);
+                                text_buffer.set_text(&format!("{}", error));
+                                _error_message.set_buffer(Some(&text_buffer));
+                                _error_dialog.show();
+                            },
+                        }
                     }
-                }
-                if _video_switch.is_active() {
-                    match start_video_record {
-                        Ok(_) => {
-                            // Do nothing
+                    if _audio_output_switch.is_active() {
+                        match _ffmpeg_record_interface.borrow_mut().start_output_audio() {
+                            Ok(_) => {
+                                // Do nothing
                             },
-                        Err(error) => {
-                            _audio_input_switch.set_sensitive(true);
-                            _audio_output_switch.set_sensitive(true);
-                            _video_switch.set_sensitive(true);
-                            _record_button.show();
-                            _stop_button.hide();
-                            let text_buffer = TextBuffer::new(None);
-                            text_buffer.set_text(&format!("{}", error));
-                            _error_message.set_buffer(Some(&text_buffer));
-                            _error_dialog.show();
-                        },
+                            Err(error) => {
+                                _audio_input_switch.set_sensitive(true);
+                                _audio_output_switch.set_sensitive(true);
+                                _video_switch.set_sensitive(true);
+                                _record_button.show();
+                                _stop_button.hide();
+                                let text_buffer = TextBuffer::new(None);
+                                text_buffer.set_text(&format!("{}", error));
+                                _error_message.set_buffer(Some(&text_buffer));
+                                _error_dialog.show();
+                            },
+                        }
+                    }
+                    if _video_switch.is_active() {
+                        match start_video_record {
+                            Ok(_) => {
+                                // Do nothing
+                            },
+                            Err(error) => {
+                                _audio_input_switch.set_sensitive(true);
+                                _audio_output_switch.set_sensitive(true);
+                                _video_switch.set_sensitive(true);
+                                _record_button.show();
+                                _stop_button.hide();
+                                let text_buffer = TextBuffer::new(None);
+                                text_buffer.set_text(&format!("{}", error));
+                                _error_message.set_buffer(Some(&text_buffer));
+                                _error_dialog.show();
+                            },
+                        }
                     }
                 }
             }
@@ -918,7 +1022,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     // Do nothing
                     },
                 Err(error) => {
-                    _ffmpeg_record_interface.borrow_mut().kill().unwrap();
                     _audio_input_switch.set_sensitive(true);
                     _audio_output_switch.set_sensitive(true);
                     _video_switch.set_sensitive(true);
@@ -937,7 +1040,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     // Do nothing
                     },
                 Err(error) => {
-                    _ffmpeg_record_interface.borrow_mut().kill().unwrap();
                     _audio_input_switch.set_sensitive(true);
                     _audio_output_switch.set_sensitive(true);
                     _video_switch.set_sensitive(true);
@@ -956,7 +1058,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     // Do nothing
                     },
                 Err(error) => {
-                    _ffmpeg_record_interface.borrow_mut().kill().unwrap();
                     _audio_input_switch.set_sensitive(true);
                     _audio_output_switch.set_sensitive(true);
                     _video_switch.set_sensitive(true);
@@ -1108,3 +1209,90 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
 
     Ok(())
 }
+
+/*fn record() {
+                        _delay_window_button.set_active(false);
+                    if _delay_spin.value() as u64 > 0 {
+                        recording_delay(
+                            _delay_spin.clone(),
+                            _delay_spin.value() as u64,
+                            delay_window.clone(),
+                            _delay_window_button.clone(),
+                            delay_window_label.clone(),
+                            _record_button.clone(),
+                        );
+                    } else if _delay_spin.value() as u64 == 0 {
+                        let _area_capture = area_capture.borrow_mut();
+                        let start_video_record = _ffmpeg_record_interface.borrow_mut().start_video(
+                            _area_capture.x,
+                            _area_capture.y,
+                            _area_capture.width,
+                            _area_capture.height,
+                            mode,
+                        );
+                        _audio_input_switch.set_sensitive(false);
+                        _audio_output_switch.set_sensitive(false);
+                        _video_switch.set_sensitive(false);
+                        start_timer(record_time_label.clone());
+                        record_time_label.set_visible(true);
+                        if hide_switch.is_active() {
+                            _main_window.minimize();
+                        }
+                        _play_button.hide();
+                        _record_button.hide();
+                        _stop_button.show();
+                        if _audio_input_switch.is_active() {
+                            match _ffmpeg_record_interface.borrow_mut().start_input_audio() {
+                                Ok(_) => {
+                                // Do nothing
+                            },
+                            Err(error) => {
+                                _audio_input_switch.set_sensitive(true);
+                                _audio_output_switch.set_sensitive(true);
+                                _video_switch.set_sensitive(true);
+                                _record_button.show();
+                                _stop_button.hide();
+                                let text_buffer = TextBuffer::new(None);
+                                text_buffer.set_text(&format!("{}", error));
+                                _error_message.set_buffer(Some(&text_buffer));
+                                _error_dialog.show();
+                            },
+                        }
+                    }
+                    if _audio_output_switch.is_active() {
+                        match _ffmpeg_record_interface.borrow_mut().start_output_audio() {
+                            Ok(_) => {
+                                // Do nothing
+                            },
+                            Err(error) => {
+                                _audio_input_switch.set_sensitive(true);
+                                _audio_output_switch.set_sensitive(true);
+                                _video_switch.set_sensitive(true);
+                                _record_button.show();
+                                _stop_button.hide();
+                                let text_buffer = TextBuffer::new(None);
+                                text_buffer.set_text(&format!("{}", error));
+                                _error_message.set_buffer(Some(&text_buffer));
+                                _error_dialog.show();
+                            },
+                        }
+                    }
+                    if _video_switch.is_active() {
+                        match start_video_record {
+                            Ok(_) => {
+                                // Do nothing
+                            },
+                            Err(error) => {
+                                _audio_input_switch.set_sensitive(true);
+                                _audio_output_switch.set_sensitive(true);
+                                _video_switch.set_sensitive(true);
+                                _record_button.show();
+                                _stop_button.hide();
+                                let text_buffer = TextBuffer::new(None);
+                                text_buffer.set_text(&format!("{}", error));
+                                _error_message.set_buffer(Some(&text_buffer));
+                                _error_dialog.show();
+                            },
+                        }
+
+}*/
