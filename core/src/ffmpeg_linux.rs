@@ -138,7 +138,6 @@ impl Ffmpeg {
             },
         ]);
         ffmpeg_command.overwrite();
-        ffmpeg_command.print_command();
 
         // Sleep for delay
         sleep(Duration::from_secs(self.record_delay as u64));
