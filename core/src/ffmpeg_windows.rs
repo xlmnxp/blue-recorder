@@ -419,7 +419,7 @@ impl Ffmpeg {
 #[cfg(feature = "gtk")]
 impl Ffmpeg {
     // Get file name
-    pub fn get_filename(&mut self) -> Result<String> {
+    pub fn get_filename(&mut self) -> Result<()> {
         self.saved_filename =
             self.filename
                 .0
@@ -439,7 +439,7 @@ impl Ffmpeg {
                 .as_path()
                 .display()
                 .to_string();
-        Ok(self.saved_filename.clone())
+        Ok(())
     }
 
     // Start video recording
