@@ -235,9 +235,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _video_switch = video_switch.clone();
     audio_input_switch.connect_toggled(move |switch: &CheckButton| {
         config_management::set_bool("default", "audio_input_check", switch.is_active());
-        if !switch.is_active() && !_video_switch.is_active() {
-            _mouse_switch.set_sensitive(true);
-        }
     });
     follow_mouse_switch.connect_toggled(|switch: &CheckButton| {
         config_management::set_bool("default", "followmousecheck", switch.is_active());
@@ -832,10 +829,12 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         if !_audio_input_switch.is_active() &&
             !_audio_output_switch.is_active() &&
             !_video_switch.is_active() ||
+            !second_click.borrow_mut().is_clicked() &&
+            _delay_spin.value() as u16 == 0 &&
             !is_overwrite(&get_bundle("already-exist", None),
                           &_ffmpeg_record_interface.borrow_mut().saved_filename,
                           _main_window.clone()
-            ) && !second_click.borrow_mut().is_clicked() && _delay_spin.value() as u16 == 0
+            )
         {
             // Do nothing
         } else {
