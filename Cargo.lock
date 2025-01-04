@@ -483,7 +483,6 @@ dependencies = [
  "anyhow",
  "async-std",
  "blue-recorder-core",
- "chrono",
  "cpal",
  "dark-light",
  "dirs",
@@ -503,6 +502,7 @@ name = "blue-recorder-core"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "chrono",
  "ffmpeg-sidecar",
  "glib 0.10.3",
  "libadwaita",

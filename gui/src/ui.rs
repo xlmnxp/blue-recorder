@@ -9,11 +9,10 @@ use blue_recorder_core::ffmpeg_linux::Ffmpeg;
 #[cfg(target_os = "windows")]
 use blue_recorder_core::ffmpeg_windows::Ffmpeg;
 use blue_recorder_core::utils::{is_wayland, play_record, RecordMode};
-use chrono::Utc;
 use cpal::traits::{DeviceTrait, HostTrait};
 use std::cell::RefCell;
 use std::ops::Add;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::rc::Rc;
 
 use crate::{area_capture, config_management, fluent::get_bundle};
@@ -692,34 +691,11 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     });
 
     // Record struct values
-    let audio_input_id = if audio_input_switch.is_active() {
-        audio_source_combobox.active_id().unwrap().to_string()
-    } else {
-        String::new()
-    };
     let audio_output_id = if audio_output_switch.is_active() {
         output_device
     } else {
         String::new()
     };
-    let audio_record_bitrate = audio_bitrate_spin.value() as u16;
-    let filename = folder_chooser_native
-        .file()
-        .unwrap()
-        .path()
-        .unwrap()
-        .join(PathBuf::from(format!(
-            "{}.{}",
-            if filename_entry.text().to_string().trim().eq("") {
-                Utc::now().to_string().replace(" UTC", "").replace(' ', "-")
-            } else {
-                filename_entry.text().to_string().trim().to_string()
-            },
-            format_chooser_combobox.active_id().unwrap()
-        )))
-        .as_path()
-        .display().to_string();
-    let follow_mouse = follow_mouse_switch.is_active();
     let mode = if area_grab_button.is_active() {
         RecordMode::Area
     } else if window_grab_button.is_active() {
@@ -727,58 +703,62 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     } else {
         RecordMode::Screen
     };
-    let output = Path::new(&filename).extension().unwrap().to_string_lossy().to_string();
-    let record_delay = delay_spin.value() as u16;
-    let record_frames = frames_spin.value() as u16;
-    let record_mouse = mouse_switch.is_active();
-    let show_area = area_switch.is_active();
-    let video_record_bitrate = video_bitrate_spin.value() as u16;
     #[cfg(target_os = "windows")]
     let window_title = window_title.borrow_mut().title.clone();
 
     // Init record struct
     #[cfg(target_os = "windows")]
     let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
-        audio_input_id,
+        audio_input_id: audio_source_combobox.clone(),
         audio_output_id,
-        filename,
-        output,
+        filename: (
+            folder_chooser_native,
+            filename_entry,
+            format_chooser_combobox,
+        ),
+        output: String::new(),
         temp_input_audio_filename: String::new(),
         temp_output_audio_filename: String::new(),
         temp_video_filename: String::new(),
         window_title,
+        saved_filename: String::new(),
         height: None,
         input_audio_process: None,
         output_audio_process: None,
         video_process: None,
-        audio_record_bitrate,
-        record_delay,
-        record_frames,
-        video_record_bitrate,
-        follow_mouse,
-        record_mouse,
-        show_area,
+        audio_record_bitrate: audio_bitrate_spin,
+        record_delay: delay_spin,
+        record_frames: frames_spin,
+        video_record_bitrate: video_bitrate_spin,
+        follow_mouse: follow_mouse_switch,
+        record_mouse: mouse_switch,
+        show_area: area_switch
     }));
     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
     let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
-        audio_input_id,
+        audio_input_id: audio_source_combobox.clone(),
         audio_output_id,
-        filename,
-        output,
+        filename: (
+            folder_chooser_native,
+            filename_entry,
+            format_chooser_combobox,
+        ),
+        output: String::new(),
         temp_input_audio_filename: String::new(),
         temp_output_audio_filename: String::new(),
         temp_video_filename: String::new(),
+        saved_filename: String::new(),
         height: None,
         input_audio_process: None,
         output_audio_process: None,
         video_process: None,
-        audio_record_bitrate,
-        record_delay,
-        record_frames,
-        video_record_bitrate,
-        follow_mouse,
-        record_mouse,
-        show_area,
+        audio_record_bitrate: audio_bitrate_spin,
+        record_delay: delay_spin.clone(),
+        record_frames: frames_spin,
+        video_record_bitrate: video_bitrate_spin,
+        follow_mouse: follow_mouse_switch,
+        record_mouse: mouse_switch,
+        show_area: area_switch
     }));
 
     // Record button
@@ -804,97 +784,107 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     //let wayland_record = main_context.block_on(WaylandRecorder::new());
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     record_button.connect_clicked(move |_| {
-        if !_audio_input_switch.is_active() &&
-            !_audio_output_switch.is_active() &&
-            !_video_switch.is_active()
-        {
-            // Do nothing
-        } else {
-            _delay_window_button.set_active(false);
-            if _delay_spin.value() as u16 > 0 {
-                recording_delay(
-                    _delay_spin.clone(),
-                    _delay_spin.value() as u16,
-                    delay_window.clone(),
-                    _delay_window_button.clone(),
-                    delay_window_label.clone(),
-                    _record_button.clone(),
-                );
-            } else if _delay_spin.value() as u16 == 0 {
-                let _area_capture = area_capture.borrow_mut();
-                let start_video_record = _ffmpeg_record_interface.borrow_mut().start_video(
-                    _area_capture.x,
-                    _area_capture.y,
-                    _area_capture.width,
-                    _area_capture.height,
-                    mode,
-                );
-                _audio_input_switch.set_sensitive(false);
-                _audio_output_switch.set_sensitive(false);
-                _video_switch.set_sensitive(false);
-                start_timer(record_time_label.clone());
-                record_time_label.set_visible(true);
-                if hide_switch.is_active() {
-                    _main_window.minimize();
-                }
-                _play_button.hide();
-                _record_button.hide();
-                _stop_button.show();
-                if _audio_input_switch.is_active() {
-                    match _ffmpeg_record_interface.borrow_mut().start_input_audio() {
-                        Ok(_) => {
-                            // Do nothing
-                            },
-                        Err(error) => {
-                            _audio_input_switch.set_sensitive(true);
-                            _audio_output_switch.set_sensitive(true);
-                            _video_switch.set_sensitive(true);
-                            _record_button.show();
-                            _stop_button.hide();
-                            let text_buffer = TextBuffer::new(None);
-                            text_buffer.set_text(&format!("{}", error));
-                            _error_message.set_buffer(Some(&text_buffer));
-                            _error_dialog.show();
-                        },
+        match _ffmpeg_record_interface.borrow_mut().get_filename() {
+            Err(error) => {
+                let text_buffer = TextBuffer::new(None);
+                text_buffer.set_text(&format!("{}", error));
+                _error_message.set_buffer(Some(&text_buffer));
+                _error_dialog.show();
+            },
+            Ok(_) => {
+                if !_audio_input_switch.is_active() &&
+                    !_audio_output_switch.is_active() &&
+                    !_video_switch.is_active()
+                {
+                    // Do nothing
+                } else {
+                    _delay_window_button.set_active(false);
+                    if _delay_spin.value() as u16 > 0 {
+                        recording_delay(
+                            _delay_spin.clone(),
+                            _delay_spin.value() as u16,
+                            delay_window.clone(),
+                            _delay_window_button.clone(),
+                            delay_window_label.clone(),
+                            _record_button.clone(),
+                        );
+                    } else if _delay_spin.value() as u16 == 0 {
+                        let _area_capture = area_capture.borrow_mut();
+                        let start_video_record = _ffmpeg_record_interface.borrow_mut().start_video(
+                            _area_capture.x,
+                            _area_capture.y,
+                            _area_capture.width,
+                            _area_capture.height,
+                            mode,
+                        );
+                        _audio_input_switch.set_sensitive(false);
+                        _audio_output_switch.set_sensitive(false);
+                        _video_switch.set_sensitive(false);
+                        start_timer(record_time_label.clone());
+                        record_time_label.set_visible(true);
+                        if hide_switch.is_active() {
+                            _main_window.minimize();
+                        }
+                        _play_button.hide();
+                        _record_button.hide();
+                        _stop_button.show();
+                        if _audio_input_switch.is_active() {
+                            match _ffmpeg_record_interface.borrow_mut().start_input_audio() {
+                                Ok(_) => {
+                                    // Do nothing
+                                },
+                                Err(error) => {
+                                    _audio_input_switch.set_sensitive(true);
+                                    _audio_output_switch.set_sensitive(true);
+                                    _video_switch.set_sensitive(true);
+                                    _record_button.show();
+                                    _stop_button.hide();
+                                    let text_buffer = TextBuffer::new(None);
+                                    text_buffer.set_text(&format!("{}", error));
+                                    _error_message.set_buffer(Some(&text_buffer));
+                                    _error_dialog.show();
+                                },
+                            }
+                        }
+                        if _audio_output_switch.is_active() {
+                            match _ffmpeg_record_interface.borrow_mut().start_output_audio() {
+                                Ok(_) => {
+                                    // Do nothing
+                                },
+                                Err(error) => {
+                                    _audio_input_switch.set_sensitive(true);
+                                    _audio_output_switch.set_sensitive(true);
+                                    _video_switch.set_sensitive(true);
+                                    _record_button.show();
+                                    _stop_button.hide();
+                                    let text_buffer = TextBuffer::new(None);
+                                    text_buffer.set_text(&format!("{}", error));
+                                    _error_message.set_buffer(Some(&text_buffer));
+                                    _error_dialog.show();
+                                },
+                            }
+                        }
+                        if _video_switch.is_active() {
+                            match start_video_record {
+                                Ok(_) => {
+                                    // Do nothing
+                                },
+                                Err(error) => {
+                                    _audio_input_switch.set_sensitive(true);
+                                    _audio_output_switch.set_sensitive(true);
+                                    _video_switch.set_sensitive(true);
+                                    _record_button.show();
+                                    _stop_button.hide();
+                                    let text_buffer = TextBuffer::new(None);
+                                    text_buffer.set_text(&format!("{}", error));
+                                    _error_message.set_buffer(Some(&text_buffer));
+                                    _error_dialog.show();
+                                },
+                            }
+                        }
                     }
                 }
-                if _audio_output_switch.is_active() {
-                    match _ffmpeg_record_interface.borrow_mut().start_output_audio() {
-                        Ok(_) => {
-                            // Do nothing
-                            },
-                        Err(error) => {
-                            _audio_input_switch.set_sensitive(true);
-                            _audio_output_switch.set_sensitive(true);
-                            _video_switch.set_sensitive(true);
-                            _record_button.show();
-                            _stop_button.hide();
-                            let text_buffer = TextBuffer::new(None);
-                            text_buffer.set_text(&format!("{}", error));
-                            _error_message.set_buffer(Some(&text_buffer));
-                            _error_dialog.show();
-                        },
-                    }
-                }
-                if _video_switch.is_active() {
-                    match start_video_record {
-                        Ok(_) => {
-                            // Do nothing
-                            },
-                        Err(error) => {
-                            _audio_input_switch.set_sensitive(true);
-                            _audio_output_switch.set_sensitive(true);
-                            _video_switch.set_sensitive(true);
-                            _record_button.show();
-                            _stop_button.hide();
-                            let text_buffer = TextBuffer::new(None);
-                            text_buffer.set_text(&format!("{}", error));
-                            _error_message.set_buffer(Some(&text_buffer));
-                            _error_dialog.show();
-                        },
-                    }
-                }
-            }
+            },
         }
     });
 
@@ -971,7 +961,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         _video_switch.set_sensitive(true);
         record_button.show();
         _stop_button.hide();
-        let file_name = _ffmpeg_record_interface.borrow_mut().filename.clone();
+        let file_name = _ffmpeg_record_interface.borrow_mut().saved_filename.clone();
         if Path::new(&file_name).try_exists().is_ok() {
             _play_button.show();
             _play_button.set_tooltip_text(Some(&get_bundle("play-tooltip", None)));
@@ -991,7 +981,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _error_message = error_message.clone();
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     play_button.connect_clicked(move |_| {
-        let file_name = _ffmpeg_record_interface.borrow_mut().filename.clone();
+        let file_name = _ffmpeg_record_interface.borrow_mut().saved_filename.clone();
         match play_record(&file_name) {
             Ok(_) => {
                 // Do nothing
