@@ -1,14 +1,15 @@
 use adw::{Application, Window};
 use adw::gio::File;
 use adw::gtk::{AboutDialog, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry, Expander, FileChooserNative,
-               FileChooserAction, Image, Label, MessageDialog, SpinButton, TextBuffer, TextView, ToggleButton};
+               FileChooserAction, Image, Label, MessageDialog, SpinButton, TextBuffer, TextView, ToggleButton, Widget};
 use adw::prelude::*;
 use anyhow::Result;
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
 use blue_recorder_core::ffmpeg_linux::Ffmpeg;
 #[cfg(target_os = "windows")]
 use blue_recorder_core::ffmpeg_windows::Ffmpeg;
-use blue_recorder_core::utils::{is_overwrite, is_wayland, play_record, RecordMode};
+use blue_recorder_core::utils::{disable_input_widgets, enable_input_widgets,
+                                is_overwrite, is_wayland, play_record, RecordMode};
 use cpal::traits::{DeviceTrait, HostTrait};
 use std::cell::RefCell;
 use std::ops::Add;
@@ -690,6 +691,29 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
             }}
     });
 
+    // Input widgets list
+    let input_widgets: Vec<Widget> = vec![
+        filename_entry.clone().into(),
+        folder_chooser_button.clone().into(),
+        format_chooser_combobox.clone().into(),
+        area_grab_button.clone().into(),
+        screen_grab_button.clone().into(),
+        window_grab_button.clone().into(),
+        video_switch.clone().into(),
+        audio_input_switch.clone().into(),
+        frames_spin.clone().into(),
+        mouse_switch.clone().into(),
+        follow_mouse_switch.clone().into(),
+        delay_spin.clone().into(),
+        hide_switch.clone().into(),
+        audio_output_switch.clone().into(),
+        video_bitrate_spin.clone().into(),
+        area_switch.clone().into(),
+        audio_bitrate_spin.clone().into(),
+        audio_source_combobox.clone().into(),
+        command_entry.clone().into()
+    ];
+
     // Record struct values
     let audio_output_id = if audio_output_switch.is_active() {
         output_device
@@ -774,6 +798,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _delay_window_button = delay_window_button.clone();
     let _error_dialog = error_dialog.clone();
     let _error_message = error_message.clone();
+    let _input_widgets = input_widgets.clone();
     //let main_context = glib::MainContext::default();
     let _main_window = main_window.clone();
     let _play_button = play_button.clone();
@@ -825,9 +850,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                         }
                     } else if _delay_spin.value() as u16 == 0 && !is_wayland() {
                         let _area_capture = area_capture.borrow_mut();
-                        _audio_input_switch.set_sensitive(false);
-                        _audio_output_switch.set_sensitive(false);
-                        _video_switch.set_sensitive(false);
+                        disable_input_widgets(_input_widgets.clone());
                         start_timer(record_time_label.clone());
                         record_time_label.set_visible(true);
                         if hide_switch.is_active() {
@@ -842,9 +865,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                                     // Do nothing
                                 },
                                 Err(error) => {
-                                    _audio_input_switch.set_sensitive(true);
-                                    _audio_output_switch.set_sensitive(true);
-                                    _video_switch.set_sensitive(true);
+                                    enable_input_widgets(_input_widgets.clone());
                                     _record_button.show();
                                     _stop_button.hide();
                                     let text_buffer = TextBuffer::new(None);
@@ -860,9 +881,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                                     // Do nothing
                                 },
                                 Err(error) => {
-                                    _audio_input_switch.set_sensitive(true);
-                                    _audio_output_switch.set_sensitive(true);
-                                    _video_switch.set_sensitive(true);
+                                    enable_input_widgets(_input_widgets.clone());
                                     _record_button.show();
                                     _stop_button.hide();
                                     let text_buffer = TextBuffer::new(None);
@@ -884,9 +903,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                                     // Do nothing
                                 },
                                 Err(error) => {
-                                    _audio_input_switch.set_sensitive(true);
-                                    _audio_output_switch.set_sensitive(true);
-                                    _video_switch.set_sensitive(true);
+                                    enable_input_widgets(_input_widgets.clone());
                                     _record_button.show();
                                     _stop_button.hide();
                                     let text_buffer = TextBuffer::new(None);
@@ -922,9 +939,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     // Do nothing
                     },
                 Err(error) => {
-                    _audio_input_switch.set_sensitive(true);
-                    _audio_output_switch.set_sensitive(true);
-                    _video_switch.set_sensitive(true);
+                    enable_input_widgets(input_widgets.clone());
                     record_button.show();
                     _stop_button.hide();
                     let text_buffer = TextBuffer::new(None);
@@ -940,9 +955,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     // Do nothing
                     },
                 Err(error) => {
-                    _audio_input_switch.set_sensitive(true);
-                    _audio_output_switch.set_sensitive(true);
-                    _video_switch.set_sensitive(true);
+                    enable_input_widgets(input_widgets.clone());
                     record_button.show();
                     _stop_button.hide();
                     let text_buffer = TextBuffer::new(None);
@@ -958,9 +971,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     // Do nothing
                 },
                 Err(error) => {
-                    _audio_input_switch.set_sensitive(true);
-                    _audio_output_switch.set_sensitive(true);
-                    _video_switch.set_sensitive(true);
+                    enable_input_widgets(input_widgets.clone());
                     record_button.show();
                     _stop_button.hide();
                     let text_buffer = TextBuffer::new(None);
@@ -970,9 +981,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 },
             }
         }
-        _audio_input_switch.set_sensitive(true);
-        _audio_output_switch.set_sensitive(true);
-        _video_switch.set_sensitive(true);
+        enable_input_widgets(input_widgets.clone());
         record_button.show();
         _stop_button.hide();
         let file_name = _ffmpeg_record_interface.borrow_mut().saved_filename.clone();

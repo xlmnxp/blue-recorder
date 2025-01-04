@@ -10,6 +10,24 @@ pub enum RecordMode {
 }
 
 #[cfg(feature = "gtk")]
+// Disable GtkWidget
+pub fn disable_input_widgets(input_widgets: Vec<adw::gtk::Widget>) {
+    use adw::gtk::prelude::WidgetExt;
+    for widget in input_widgets {
+        widget.set_sensitive(false);
+    }
+}
+
+#[cfg(feature = "gtk")]
+// Enable GtkWidget
+pub fn enable_input_widgets(input_widgets: Vec<adw::gtk::Widget>) {
+    use adw::gtk::prelude::WidgetExt;
+    for widget in input_widgets {
+        widget.set_sensitive(true);
+    }
+}
+
+#[cfg(feature = "gtk")]
 // Execute command after finish recording
 pub fn exec(command: &str) -> Result<()> {
     if !command.trim().is_empty() {
