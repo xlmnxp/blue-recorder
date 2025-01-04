@@ -810,13 +810,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                         );
                     } else if _delay_spin.value() as u16 == 0 {
                         let _area_capture = area_capture.borrow_mut();
-                        let start_video_record = _ffmpeg_record_interface.borrow_mut().start_video(
-                            _area_capture.x,
-                            _area_capture.y,
-                            _area_capture.width,
-                            _area_capture.height,
-                            mode,
-                        );
                         _audio_input_switch.set_sensitive(false);
                         _audio_output_switch.set_sensitive(false);
                         _video_switch.set_sensitive(false);
@@ -865,7 +858,13 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             }
                         }
                         if _video_switch.is_active() {
-                            match start_video_record {
+                            match _ffmpeg_record_interface.borrow_mut().start_video(
+                                _area_capture.x,
+                                _area_capture.y,
+                                _area_capture.width,
+                                _area_capture.height,
+                                mode
+                            ) {
                                 Ok(_) => {
                                     // Do nothing
                                 },
