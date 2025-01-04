@@ -8,7 +8,7 @@ use anyhow::Result;
 use blue_recorder_core::ffmpeg_linux::Ffmpeg;
 #[cfg(target_os = "windows")]
 use blue_recorder_core::ffmpeg_windows::Ffmpeg;
-use blue_recorder_core::utils::{is_wayland, play_record, RecordMode};
+use blue_recorder_core::utils::{is_overwrite, is_wayland, play_record, RecordMode};
 use cpal::traits::{DeviceTrait, HostTrait};
 use std::cell::RefCell;
 use std::ops::Add;
@@ -16,7 +16,7 @@ use std::path::Path;
 use std::rc::Rc;
 
 use crate::{area_capture, config_management, fluent::get_bundle};
-use crate::timer::{recording_delay, start_timer, stop_timer};
+use crate::timer::{RecordClick, recording_delay, start_timer, stop_timer};
 
 pub fn run_ui(application: &Application) {
     // Error dialog
@@ -783,6 +783,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _video_switch = video_switch.clone();
     //let wayland_record = main_context.block_on(WaylandRecorder::new());
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
+    let second_click: Rc<RefCell<RecordClick>> = Rc::new(RefCell::new(RecordClick {
+        is_record_button_clicked: false,
+    }));
     record_button.connect_clicked(move |_| {
         match _ffmpeg_record_interface.borrow_mut().get_filename() {
             Err(error) => {
@@ -794,21 +797,33 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
             Ok(_) => {
                 if !_audio_input_switch.is_active() &&
                     !_audio_output_switch.is_active() &&
-                    !_video_switch.is_active()
+                    !_video_switch.is_active() ||
+                    !is_overwrite(&get_bundle("already-exist", None),
+                                 &_ffmpeg_record_interface.borrow_mut().saved_filename,
+                                 _main_window.clone()
+                    ) && !second_click.borrow_mut().is_clicked() && _delay_spin.value() as u16 == 0
                 {
                     // Do nothing
                 } else {
                     _delay_window_button.set_active(false);
                     if _delay_spin.value() as u16 > 0 {
-                        recording_delay(
-                            _delay_spin.clone(),
-                            _delay_spin.value() as u16,
-                            delay_window.clone(),
-                            _delay_window_button.clone(),
-                            delay_window_label.clone(),
-                            _record_button.clone(),
-                        );
-                    } else if _delay_spin.value() as u16 == 0 {
+                        if !is_overwrite(&get_bundle("already-exist", None),
+                                         &_ffmpeg_record_interface.borrow_mut().saved_filename,
+                                         _main_window.clone())
+                        {
+                            //Do nothing
+                        } else {
+                            recording_delay(
+                                _delay_spin.clone(),
+                                _delay_spin.value() as u16,
+                                delay_window.clone(),
+                                _delay_window_button.clone(),
+                                delay_window_label.clone(),
+                                _record_button.clone(),
+                                second_click.clone(),
+                            );
+                        }
+                    } else if _delay_spin.value() as u16 == 0 && !is_wayland() {
                         let _area_capture = area_capture.borrow_mut();
                         _audio_input_switch.set_sensitive(false);
                         _audio_output_switch.set_sensitive(false);

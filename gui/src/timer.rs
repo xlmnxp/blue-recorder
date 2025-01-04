@@ -4,9 +4,27 @@ use adw::gtk::{Button, ToggleButton, Label, SpinButton};
 use adw::gtk::glib;
 use adw::gtk::prelude::*;
 use adw::Window;
+use std::cell::RefCell;
+use std::rc::Rc;
+
+// Check for record_button.emit_clicked()
+#[derive(Clone, Copy)]
+pub struct RecordClick {
+    pub is_record_button_clicked: bool,
+}
+
+impl RecordClick {
+    pub fn set_clicked(&mut self, status: bool) {
+        self.is_record_button_clicked = status;
+    }
+
+    pub fn is_clicked(&mut self) -> bool {
+        self.is_record_button_clicked
+    }
+}
 
 pub fn recording_delay(delay_spin: SpinButton, mut delay_time: u16, delay_window: Window, delay_window_button: ToggleButton,
-                       delay_window_label: Label, record_button: Button) {
+                       delay_window_label: Label, record_button: Button, record_click: Rc<RefCell<RecordClick>>) {
     // Keep time label alive and update every 1sec
     let default_value = delay_time;
     let capture_delay_label = move || {
@@ -25,7 +43,11 @@ pub fn recording_delay(delay_spin: SpinButton, mut delay_time: u16, delay_window
             // Hide delay window and start recording
             delay_window.hide();
             delay_spin.set_value(0.0);
+            // Inform that record button is on second click
+            record_click.borrow_mut().set_clicked(true);
             record_button.emit_clicked();
+            // Revert record_click
+            record_click.borrow_mut().set_clicked(false);
             // Keep the input value
             delay_spin.set_value(default_value as f64);
             glib::source::Continue(false)
