@@ -144,12 +144,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     play_button.hide();
     stop_button.hide();
 
-    // Disable show area check button
-    if !area_grab_button.is_active() {
-        area_switch.set_active(false);
-        area_switch.set_sensitive(false);
-    }
-
     // Toggle button
     config_management::set("default", "mode", "screen");
     screen_grab_button.set_active(true);
@@ -692,7 +686,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     });
 
     // Input widgets list
-    let input_widgets: Vec<Widget> = vec![
+    let mut input_widgets: Vec<Widget> = vec![
         filename_entry.clone().into(),
         folder_chooser_button.clone().into(),
         format_chooser_combobox.clone().into(),
@@ -701,18 +695,30 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         window_grab_button.clone().into(),
         video_switch.clone().into(),
         audio_input_switch.clone().into(),
+        frames_label.clone().into(),
         frames_spin.clone().into(),
         mouse_switch.clone().into(),
         follow_mouse_switch.clone().into(),
+        delay_label.clone().into(),
         delay_spin.clone().into(),
         hide_switch.clone().into(),
         audio_output_switch.clone().into(),
+        video_bitrate_label.clone().into(),
         video_bitrate_spin.clone().into(),
-        area_switch.clone().into(),
+        audio_bitrate_label.clone().into(),
         audio_bitrate_spin.clone().into(),
+        audio_source_label.clone().into(),
         audio_source_combobox.clone().into(),
+        command_label.clone().into(),
         command_entry.clone().into()
     ];
+
+    // Disable show area check button
+    if !area_grab_button.is_active() {
+        input_widgets.push(area_switch.clone().into());
+        area_switch.set_active(false);
+        area_switch.set_sensitive(false);
+    }
 
     // Record struct values
     let audio_output_id = if audio_output_switch.is_active() {
