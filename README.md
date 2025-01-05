@@ -19,17 +19,17 @@ Blue Recorder is available as a Snap and Flatpak package.
 ## Build from source
 Blue Recorder depends on the following dependencies:
 ```
-alsa
 ffmpeg
 gdk
 gio
 gtk
+pipewire
 x11-utils
 ```
 
 Install dependencies for Ubuntu and Debian-based distros:
 ```
-sudo apt install build-essential clang cargo x11-utils ffmpeg libgtk-3-dev libgtk-4-dev libatk1.0-dev libasound2-dev libgstreamer1.0-dev
+sudo apt install build-essential clang cargo x11-utils ffmpeg libgtk-3-dev libgtk-4-dev libatk1.0-dev libgstreamer1.0-dev libpipewire-0.3-dev
 ```
 Then use `Cargo` to build it:
 ```
