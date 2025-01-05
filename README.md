@@ -36,7 +36,7 @@ Then use `Cargo` to build it:
 git clone https://github.com/xlmnxp/blue-recorder
 cd <Project Directory>
 cargo build --release
-cp -a data interfaces locales target/release
+cp -a data gui/interfaces locales target/release
 ```
 Then you will find the executable file at: 
 `<Project Directory>/target/release/blue-recorder`
