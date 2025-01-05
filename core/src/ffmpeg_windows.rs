@@ -451,6 +451,10 @@ impl Ffmpeg {
         };
         let mut ffmpeg_command = FfmpegCommand::new();
         let format = "gdigrab";
+        let filename = self.saved_filename.clone();
+        self.output = Path::new(&filename).extension()
+                                          .ok_or_else(|| anyhow!("Failed to get file extension."))?
+                                          .to_string_lossy().to_string();
 
         // Record video to tmp if audio record enabled
         if !self.audio_input_id.active_id().ok_or_else(|| anyhow!("Failed to get audio input device ID."))?
