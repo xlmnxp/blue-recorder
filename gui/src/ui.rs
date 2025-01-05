@@ -649,9 +649,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 select_window_label.set_label(&get_bundle("click-window", None));
                 select_window.show();
 
-                let area_capture = _area_capture.clone();
                 let error_message = _error_message.clone();
-                let error_dialog = error_dialog.clone();
+                let error_dialog = _error_dialog.clone();
                 let _select_window = select_window.clone();
                 let window_title = _window_title.clone();
                 glib::timeout_add_local(1000, move || {
@@ -754,7 +753,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         output_audio_process: None,
         video_process: None,
         audio_record_bitrate: audio_bitrate_spin,
-        record_delay: delay_spin,
+        record_delay: delay_spin.clone(),
         record_frames: frames_spin,
         video_record_bitrate: video_bitrate_spin,
         follow_mouse: follow_mouse_switch,
