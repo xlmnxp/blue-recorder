@@ -7,7 +7,6 @@ edition = "2021"
 anyhow = "1.0.86"
 async-std = {version = "1.12.0", features = ["attributes"]}
 blue-recorder-core = { path = "../core", features = ["gtk"] }
-cpal = "0.15.3"
 dark-light = "1.0.0"
 dirs = "4.0.0"
 fluent-bundle = "0.15.3"
@@ -19,6 +18,7 @@ secfmt = "0.1.1"
 
 # Windows-only dependency
 [target.'cfg(windows)'.dependencies]
+cpal = "0.15.3"
 display-info = "0.5.1"
 winapi = { version = "0.3", features = ["winuser"] }
 x-win = "2.0.2"

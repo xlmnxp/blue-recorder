@@ -105,6 +105,38 @@ pub fn is_wayland() -> bool {
         .eq_ignore_ascii_case("wayland")
 }
 
+// Get audio output source
+#[cfg(feature = "gtk")]
+pub fn audio_output_source() -> Result<String> {
+    // Get the default sink
+    let default_sink_output = Command::new("pactl")
+        .arg("get-default-sink")
+        .output()?;
+
+    let default_sink = String::from_utf8_lossy(&default_sink_output.stdout)
+        .trim()
+        .to_string();
+
+    // List sinks and filter for the monitor of the default sink
+    let sinks_output = Command::new("pactl")
+        .arg("list")
+        .arg("sinks")
+        .output()?;
+
+    let sinks = String::from_utf8_lossy(&sinks_output.stdout);
+    let monitor_line = sinks
+        .lines()
+        .find(|line| line.contains(&format!("{}.monitor", default_sink)))
+        .unwrap_or("");
+
+    // Extract the part after the colon
+    let output_source = monitor_line.split(':')
+        .nth(1)
+        .unwrap_or("")
+        .trim().to_string();
+    Ok(output_source)
+}
+
 #[cfg(feature = "gtk")]
 // Play recorded file
 pub fn play_record(file_name: &str) -> Result<()> {
@@ -117,4 +149,35 @@ pub fn play_record(file_name: &str) -> Result<()> {
         open::that(file_name)?;
     }
     Ok(())
+}
+
+#[cfg(feature = "gtk")]
+// Get audio input source list
+pub fn sources_descriptions_list() -> Result<Vec<String>> {
+    let sources_descriptions: Vec<String> = {
+        let list_sources_child = std::process::Command::new("pactl")
+            .args(["list", "sources"])
+            .stdout(std::process::Stdio::piped())
+            .spawn();
+        let sources_descriptions = String::from_utf8(if let Ok(..) = list_sources_child {
+            std::process::Command::new("grep")
+                .args(["-e", "device.description"])
+                .stdin(list_sources_child?.stdout.take()
+                       .ok_or_else(|| anyhow::anyhow!("Failed to get audio input source descriptions."))?)
+                .output()?
+                .stdout
+        } else {
+            Vec::new()
+        })?;
+        sources_descriptions
+            .split('\n')
+            .map(|s| {
+                s.trim()
+                 .replace("device.description = ", "")
+                 .replace('\"', "")
+            })
+            .filter(|s| !s.is_empty())
+            .collect()
+    };
+    Ok(sources_descriptions)
 }

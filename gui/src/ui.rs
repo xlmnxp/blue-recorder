@@ -8,8 +8,9 @@ use anyhow::Result;
 use blue_recorder_core::ffmpeg_linux::Ffmpeg;
 #[cfg(target_os = "windows")]
 use blue_recorder_core::ffmpeg_windows::Ffmpeg;
-use blue_recorder_core::utils::{disable_input_widgets, enable_input_widgets,
-                                is_overwrite, is_wayland, play_record, RecordMode};
+use blue_recorder_core::utils::{audio_output_source, disable_input_widgets, enable_input_widgets,
+                                is_overwrite, is_wayland, play_record, RecordMode, sources_descriptions_list};
+#[cfg(target_os = "windows")]
 use cpal::traits::{DeviceTrait, HostTrait};
 use std::cell::RefCell;
 use std::ops::Add;
@@ -57,6 +58,7 @@ pub fn run_ui(application: &Application) {
 
 fn build_ui(application: &Application, error_dialog: MessageDialog, error_message: TextView) -> Result<()> {
     // Init audio source
+    #[cfg(target_os = "windows")]
     let host_audio_device = cpal::default_host();
 
     // Config initialize
@@ -186,16 +188,23 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     format_chooser_combobox.set_active(Some(config_management::get("default", "format").parse::<u32>().unwrap_or(0u32)));
 
     // Get audio sources
-    let input_device = host_audio_device.input_devices()?;
-    let sources_descriptions: Vec<String> = input_device
-        .filter_map(|device| device.name().ok())
-        .collect();
-    let host_output_device = host_audio_device.default_output_device();
-    let output_device = if host_output_device.is_some() {
-        host_output_device.unwrap().name()?
-    } else {
-      String::new()
-    };
+    #[cfg(target_os = "windows")]
+    {
+        let input_device = host_audio_device.input_devices()?;
+        let sources_descriptions: Vec<String> = input_device
+            .filter_map(|device| device.name().ok())
+            .collect();
+        let host_output_device = host_audio_device.default_output_device();
+        let audio_output_source = if host_output_device.is_some() {
+            host_output_device.unwrap().name()?
+        } else {
+            String::new()
+        };
+    }
+    #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+    let sources_descriptions: Vec<String> = sources_descriptions_list().unwrap_or_else(|_| Vec::new());
+    #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+    let audio_output_source: String = audio_output_source().unwrap_or_else(|_| String::new());
 
     audio_source_combobox.append(Some("default"), &get_bundle("audio-input", None));
     for (id, audio_source) in sources_descriptions.iter().enumerate() {
@@ -686,7 +695,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         filename_entry.clone().into(),
         folder_chooser_button.clone().into(),
         format_chooser_combobox.clone().into(),
-        area_grab_button.clone().into(),
         screen_grab_button.clone().into(),
         window_grab_button.clone().into(),
         video_switch.clone().into(),
@@ -708,6 +716,11 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         command_label.clone().into(),
         command_entry.clone().into()
     ];
+    // Temporary solution
+    if !is_wayland() {
+        // Keep area_selection disaled in wayland
+        input_widgets.push(area_grab_button.clone().into());
+    }
 
     // Disable show area check button
     if !area_grab_button.is_active() {
@@ -718,7 +731,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
 
     // Record struct values
     let audio_output_id = if audio_output_switch.is_active() {
-        output_device
+        audio_output_source
     } else {
         String::new()
     };
@@ -855,7 +868,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                         second_click.clone(),
                     );
                 }
-            } else if _delay_spin.value() as u16 == 0 && !is_wayland() {
+            } else if _delay_spin.value() as u16 == 0 {
                 let _area_capture = area_capture.borrow_mut();
                 disable_input_widgets(_input_widgets.clone());
                 start_timer(record_time_label.clone());
@@ -898,7 +911,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                         },
                     }
                 }
-                if _video_switch.is_active() {
+                if _video_switch.is_active() && !is_wayland() {
                     match _ffmpeg_record_interface.borrow_mut().start_video(
                         _area_capture.x,
                         _area_capture.y,

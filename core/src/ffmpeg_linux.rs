@@ -1,12 +1,17 @@
+#[cfg(feature = "gtk")]
 use adw::gtk::{CheckButton, ComboBoxText, Entry, FileChooserNative, SpinButton};
+#[cfg(feature = "gtk")]
 use adw::gtk::prelude::*;
 use anyhow::{anyhow, Error, Result};
+#[cfg(feature = "gtk")]
 use chrono::Utc;
 use ffmpeg_sidecar::child::FfmpegChild;
 use ffmpeg_sidecar::command::FfmpegCommand;
 use tempfile;
 use std::{cell::RefCell, time::Instant};
-use std::path::{Path, PathBuf};
+use std::path::Path;
+#[cfg(feature = "gtk")]
+use std::path::PathBuf;
 use std::rc::Rc;
 use std::thread::sleep;
 use std::time::Duration;
@@ -453,6 +458,9 @@ impl Ffmpeg {
 
     // Start video recording
     pub fn start_video(&mut self, x: u16, y: u16, width: u16, height: u16,  mode: RecordMode) -> Result<()> {
+        //if mode == RecordMode::Window && !self.follow_mouse.is_active() { //REVIEW //TODO
+            // pulse = gstreamer for video  && add to cmd linux + add convert function to gstreamer ouput
+        //} else {}
         let display = format!("{}+{},{}",
                 std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string())
                 .as_str(),

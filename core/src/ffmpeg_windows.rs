@@ -1,12 +1,17 @@
+#[cfg(feature = "gtk")]
 use adw::gtk::{CheckButton, ComboBoxText, Entry, FileChooserNative, SpinButton};
+#[cfg(feature = "gtk")]
 use adw::gtk::prelude::*;
 use anyhow::{anyhow, Error, Result};
+#[cfg(feature = "gtk")]
 use chrono::Utc;
 use ffmpeg_sidecar::child::FfmpegChild;
 use ffmpeg_sidecar::command::FfmpegCommand;
 use tempfile;
 use std::{cell::RefCell, time::Instant};
-use std::path::{Path, PathBuf};
+use std::path::Path;
+#[cfg(feature = "gtk")]
+use std::path::PathBuf;
 use std::rc::Rc;
 use std::thread::sleep;
 use std::time::Duration;
