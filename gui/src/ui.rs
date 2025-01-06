@@ -1002,15 +1002,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         enable_input_widgets(input_widgets.clone());
         record_button.show();
         _stop_button.hide();
-        let file_name = _ffmpeg_record_interface.borrow_mut().saved_filename.clone();
-        if Path::new(&file_name).try_exists().is_ok() {
-            _play_button.show();
-            _play_button.set_tooltip_text(Some(&get_bundle("play-tooltip", None)));
-        } else  {
-            _play_button.show();
-            _play_button.set_sensitive(false);
-            _play_button.set_tooltip_text(Some(&get_bundle("play-inactive-tooltip", None)));
-        }
+        _play_button.show();
     });
 
     // Delay window button
