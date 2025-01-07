@@ -690,6 +690,12 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
             }}
     });
 
+    // Disable mouse cursor capture if video record is not active
+    if !video_switch.is_active() {
+        mouse_switch.set_sensitive(false);
+        follow_mouse_switch.set_sensitive(false);
+    }
+
     // Input widgets list
     let mut input_widgets: Vec<Widget> = vec![
         filename_entry.clone().into(),
@@ -701,8 +707,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         audio_input_switch.clone().into(),
         frames_label.clone().into(),
         frames_spin.clone().into(),
-        mouse_switch.clone().into(),
-        follow_mouse_switch.clone().into(),
         delay_label.clone().into(),
         delay_spin.clone().into(),
         hide_switch.clone().into(),
@@ -795,8 +799,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         record_delay: delay_spin.clone(),
         record_frames: frames_spin,
         video_record_bitrate: video_bitrate_spin,
-        follow_mouse: follow_mouse_switch,
-        record_mouse: mouse_switch,
+        follow_mouse: follow_mouse_switch.clone(),
+        record_mouse: mouse_switch.clone(),
         show_area: area_switch
     }));
 
@@ -813,9 +817,11 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _delay_window_button = delay_window_button.clone();
     let _error_dialog = error_dialog.clone();
     let _error_message = error_message.clone();
-    let _input_widgets = input_widgets.clone();
+    let _follow_mouse_switch = follow_mouse_switch.clone();
+    let mut _input_widgets = input_widgets.clone();
     //let main_context = glib::MainContext::default();
     let _main_window = main_window.clone();
+    let _mouse_switch = mouse_switch.clone();
     let _play_button = play_button.clone();
     let _record_button = record_button.clone();
     let _record_time_label = record_time_label.clone();
@@ -827,8 +833,20 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         is_record_button_clicked: false,
     }));
     record_button.connect_clicked(move |_| {
+        // Disable mouse cursor capture during record
+        if _video_switch.is_active() {
+            _mouse_switch.set_sensitive(false);
+            _follow_mouse_switch.set_sensitive(false);
+        }
         match _ffmpeg_record_interface.borrow_mut().get_filename() {
             Err(error) => {
+                if _video_switch.is_active() {
+                    _mouse_switch.set_sensitive(true);
+                    _follow_mouse_switch.set_sensitive(true);
+                }
+                enable_input_widgets(_input_widgets.clone());
+                _record_button.show();
+                _stop_button.hide();
                 let text_buffer = TextBuffer::new(None);
                 text_buffer.set_text(&format!("{}", error));
                 _error_message.set_buffer(Some(&text_buffer));
@@ -885,6 +903,10 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             // Do nothing
                         },
                         Err(error) => {
+                            if _video_switch.is_active() {
+                                _mouse_switch.set_sensitive(true);
+                                _follow_mouse_switch.set_sensitive(true);
+                            }
                             enable_input_widgets(_input_widgets.clone());
                             _record_button.show();
                             _stop_button.hide();
@@ -901,6 +923,10 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             // Do nothing
                         },
                         Err(error) => {
+                            if _video_switch.is_active() {
+                                _mouse_switch.set_sensitive(true);
+                                _follow_mouse_switch.set_sensitive(true);
+                            }
                             enable_input_widgets(_input_widgets.clone());
                             _record_button.show();
                             _stop_button.hide();
@@ -923,6 +949,10 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             // Do nothing
                         },
                         Err(error) => {
+                            if _video_switch.is_active() {
+                                _mouse_switch.set_sensitive(true);
+                                _follow_mouse_switch.set_sensitive(true);
+                            }
                             enable_input_widgets(_input_widgets.clone());
                             _record_button.show();
                             _stop_button.hide();
@@ -941,10 +971,12 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     stop_button.set_tooltip_text(Some(&get_bundle("stop-tooltip", None)));
     stop_label.set_label(&get_bundle("stop-recording", None));
     let _audio_input_switch = audio_input_switch.clone();
+    let _audio_output_switch = audio_output_switch.clone();
     let _error_dialog = error_dialog.clone();
     let _error_message = error_message.clone();
+    let _follow_mouse_switch = follow_mouse_switch.clone();
+    let _mouse_switch = mouse_switch.clone();
     let _play_button = play_button.clone();
-    let _audio_output_switch = audio_output_switch.clone();
     let _stop_button = stop_button.clone();
     let _video_switch = video_switch.clone();
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
@@ -954,9 +986,14 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         if _audio_input_switch.is_active() {
             match _ffmpeg_record_interface.borrow_mut().stop_input_audio() {
                 Ok(_) => {
-                    // Do nothing
-                    },
+                    _play_button.set_sensitive(false);
+                    _play_button.set_tooltip_text(Some(&get_bundle("play-inactive-tooltip", None)));
+                },
                 Err(error) => {
+                    if _video_switch.is_active() {
+                        _mouse_switch.set_sensitive(true);
+                        _follow_mouse_switch.set_sensitive(true);
+                    }
                     enable_input_widgets(input_widgets.clone());
                     record_button.show();
                     _stop_button.hide();
@@ -970,9 +1007,14 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         if _audio_output_switch.is_active() {
             match _ffmpeg_record_interface.borrow_mut().stop_output_audio() {
                 Ok(_) => {
-                    // Do nothing
-                    },
+                    _play_button.set_sensitive(false);
+                    _play_button.set_tooltip_text(Some(&get_bundle("play-inactive-tooltip", None)));
+                },
                 Err(error) => {
+                    if _video_switch.is_active() {
+                        _mouse_switch.set_sensitive(true);
+                        _follow_mouse_switch.set_sensitive(true);
+                    }
                     enable_input_widgets(input_widgets.clone());
                     record_button.show();
                     _stop_button.hide();
@@ -986,9 +1028,14 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         if _video_switch.is_active() {
             match _ffmpeg_record_interface.borrow_mut().stop_video() {
                 Ok(_) => {
-                    // Do nothing
+                    _play_button.set_sensitive(false);
+                    _play_button.set_tooltip_text(Some(&get_bundle("play-inactive-tooltip", None)));
                 },
                 Err(error) => {
+                    if _video_switch.is_active() {
+                        _mouse_switch.set_sensitive(true);
+                        _follow_mouse_switch.set_sensitive(true);
+                    }
                     enable_input_widgets(input_widgets.clone());
                     record_button.show();
                     _stop_button.hide();
@@ -998,6 +1045,10 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     _error_dialog.show();
                 },
             }
+        }
+        if _video_switch.is_active() {
+            _mouse_switch.set_sensitive(true);
+            _follow_mouse_switch.set_sensitive(true);
         }
         enable_input_widgets(input_widgets.clone());
         record_button.show();
