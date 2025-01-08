@@ -985,6 +985,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _video_switch = video_switch.clone();
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     stop_button.connect_clicked(move |_| {
+        let mut show_play = true;
         _record_time_label.set_visible(false);
         stop_timer(_record_time_label.clone());
         if _audio_input_switch.is_active() {
@@ -1000,6 +1001,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     }
                     enable_input_widgets(input_widgets.clone());
                     record_button.show();
+                    show_play = false;
                     _stop_button.hide();
                     let text_buffer = TextBuffer::new(None);
                     text_buffer.set_text(&format!("{}", error));
@@ -1021,6 +1023,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     }
                     enable_input_widgets(input_widgets.clone());
                     record_button.show();
+                    show_play = false;
                     _stop_button.hide();
                     let text_buffer = TextBuffer::new(None);
                     text_buffer.set_text(&format!("{}", error));
@@ -1042,6 +1045,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     }
                     enable_input_widgets(input_widgets.clone());
                     record_button.show();
+                    show_play = false;
                     _stop_button.hide();
                     let text_buffer = TextBuffer::new(None);
                     text_buffer.set_text(&format!("{}", error));
@@ -1057,7 +1061,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         enable_input_widgets(input_widgets.clone());
         record_button.show();
         _stop_button.hide();
-        _play_button.show();
+        if show_play {
+            _play_button.show();
+        }
     });
 
     // Delay window button
