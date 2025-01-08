@@ -9,7 +9,9 @@ use blue_recorder_core::ffmpeg_linux::Ffmpeg;
 #[cfg(target_os = "windows")]
 use blue_recorder_core::ffmpeg_windows::Ffmpeg;
 use blue_recorder_core::utils::{audio_output_source, disable_input_widgets, enable_input_widgets,
-                                is_overwrite, is_wayland, play_record, RecordMode, sources_descriptions_list};
+                                is_overwrite, is_wayland, play_record, RecordMode};
+#[cfg(any(target_os = "freebsd", target_os = "linux"))]
+use blue_recorder_core::utils::sources_descriptions_list;
 #[cfg(target_os = "windows")]
 use cpal::traits::{DeviceTrait, HostTrait};
 use std::cell::RefCell;
@@ -773,8 +775,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         record_delay: delay_spin.clone(),
         record_frames: frames_spin,
         video_record_bitrate: video_bitrate_spin,
-        follow_mouse: follow_mouse_switch,
-        record_mouse: mouse_switch,
+        follow_mouse: follow_mouse_switch.clone(),
+        record_mouse: mouse_switch.clone(),
         show_area: area_switch
     }));
     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
