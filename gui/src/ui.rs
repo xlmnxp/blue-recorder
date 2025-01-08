@@ -8,10 +8,10 @@ use anyhow::Result;
 use blue_recorder_core::ffmpeg_linux::Ffmpeg;
 #[cfg(target_os = "windows")]
 use blue_recorder_core::ffmpeg_windows::Ffmpeg;
-use blue_recorder_core::utils::{audio_output_source, disable_input_widgets, enable_input_widgets,
+use blue_recorder_core::utils::{disable_input_widgets, enable_input_widgets,
                                 is_overwrite, is_wayland, play_record, RecordMode};
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
-use blue_recorder_core::utils::sources_descriptions_list;
+use blue_recorder_core::utils::{audio_output_source, sources_descriptions_list};
 #[cfg(target_os = "windows")]
 use cpal::traits::{DeviceTrait, HostTrait};
 use std::cell::RefCell;
@@ -202,12 +202,17 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         } else {
             String::new()
         };
+        audio_source_combobox.append(Some("default"), &get_bundle("audio-input", None));
+        for (id, audio_source) in sources_descriptions.iter().enumerate() {
+            audio_source_combobox.append(Some(id.to_string().as_str()), audio_source);
+        }
     }
     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
     let sources_descriptions: Vec<String> = sources_descriptions_list().unwrap_or_else(|_| Vec::new());
     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
     let audio_output_source: String = audio_output_source().unwrap_or_else(|_| String::new());
 
+    #[cfg(any(target_os = "freebsd", target_os = "linux"))]
     audio_source_combobox.append(Some("default"), &get_bundle("audio-input", None));
     for (id, audio_source) in sources_descriptions.iter().enumerate() {
         audio_source_combobox.append(Some(id.to_string().as_str()), audio_source);

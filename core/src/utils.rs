@@ -9,6 +9,38 @@ pub enum RecordMode {
     Window,
 }
 
+// Get audio output source
+#[cfg(feature = "gtk")]
+pub fn audio_output_source() -> Result<String> {
+    // Get the default sink
+    let default_sink_output = Command::new("pactl")
+        .arg("get-default-sink")
+        .output()?;
+
+    let default_sink = String::from_utf8_lossy(&default_sink_output.stdout)
+        .trim()
+        .to_string();
+
+    // List sinks and filter for the monitor of the default sink
+    let sinks_output = Command::new("pactl")
+        .arg("list")
+        .arg("sinks")
+        .output()?;
+
+    let sinks = String::from_utf8_lossy(&sinks_output.stdout);
+    let monitor_line = sinks
+        .lines()
+        .find(|line| line.contains(&format!("{}.monitor", default_sink)))
+        .unwrap_or("");
+
+    // Extract the part after the colon
+    let output_source = monitor_line.split(':')
+        .nth(1)
+        .unwrap_or("")
+        .trim().to_string();
+    Ok(output_source)
+}
+
 #[cfg(feature = "gtk")]
 // Disable GtkWidget
 pub fn disable_input_widgets(input_widgets: Vec<adw::gtk::Widget>) {
@@ -103,38 +135,6 @@ pub fn is_wayland() -> bool {
     std::env::var("XDG_SESSION_TYPE")
         .unwrap_or_default()
         .eq_ignore_ascii_case("wayland")
-}
-
-// Get audio output source
-#[cfg(feature = "gtk")]
-pub fn audio_output_source() -> Result<String> {
-    // Get the default sink
-    let default_sink_output = Command::new("pactl")
-        .arg("get-default-sink")
-        .output()?;
-
-    let default_sink = String::from_utf8_lossy(&default_sink_output.stdout)
-        .trim()
-        .to_string();
-
-    // List sinks and filter for the monitor of the default sink
-    let sinks_output = Command::new("pactl")
-        .arg("list")
-        .arg("sinks")
-        .output()?;
-
-    let sinks = String::from_utf8_lossy(&sinks_output.stdout);
-    let monitor_line = sinks
-        .lines()
-        .find(|line| line.contains(&format!("{}.monitor", default_sink)))
-        .unwrap_or("");
-
-    // Extract the part after the colon
-    let output_source = monitor_line.split(':')
-        .nth(1)
-        .unwrap_or("")
-        .trim().to_string();
-    Ok(output_source)
 }
 
 #[cfg(feature = "gtk")]
