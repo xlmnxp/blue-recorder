@@ -184,4 +184,4 @@ video-bitrate-tooltip = Set video bitrate in KB/s
 video-tooltip = يسجل الشاشة
 wayland-tooltip = غير مدعوم في وايلاند
 window-tooltip = يحدد نافذة ليسجلها
-windows-unsupported-tooltip = Not supported on windows platform
+windows-unsupported-tooltip = Not supported on Windows platform

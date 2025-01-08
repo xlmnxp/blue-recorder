@@ -184,4 +184,4 @@ video-bitrate-tooltip = Set video bitrate in KB/s
 video-tooltip = Video recording
 wayland-tooltip = Not supported in Wayland
 window-tooltip = Select window to record
-windows-unsupported-tooltip = Not supported on windows platform
+windows-unsupported-tooltip = Not supported on Windows platform
