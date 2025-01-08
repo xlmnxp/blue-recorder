@@ -191,28 +191,25 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
 
     // Get audio sources
     #[cfg(target_os = "windows")]
-    {
-        let input_device = host_audio_device.input_devices()?;
-        let sources_descriptions: Vec<String> = input_device
-            .filter_map(|device| device.name().ok())
-            .collect();
-        let host_output_device = host_audio_device.default_output_device();
-        let audio_output_source = if host_output_device.is_some() {
-            host_output_device.unwrap().name()?
-        } else {
-            String::new()
-        };
-        audio_source_combobox.append(Some("default"), &get_bundle("audio-input", None));
-        for (id, audio_source) in sources_descriptions.iter().enumerate() {
-            audio_source_combobox.append(Some(id.to_string().as_str()), audio_source);
-        }
-    }
+    let input_device = host_audio_device.input_devices()?;
+    #[cfg(target_os = "windows")]
+    let sources_descriptions: Vec<String> = input_device
+        .filter_map(|device| device.name().ok())
+        .collect();
+    #[cfg(target_os = "windows")]
+    let host_output_device = host_audio_device.default_output_device();
+    #[cfg(target_os = "windows")]
+    let audio_output_source = if host_output_device.is_some() {
+        host_output_device.unwrap().name()?
+    } else {
+        String::new()
+    };
+
     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
     let sources_descriptions: Vec<String> = sources_descriptions_list().unwrap_or_else(|_| Vec::new());
     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
     let audio_output_source: String = audio_output_source().unwrap_or_else(|_| String::new());
 
-    #[cfg(any(target_os = "freebsd", target_os = "linux"))]
     audio_source_combobox.append(Some("default"), &get_bundle("audio-input", None));
     for (id, audio_source) in sources_descriptions.iter().enumerate() {
         audio_source_combobox.append(Some(id.to_string().as_str()), audio_source);
