@@ -240,7 +240,7 @@ impl Ffmpeg {
                                                                              .to_string();
         let mut ffmpeg_command = FfmpegCommand::new();
         ffmpeg_command.format("dshow")
-                      .input(format!("audio={}", &self.audio_input_id))
+                      .input(format!("audio={}", &self.audio_output_id))
                       .format("ogg");
         // Remove metadate
         ffmpeg_command.args(["-map_metadata", "-1"]);
@@ -628,7 +628,7 @@ impl Ffmpeg {
                                                                              .to_string();
         let mut ffmpeg_command = FfmpegCommand::new();
         ffmpeg_command.format("dshow")
-                      .input(format!("audio={}", &self.audio_input_id))
+                      .input(format!("audio=\"{}\"", &self.audio_output_id))
                       .format("ogg");
         // Remove metadate
         ffmpeg_command.args(["-map_metadata", "-1"]);
