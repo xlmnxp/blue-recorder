@@ -210,6 +210,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
     let audio_output_source: String = audio_output_source().unwrap_or_else(|_| String::new());
 
+    #[cfg(any(target_os = "freebsd", target_os = "linux"))]
     audio_source_combobox.append(Some("default"), &get_bundle("audio-input", None));
     for (id, audio_source) in sources_descriptions.iter().enumerate() {
         audio_source_combobox.append(Some(id.to_string().as_str()), audio_source);

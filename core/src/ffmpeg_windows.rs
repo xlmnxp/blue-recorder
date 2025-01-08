@@ -579,7 +579,9 @@ impl Ffmpeg {
                                                                            .to_string();
         let mut ffmpeg_command = FfmpegCommand::new();
         ffmpeg_command.format("dshow")
-                      .input(format!("audio={}", &self.audio_input_id))
+                      .input(format!("audio=\"{}\"", &self.audio_input_id.active_text()
+                             .ok_or_else(|| anyhow!("Failed to get audio input source."))?)
+                      )
                       .format("ogg");
         // Disable bitrate if value is zero
         if self.audio_record_bitrate.value() as u16 > 0 {
@@ -612,7 +614,7 @@ impl Ffmpeg {
                 .ok_or_else(|| anyhow!("Not exiting the input audio recording process successfully."))?
                 .borrow_mut()
                 .quit()?;
-      }
+        }
         Ok(())
     }
 
