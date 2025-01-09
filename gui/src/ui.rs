@@ -18,8 +18,6 @@ use std::cell::RefCell;
 use std::ops::Add;
 use std::path::Path;
 use std::rc::Rc;
-use std::sync::mpsc;
-use std::thread;
 
 use crate::{area_capture, config_management, fluent::get_bundle};
 use crate::timer::{RecordClick, recording_delay, start_timer, stop_timer};
@@ -988,9 +986,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _stop_button = stop_button.clone();
     let _video_switch = video_switch.clone();
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
-    let (tx, rx) = mpsc::channel::<Result<()>>();
     stop_button.connect_clicked(move |_| {
-        let _tx = tx.clone();
         let mut show_play = true;
         _record_time_label.set_visible(false);
         stop_timer(_record_time_label.clone());
@@ -1070,10 +1066,21 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         if show_play {
             _play_button.show();
         }
-        let merge_request = _ffmpeg_record_interface.borrow_mut().merge();
-        thread::spawn(move || {
-            _tx.send(merge_request).unwrap();
-        });
+
+        // Save record
+        match _ffmpeg_record_interface.borrow_mut().merge() {
+            Ok(_) => {
+                _play_button.set_sensitive(true);
+                _play_button.set_tooltip_text(Some(&get_bundle("play-tooltip", None)));
+            },
+            Err(error) => {
+                _play_button.hide();
+                let text_buffer = TextBuffer::new(None);
+                text_buffer.set_text(&format!("{}", error));
+                _error_message.set_buffer(Some(&text_buffer));
+                _error_dialog.show();
+            },
+        }
     });
 
     // Delay window button
