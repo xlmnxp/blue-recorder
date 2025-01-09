@@ -634,7 +634,6 @@ impl Ffmpeg {
         ffmpeg_command.args(["-map_metadata", "-1"]);
         ffmpeg_command.arg(&self.temp_output_audio_filename);
         ffmpeg_command.overwrite();
-        ffmpeg_command.print_command();
 
         // Sleep for delay
         if !is_video_record(&self.temp_video_filename) && !is_input_audio_record(&self.temp_input_audio_filename) {
