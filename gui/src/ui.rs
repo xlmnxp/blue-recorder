@@ -18,6 +18,8 @@ use std::cell::RefCell;
 use std::ops::Add;
 use std::path::Path;
 use std::rc::Rc;
+use std::sync::mpsc;
+use std::thread;
 
 use crate::{area_capture, config_management, fluent::get_bundle};
 use crate::timer::{RecordClick, recording_delay, start_timer, stop_timer};
@@ -138,6 +140,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
 
     // --- default properties
     // Windows
+    area_chooser_window.set_transient_for(Some(&main_window));
     area_chooser_window.set_title(Some(&get_bundle("area-chooser", None))); // Title is hidden
     error_dialog.set_transient_for(Some(&main_window));
     select_window.set_transient_for(Some(&main_window));
@@ -985,7 +988,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _stop_button = stop_button.clone();
     let _video_switch = video_switch.clone();
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
+    let (tx, rx) = mpsc::channel::<Result<()>>();
     stop_button.connect_clicked(move |_| {
+        let _tx = tx.clone();
         let mut show_play = true;
         _record_time_label.set_visible(false);
         stop_timer(_record_time_label.clone());
@@ -1065,6 +1070,10 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         if show_play {
             _play_button.show();
         }
+        let merge_request = _ffmpeg_record_interface.borrow_mut().merge();
+        thread::spawn(move || {
+            _tx.send(merge_request).unwrap();
+        });
     });
 
     // Delay window button

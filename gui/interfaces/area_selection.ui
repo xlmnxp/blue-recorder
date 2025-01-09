@@ -11,6 +11,8 @@
 		<property name="deletable">False</property>
 		<property name="hexpand">True</property>
 		<property name="vexpand">True</property>
+		<property name="modal">True</property>
+		<property name="destroy-with-parent">True</property>
 		<child type="title">
 			<object class="GtkHeaderBar" id="headerbar2">
 				<property name="visible">True</property>
