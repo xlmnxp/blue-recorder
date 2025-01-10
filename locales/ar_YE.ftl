@@ -28,25 +28,25 @@ design = صممه:
 translate = ترجمه:
 
 # Overwrite warning 
-already-exist = الملف موجود، أترغب بالكتابة عليه؟
+already-exist = موجودٌ هذا الملف، أفتأذن بالكتابة عليه؟
 
 # Area select apply button
-apply = طبق
+apply = اخترها
 
 # Area select button
-area-chooser = محدد المنطقة
+area-chooser = مُحَدِّد الرُّقعة
 
 # Audio bitrate label
-audio-bitrate = B/Audio:
+audio-bitrate = جودة الصوت:
 
 # Audio source input
-audio-input = مصدر الصوت الافتراضي
+audio-input = مدخل الصوت المعهود
 
 # Audio source label
 audio-source = مدخل الصوت:
 
 # Auto hide label
-auto-hide = إخفاء تلقائي
+auto-hide = توارَ من تلقاء نفسك
 
 # Output formats
 avi-format = AVI (Audio Video Interleaved)
@@ -61,19 +61,19 @@ wmv-format = WMV (Windows Media Video)
 blue-recorder = المسجّل الأزرق
 
 # Click to select window
-click-window = Left click to select window
+click-window = انقر باليسار لانتقاء النافذة
 
 # Close error dialog
-close = Close
+close = أغلِق
 
 # Copy right
 copy-right = © 2021 Salem Yaslem
 
 # Run command label
-default-command = أمرٌ ينفذ عند الانتهاء:
+default-command = أمرٌ يُنفَّذ عند الانتهاء:
 
 # Default output folder
-default-folder = المجلد الافتراضي:
+default-folder = مَقَرُّ التسجيلات:
 
 # Delay label
 delay = المهلة:
@@ -82,19 +82,19 @@ delay = المهلة:
 delay-title = سيبدأ التسجيل في غضون
 
 # Stop delay timer
-delay-window-stop = إيقاف
+delay-window-stop = أوقِف
 
 # About message
 dialog-comment =  مسجّل شاشة لسطح مكتب لينكس، يدعم إكس ووايلاند.
 
 # Details button
-details-button = Details
+details-button = التفاصيل
 
 # Run command input
-enter-command = اكتب الأمر هنا..
+enter-command = اكتب الأمر هاهنا..
 
 # Error dialog title
-error-title = Error
+error-title = خلل
 
 # Frames label
 file-name = اسم الملفّ الافتراضي:
@@ -103,85 +103,85 @@ file-name = اسم الملفّ الافتراضي:
 file-name-overwritten = اسم الملف (سيُكتَبُ عليه)
 
 # Follow mouse label
-follow-mouse = Follow Mouse
+follow-mouse = اقتفِ أثر مؤشر الفأرة
 
 # Frames label
-frames = الإطارات:
+frames = الصور في الثانية:
 
 # License
 license-website = http://www.gnu.org/licenses/
 license =
- المسجل الأزرق برمجية حُرَّة! 
- لك فيه حرية إعادة توزيعه أو تعديله وفق ما تنص عليه رخصة جنو العمومية التي نشرتها مؤسسة البرمجيات الحرة، سواء كان الإصدار الثالث من الرخصة أو أي إصدار لاحق حسب رغبتك.
+ المسجل الأزرق برمجية حُرَّة تليدة! 
+ لك فيه مطلق الحرية في إعادة توزيعه أو تعديله وفق ما تنص عليه رخصة جنو العمومية التي نشرتها مؤسسة البرمجيات الحرة، سواء أكان الإصدار الثالث من الرخصة أو أي إصدار لاحق تختاره.
 
- نشرنا المسجل الأزرق وإننا راجون أن يُنتَفع به، ولكنه دون أي ضمانة، دون أي نوع من الضمانات لا صراحةً ولا ضمنيًا، حتى ضمانات التسويق أو ملاءمة أمر بعينه.
+ نشرنا المسجل الأزرق وإننا راجون أن يُنتَفع به،  بيد أنه خلو من أي ضمانة، لا صريحة ولا ضمنية، حتى ضمانات التسويق أو الملاءمة لغرض بعينه.
 
- لمزيد تفاصيل راجع رخصة جنو العمومية. إن لم تكن حصلت على نسخة من رخصة جنو العمومية مع المسجل الأزرق فانظر { license-website }.
+ لمزيد تفاصيل طالع رخصة جنو العمومية. فإن لم تكن قد حصلت على نسخة منها مع المسجل الأزرق فانظر { license-website }.
 
 # Recording button
 record = سجل
 
 # Record audio label
-record-audio = Record Mic
+record-audio = سجل الصوت
 
 # Record speaker label
-record-speaker = Record Speaker
+record-speaker = سجل صوت السماعة
 
 # Record video label
-record-video = تسجيل الصورة
+record-video = سجل الصورة
 
 # Run command label
 run-command = أمرٌ ينفذ عند الانتهاء:
 
 # Selection buttons
-select-area = حدد منطقة
-select-screen = حدد شاشة
-select-window = حدد نافذة
+select-area = اختَر رُّقعة
+select-screen = اختَر الشاشة
+select-window = اختَر نافذة
 
 # Error message
-some-error = Something went wrong
+some-error = حدث ما يُعيقني
 
 # Stop recording button
-stop-recording = إيقاف التسجيل
+stop-recording = أوقِف التسجيل
 
 # Show captured area
-show-area = Show Area
+show-area = أظهِر الرُّقعة
 
 # Show mouse label
-show-mouse = إظهار مؤشر الفأرة
+show-mouse = أظهِر المؤشر
 
 # Minimize to tray icon
-tray-minimize = Minimize to tray
+tray-minimize = أصغِره إلى المَخبأ
 
 # Video bitrate label
-video-bitrate = B/Video:
+video-bitrate = جودة الصورة:
 
 # Website link
 website = الموقع
 
 # Tooltip
-about-tooltip = ما يُستَحسَنُ أن تعلمه عن المسجل الأزرق
-area-tooltip = يحدد المنطقة المُراد تسجيلها
-audio-bitrate-tooltip = Set audio bitrate in KB/s
-audio-source-tooltip = لاختيار مدخل الصوت
-audio-input-tooltip = Mic audio recording
-delay-tooltip = مُهلة قبل بدء التسجيل
-folder-tooltip = لاختيار مكان التخزين
-follow-mouse-tooltip = Make the grabbed area follow the mouse
-format-tooltip = لاختيار صيغة الخَرج
-frames-tooltip = عدد الإطارات في الثانية
-hide-tooltip = لإخفاء نافذة المسجل الأزرق عند بدء التسجيل
+about-tooltip = غرة ما يحسن بك علمه عن المسجل الأزرق
+area-tooltip = اختر البقعة المُراد تسجيلها
+audio-bitrate-tooltip = اضبط جودة الصوت بما يناسب بالبت
+audio-source-tooltip = اختر منبع الصوت 
+audio-input-tooltip = يسجل الصوت
+delay-tooltip = المُهلة قبل بدء التسجيل
+folder-tooltip = اختر مقر تسجيلاتك
+follow-mouse-tooltip = اجعل الرقعة المختارة تتبع حركة السهم
+format-tooltip = اختر صيغة الخَرج
+frames-tooltip = خصص عدد الصور في الثانية
+hide-tooltip = اطوِ نافذة المسجل الأزرق عند بدء التسجيل
 mouse-tooltip = يظهر مؤشر الفأرة عند التسجيل
-play-tooltip = Click to play video
-play-inactive-tooltip = Please wait until the file is saved
-record-tooltip = يبدأ تسجيل الشاشة
-screen-tooltip = يحدد الشاشة ليسجلها
-show-area-tooltip = Show selected area during record
-speaker-tooltip = Speakr sound recording
-stop-tooltip = وقف تسجيل الشاشة
-tray-minimize-tooltip = Minimize application to tray icon
-video-bitrate-tooltip = Set video bitrate in KB/s
+play-tooltip = انقر لمشاهدة ما سُجِّل
+play-inactive-tooltip = ترقَّب ريثما يتم حفظ ما سُجِّل
+record-tooltip = يشرع في التسجيل
+screen-tooltip = يحدد الشاشة كاملة ليسجلها
+show-area-tooltip = يُظهر البقعة المنتقاة أثناء التسجيل
+speaker-tooltip = سجل صوت السماعة
+stop-tooltip = أوقِف تسجيل الشاشة
+tray-minimize-tooltip = أصغره إلى المخبأ
+video-bitrate-tooltip = اضبط جودة الصورة بما يناسب بالبت
 video-tooltip = يسجل الشاشة
 wayland-tooltip = غير مدعوم في وايلاند
 window-tooltip = يحدد نافذة ليسجلها
-windows-unsupported-tooltip = Not supported on Windows platform
+windows-unsupported-tooltip = غير مدعوم في ويندوز
