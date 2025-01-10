@@ -983,6 +983,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _follow_mouse_switch = follow_mouse_switch.clone();
     let _mouse_switch = mouse_switch.clone();
     let _play_button = play_button.clone();
+    let _record_button = record_button.clone();
     let _stop_button = stop_button.clone();
     let _video_switch = video_switch.clone();
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
@@ -1002,7 +1003,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                         _follow_mouse_switch.set_sensitive(true);
                     }
                     enable_input_widgets(input_widgets.clone());
-                    record_button.show();
+                    _record_button.show();
                     show_play = false;
                     _stop_button.hide();
                     let text_buffer = TextBuffer::new(None);
@@ -1024,7 +1025,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                         _follow_mouse_switch.set_sensitive(true);
                     }
                     enable_input_widgets(input_widgets.clone());
-                    record_button.show();
+                    _record_button.show();
                     show_play = false;
                     _stop_button.hide();
                     let text_buffer = TextBuffer::new(None);
@@ -1046,7 +1047,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                         _follow_mouse_switch.set_sensitive(true);
                     }
                     enable_input_widgets(input_widgets.clone());
-                    record_button.show();
+                    _record_button.show();
                     show_play = false;
                     _stop_button.hide();
                     let text_buffer = TextBuffer::new(None);
@@ -1061,11 +1062,11 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
             _follow_mouse_switch.set_sensitive(true);
         }
         enable_input_widgets(input_widgets.clone());
-        record_button.show();
         _stop_button.hide();
         if show_play {
             _play_button.show();
         }
+        _record_button.show();
     });
 
     // Save tmp files
@@ -1073,7 +1074,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _error_message = error_message.clone();
     let _play_button = play_button.clone();
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
-    stop_button.connect_hide(move |_| {
+    play_button.connect_show(move |_| {
         match _ffmpeg_record_interface.borrow_mut().merge() {
             Ok(_) => {
                 _play_button.set_sensitive(true);
