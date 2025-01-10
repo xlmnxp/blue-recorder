@@ -1066,8 +1066,14 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         if show_play {
             _play_button.show();
         }
+    });
 
-        // Save record
+    // Save tmp files
+    let _error_dialog = error_dialog.clone();
+    let _error_message = error_message.clone();
+    let _play_button = play_button.clone();
+    let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
+    stop_button.connect_hide(move |_| {
         match _ffmpeg_record_interface.borrow_mut().merge() {
             Ok(_) => {
                 _play_button.set_sensitive(true);
