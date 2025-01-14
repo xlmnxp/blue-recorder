@@ -173,7 +173,6 @@ frames-tooltip = خصص عدد الصور في الثانية
 hide-tooltip = اطوِ نافذة المسجل الأزرق عند بدء التسجيل
 mouse-tooltip = يظهر مؤشر الفأرة عند التسجيل
 play-tooltip = انقر لمشاهدة ما سُجِّل
-play-inactive-tooltip = ترقَّب ريثما يتم حفظ ما سُجِّل
 record-tooltip = يشرع في التسجيل
 screen-tooltip = يحدد الشاشة كاملة ليسجلها
 show-area-tooltip = يُظهر البقعة المنتقاة أثناء التسجيل

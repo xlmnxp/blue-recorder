@@ -173,7 +173,6 @@ frames-tooltip = Set frames rate
 hide-tooltip = Hide window when start recording
 mouse-tooltip = Mouse appears in video recording
 play-tooltip = Click to play video
-play-inactive-tooltip = Please wait until the file is saved
 record-tooltip = Start screen record
 screen-tooltip = Select screen to record
 show-area-tooltip = Show selected area during record

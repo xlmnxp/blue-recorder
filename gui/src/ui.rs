@@ -994,8 +994,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         if _audio_input_switch.is_active() {
             match _ffmpeg_record_interface.borrow_mut().stop_input_audio() {
                 Ok(_) => {
-                    _play_button.set_sensitive(false);
-                    _play_button.set_tooltip_text(Some(&get_bundle("play-inactive-tooltip", None)));
+                    // Continue
                 },
                 Err(error) => {
                     if _video_switch.is_active() {
@@ -1016,8 +1015,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         if _audio_output_switch.is_active() {
             match _ffmpeg_record_interface.borrow_mut().stop_output_audio() {
                 Ok(_) => {
-                    _play_button.set_sensitive(false);
-                    _play_button.set_tooltip_text(Some(&get_bundle("play-inactive-tooltip", None)));
+                    // Continue
                 },
                 Err(error) => {
                     if _video_switch.is_active() {
@@ -1038,8 +1036,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         if _video_switch.is_active() {
             match _ffmpeg_record_interface.borrow_mut().stop_video() {
                 Ok(_) => {
-                    _play_button.set_sensitive(false);
-                    _play_button.set_tooltip_text(Some(&get_bundle("play-inactive-tooltip", None)));
+                    // Continue
                 },
                 Err(error) => {
                     if _video_switch.is_active() {
@@ -1057,6 +1054,19 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 },
             }
         }
+        // Save tmp files
+        match _ffmpeg_record_interface.borrow_mut().merge() {
+            Ok(_) => {
+                // Continue
+            },
+            Err(error) => {
+                show_play = false;
+                let text_buffer = TextBuffer::new(None);
+                text_buffer.set_text(&format!("{}", error));
+                _error_message.set_buffer(Some(&text_buffer));
+                _error_dialog.show();
+            },
+        };
         if _video_switch.is_active() {
             _mouse_switch.set_sensitive(true);
             _follow_mouse_switch.set_sensitive(true);
@@ -1064,30 +1074,10 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         enable_input_widgets(input_widgets.clone());
         _stop_button.hide();
         if show_play {
+            _play_button.set_tooltip_text(Some(&get_bundle("play-tooltip", None)));
             _play_button.show();
         }
         _record_button.show();
-    });
-
-    // Save tmp files
-    let _error_dialog = error_dialog.clone();
-    let _error_message = error_message.clone();
-    let _play_button = play_button.clone();
-    let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
-    play_button.connect_show(move |_| {
-        match _ffmpeg_record_interface.borrow_mut().merge() {
-            Ok(_) => {
-                _play_button.set_sensitive(true);
-                _play_button.set_tooltip_text(Some(&get_bundle("play-tooltip", None)));
-            },
-            Err(error) => {
-                _play_button.hide();
-                let text_buffer = TextBuffer::new(None);
-                text_buffer.set_text(&format!("{}", error));
-                _error_message.set_buffer(Some(&text_buffer));
-                _error_dialog.show();
-            },
-        }
     });
 
     // Delay window button
