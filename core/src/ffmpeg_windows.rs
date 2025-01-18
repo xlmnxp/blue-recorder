@@ -37,9 +37,12 @@ pub struct Ffmpeg {
     pub record_delay: u16,
     pub record_frames: u16,
     pub video_record_bitrate: u16,
+    pub audio_input_switch: bool,
+    pub audio_output_switch: bool,
     pub follow_mouse: bool,
     pub record_mouse: bool,
     pub show_area: bool,
+    pub video_switch: bool,
 }
 
 #[cfg(feature = "gtk")]
@@ -62,9 +65,12 @@ pub struct Ffmpeg {
     pub record_delay: SpinButton,
     pub record_frames: SpinButton,
     pub video_record_bitrate: SpinButton,
+    pub audio_input_switch: CheckButton,
+    pub audio_output_switch: CheckButton,
     pub follow_mouse: CheckButton,
     pub record_mouse: CheckButton,
     pub show_area: CheckButton,
+    pub video_switch: CheckButton,
 }
 
 #[cfg(feature = "cmd")]
