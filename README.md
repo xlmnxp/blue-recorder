@@ -37,7 +37,7 @@ sudo apt install build-essential clang cargo libappindicator3-1 x11-utils gettex
 the use `Cargo` to build it
 ```
 git clone https://github.com/xlmnxp/blue-recorder
-cd <Project Directory>
+cd blue-recorder/
 cargo build --release
 cp -a data interfaces po target/release
 ```
