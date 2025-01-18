@@ -112,6 +112,21 @@
     color: @theme_selected_bg_color;
 }
 
+#spinner {
+    color: @theme_selected_bg_color;
+}
+
+#spinner_window {
+    background: none;
+    border: none;
+    border-radius: 0px;
+    font-weight: bold;
+}
+
+#spinner_label {
+    color: @theme_selected_bg_color;
+}
+
 #stop_button {
     background: #ed333b;
     border: 1px solid #ed333b;

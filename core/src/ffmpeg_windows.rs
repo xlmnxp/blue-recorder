@@ -2,32 +2,21 @@
 use adw::gtk::{CheckButton, ComboBoxText, Entry, FileChooserNative, SpinButton};
 #[cfg(feature = "gtk")]
 use adw::gtk::prelude::*;
-use anyhow::{anyhow, Result};
-#[cfg(feature = "cmd")]
-use anyhow::Error;
+use anyhow::{anyhow, Error, Result};
 #[cfg(feature = "gtk")]
 use chrono::Utc;
-#[cfg(feature = "cmd")]
 use ffmpeg_sidecar::child::FfmpegChild;
-#[cfg(feature = "cmd")]
 use ffmpeg_sidecar::command::FfmpegCommand;
 use tempfile;
-use std::cell::RefCell;
+use std::{cell::RefCell, time::Instant};
 use std::path::Path;
 #[cfg(feature = "gtk")]
 use std::path::PathBuf;
-use std::process::Command;
-#[cfg(feature = "gtk")]
-use std::process::Child;
 use std::rc::Rc;
 use std::thread::sleep;
 use std::time::Duration;
-#[cfg(feature = "cmd")]
-use std::time::Instant;
 
-use crate::utils::{is_input_audio_record, is_output_audio_record, is_video_record, RecordMode};
-#[cfg(feature = "cmd")]
-use crate::utils::is_valide;
+use crate::utils::{is_input_audio_record, is_output_audio_record, is_valide, is_video_record, RecordMode};
 
 #[cfg(feature = "cmd")]
 #[derive(Clone)]
@@ -66,9 +55,9 @@ pub struct Ffmpeg {
     pub window_title: String,
     pub saved_filename: String,
     pub height: Option<u16>,
-    pub input_audio_process: Option<Rc<RefCell<Child>>>,
-    pub output_audio_process: Option<Rc<RefCell<Child>>>,
-    pub video_process: Option<Rc<RefCell<Child>>>,
+    pub input_audio_process: Option<Rc<RefCell<FfmpegChild>>>,
+    pub output_audio_process: Option<Rc<RefCell<FfmpegChild>>>,
+    pub video_process: Option<Rc<RefCell<FfmpegChild>>>,
     pub audio_record_bitrate: SpinButton,
     pub record_delay: SpinButton,
     pub record_frames: SpinButton,
@@ -329,7 +318,7 @@ impl Ffmpeg {
                                      (|| anyhow!("Unable to get height value"))?);
                 let ffmpeg_convert = format!("ffmpeg -i file:{} -filter_complex '{}' \
                                               -loop 0 {} -y", &self.temp_video_filename,filter,&self.filename);
-                Command::new("sh").arg("-c").arg(&ffmpeg_convert).output()?;
+                std::process::Command::new("sh").arg("-c").arg(&ffmpeg_convert).output()?;
             }
         } else if is_input_audio_record(&self.temp_input_audio_filename) {
             // Validate audio file integrity
@@ -398,7 +387,7 @@ impl Ffmpeg {
                           .ok_or_else(|| anyhow!("Unable to kill the video recording process successfully."))?
                           .borrow_mut()
                           .as_inner().id();
-            Command::new("taskkill")
+            std::process::Command::new("taskkill")
                 .arg("/PID")
                 .arg(pid.to_string())
                 .arg("/F")
@@ -410,7 +399,7 @@ impl Ffmpeg {
                           .ok_or_else(|| anyhow!("Unable to kill the input audio recording process successfully."))?
                           .borrow_mut()
                           .as_inner().id();
-            Command::new("taskkill")
+            std::process::Command::new("taskkill")
                 .arg("/PID")
                 .arg(pid.to_string())
                 .arg("/F")
@@ -422,7 +411,7 @@ impl Ffmpeg {
                           .ok_or_else(|| anyhow!("Unable to kill the output audio recording process successfully."))?
                           .borrow_mut()
                           .as_inner().id();
-            Command::new("taskkill")
+            std::process::Command::new("taskkill")
                 .arg("/PID")
                 .arg(pid.to_string())
                 .arg("/F")
@@ -465,7 +454,7 @@ impl Ffmpeg {
             RecordMode::Screen => "desktop",
             RecordMode::Window => &format!("title={}", &self.window_title),
         };
-        let mut ffmpeg_command = Command::new("ffmpeg");
+        let mut ffmpeg_command = FfmpegCommand::new();
         let format = "gdigrab";
         let filename = self.saved_filename.clone();
         self.output = Path::new(&filename).extension()
@@ -491,7 +480,7 @@ impl Ffmpeg {
                                                                    .to_string();
         }
         // Video format
-        ffmpeg_command.arg(format);
+        ffmpeg_command.format(format);
 
         // Show grabbed area
         if self.show_area.is_active() {
@@ -512,14 +501,14 @@ impl Ffmpeg {
 
         // Record video with specified width and hight
         if let RecordMode::Area = mode  {
-            ffmpeg_command.args(["-s", &width.to_string(), &height.to_string()]).args([
+            ffmpeg_command.size(width.into(), height.into()).args([
                 "-offset_x", &x.to_string(),
                 "-offset_y", &y.to_string()
             ]);
         }
 
         // input
-        ffmpeg_command.args(["-i", display]);
+        ffmpeg_command.input(display);
 
         // Disable bitrate if value is zero
         if self.video_record_bitrate.value() as u16 > 0 {
@@ -556,7 +545,7 @@ impl Ffmpeg {
                 }
             },
         ]);
-        ffmpeg_command.arg("-y");
+        ffmpeg_command.overwrite();
 
         // Sleep for delay
         sleep(Duration::from_secs(self.record_delay.value() as u64));
@@ -569,23 +558,13 @@ impl Ffmpeg {
 
     // Stop video recording
     pub fn stop_video(&mut self) -> Result<()> {
-        // Kill the process to stop recording
+        // Quit the process to stop recording
         if self.video_process.is_some() {
-        Command::new("kill")
-                .arg(format!(
-                    "{}",
-                    self.video_process
-                        .clone()
-                        .ok_or_else(|| anyhow!("Failed to get video_process ID."))?
-                        .borrow_mut().id()
-                ))
-                .output()?;
-
             self.video_process
                 .clone()
                 .ok_or_else(|| anyhow!("Not exiting the video recording process successfully."))?
                 .borrow_mut()
-                .wait()?;
+                .quit()?;
         }
         Ok(())
     }
@@ -598,12 +577,12 @@ impl Ffmpeg {
                                                            .keep()?;
         self.temp_input_audio_filename = Path::new(&input_audio_tempfile.1).to_string_lossy()
                                                                            .to_string();
-        let mut ffmpeg_command = Command::new("ffmpeg");
-        ffmpeg_command.args(["-f", "dshow"])
-                      .args(["-i", &format!("audio=\"{}\"", &self.audio_input_id.active_text()
+        let mut ffmpeg_command = FfmpegCommand::new();
+        ffmpeg_command.format("dshow")
+                      .input(format!("audio=\"{}\"", &self.audio_input_id.active_text()
                              .ok_or_else(|| anyhow!("Failed to get audio input source."))?)
-                      ])
-                      .args(["-f", "ogg"]);
+                      )
+                      .format("ogg");
         // Disable bitrate if value is zero
         if self.audio_record_bitrate.value() as u16 > 0 {
             ffmpeg_command.args([
@@ -614,7 +593,7 @@ impl Ffmpeg {
         // Remove metadate
         ffmpeg_command.args(["-map_metadata", "-1"]);
         ffmpeg_command.arg(&self.temp_input_audio_filename);
-        ffmpeg_command.arg("-y");
+        ffmpeg_command.overwrite();
 
         // Sleep for delay
         if !is_video_record(&self.temp_video_filename) {
@@ -628,23 +607,13 @@ impl Ffmpeg {
 
     // Stop audio input recording
     pub fn stop_input_audio(&mut self) -> Result<()> {
-        // Kill the process to stop recording
+        // Quit the process to stop recording
         if self.input_audio_process.is_some() {
-            Command::new("kill")
-                .arg(format!(
-                    "{}",
-                    self.input_audio_process
-                        .clone()
-                        .ok_or_else(|| anyhow!("Failed to get input_audio_process ID."))?
-                        .borrow_mut().id()
-                ))
-                .output()?;
-
             self.input_audio_process
                 .clone()
                 .ok_or_else(|| anyhow!("Not exiting the input audio recording process successfully."))?
                 .borrow_mut()
-                .wait()?;
+                .quit()?;
         }
         Ok(())
     }
@@ -657,14 +626,14 @@ impl Ffmpeg {
                                                             .keep()?;
         self.temp_output_audio_filename = Path::new(&output_audio_tempfile.1).to_string_lossy()
                                                                              .to_string();
-        let mut ffmpeg_command = Command::new("ffmpeg");
-        ffmpeg_command.args(["-f", "dshow"])
-                      .args(["-i", &format!("audio=\"{}\"", &self.audio_output_id)])
-                      .args(["-f", "ogg"]);
+        let mut ffmpeg_command = FfmpegCommand::new();
+        ffmpeg_command.format("dshow")
+                      .input(format!("audio=\"{}\"", &self.audio_output_id))
+                      .format("ogg");
         // Remove metadate
         ffmpeg_command.args(["-map_metadata", "-1"]);
         ffmpeg_command.arg(&self.temp_output_audio_filename);
-        ffmpeg_command.arg("-y");
+        ffmpeg_command.overwrite();
 
         // Sleep for delay
         if !is_video_record(&self.temp_video_filename) && !is_input_audio_record(&self.temp_input_audio_filename) {
@@ -678,23 +647,13 @@ impl Ffmpeg {
 
     // Stop audio output recording
     pub fn stop_output_audio(&mut self) -> Result<()> {
-        // Kill the process to stop recording
+        // Quit the process to stop recording
         if self.output_audio_process.is_some() {
-            Command::new("kill")
-                .arg(format!(
-                    "{}",
-                    self.output_audio_process
-                        .clone()
-                        .ok_or_else(|| anyhow!("Failed to get output_audio_process ID."))?
-                        .borrow_mut().id()
-                ))
-                .output()?;
-
             self.output_audio_process
                 .clone()
                 .ok_or_else(|| anyhow!("Not exiting the output audio recording process successfully."))?
                 .borrow_mut()
-                .wait()?;
+                .quit()?;
         }
         Ok(())
     }
@@ -703,29 +662,49 @@ impl Ffmpeg {
     pub fn merge(&mut self) -> Result<()> {
         if is_video_record(&self.temp_video_filename) {
             if self.output != "gif" {
-                let mut ffmpeg_command = Command::new("ffmpeg");
-                ffmpeg_command.args(["-i", &self.temp_video_filename]);
-                ffmpeg_command.args(["-f", "ogg"]);
-                if is_input_audio_record(&self.temp_input_audio_filename) {
-                    ffmpeg_command.args(["-i", &self.temp_input_audio_filename]);
+                // Validate video file integrity
+                let start_time = Instant::now();
+                let duration = Duration::from_secs(60);
+                loop {
+                    if is_valide(&self.temp_video_filename)? {
+                        break;
+                    } else if Instant::now().duration_since(start_time) >= duration {
+                        return Err(Error::msg("Unable to validate tmp video file."));
+                    }
                 }
-                if is_output_audio_record(&self.temp_output_audio_filename) {
-                    ffmpeg_command.args(["-i", &self.temp_output_audio_filename]);
-                }
-                ffmpeg_command.args([
-                    "-c:a",
-                    "aac",
-                    &self.saved_filename.clone()
-                ]);
-                ffmpeg_command.arg("-y");
-                let program = ffmpeg_command.get_program().to_string_lossy().to_string();
-                let args: Vec<String> = ffmpeg_command.get_args().map(|arg| arg.to_string_lossy().into_owned()).collect();
-                let mut merge_command = program;
-                for arg in args {
-                    merge_command.push_str(&format!(" {}", arg));
-                }
-                adw::glib::spawn_command_line_async(merge_command)?;
+                if is_input_audio_record(&self.temp_input_audio_filename) ||
+                    is_output_audio_record(&self.temp_output_audio_filename) {
+                        let mut ffmpeg_command = FfmpegCommand::new();
+                        ffmpeg_command.input(&self.temp_video_filename);
+                        ffmpeg_command.format("ogg");
+                        if is_input_audio_record(&self.temp_input_audio_filename) {
+                            ffmpeg_command.input(&self.temp_input_audio_filename);
+                        }
+                        if is_output_audio_record(&self.temp_output_audio_filename) {
+                            ffmpeg_command.input(&self.temp_output_audio_filename);
+                        }
+                        ffmpeg_command.args([
+                            "-c:a",
+                            "aac",
+                            &self.saved_filename.clone()
+                        ]);
+                        ffmpeg_command.overwrite()
+                                      .spawn()?
+                                      .wait()?;
+                    } else {
+                        std::fs::copy(&self.temp_video_filename, &self.saved_filename)?;
+                    }
             } else {
+                // Validate video file integrity
+                let start_time = Instant::now();
+                let duration = Duration::from_secs(60);
+                loop {
+                    if is_valide(&self.temp_video_filename)? {
+                        break;
+                    } else if Instant::now().duration_since(start_time) >= duration {
+                        return Err(Error::msg("Unable to validate tmp video file."));
+                    }
+                }
                 // Convert MP4 to GIF
                 let filter = format!("fps={},scale={}:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse",
                                      self.record_frames.value() as u16,
@@ -735,44 +714,54 @@ impl Ffmpeg {
                                               -loop 0 {} -y", &self.temp_video_filename,filter,
                                              &self.saved_filename
                                              .clone());
-                adw::glib::spawn_command_line_async(ffmpeg_convert)?;
+                std::process::Command::new("sh").arg("-c").arg(&ffmpeg_convert).output()?;
             }
         } else if is_input_audio_record(&self.temp_input_audio_filename) {
+            // Validate audio file integrity
+            let start_time = Instant::now();
+            let duration = Duration::from_secs(60);
+            loop {
+                if is_valide(&self.temp_input_audio_filename)? {
+                    break;
+                } else if Instant::now().duration_since(start_time) >= duration {
+                    return Err(Error::msg("Unable to validate tmp video file."));
+                }
+            }
             // If only audio is recording then convert it to chosen format
-            let mut ffmpeg_command = Command::new("ffmpeg");
-            ffmpeg_command.args(["-f", "ogg"]);
-            ffmpeg_command.args(["-i", &self.temp_input_audio_filename]);
+            let mut ffmpeg_command = FfmpegCommand::new();
+            ffmpeg_command.format("ogg");
+            ffmpeg_command.input(&self.temp_input_audio_filename);
             if is_output_audio_record(&self.temp_output_audio_filename) {
-                ffmpeg_command.args(["-i", &self.temp_output_audio_filename]);
+                ffmpeg_command.input(&self.temp_output_audio_filename);
             }
             ffmpeg_command.args([
                 "-c:a",
                 "aac",
                 &self.saved_filename
-                     .clone(),
-                "-y"
-            ]);
-            let program = ffmpeg_command.get_program().to_string_lossy().to_string();
-            let args: Vec<String> = ffmpeg_command.get_args().map(|arg| arg.to_string_lossy().into_owned()).collect();
-            let mut merge_command = program;
-            for arg in args {
-                merge_command.push_str(&format!(" {}", arg));
-            }
-            adw::glib::spawn_command_line_async(merge_command)?;
+                     .clone()
+            ]).overwrite()
+              .spawn()?
+              .wait()?;
         } else {
-            // If only output audio is recording then convert it to chosen format
-            let mut ffmpeg_command = Command::new("ffmpeg");
-            ffmpeg_command.args(["-f", "ogg"]);
-            ffmpeg_command.args(["-i", &self.temp_output_audio_filename]);
-            ffmpeg_command.arg(&self.saved_filename.clone());
-            ffmpeg_command.arg("-y");
-            let program = ffmpeg_command.get_program().to_string_lossy().to_string();
-            let args: Vec<String> = ffmpeg_command.get_args().map(|arg| arg.to_string_lossy().into_owned()).collect();
-            let mut merge_command = program;
-            for arg in args {
-                merge_command.push_str(&format!(" {}", arg));
+            // Validate audio file integrity
+            let start_time = Instant::now();
+            let duration = Duration::from_secs(60);
+            loop {
+                if is_valide(&self.temp_output_audio_filename)? {
+                    break;
+                } else if Instant::now().duration_since(start_time) >= duration {
+                    return Err(Error::msg("Unable to validate tmp video file."));
+                }
             }
-            adw::glib::spawn_command_line_async(merge_command)?;
+            // If only output audio is recording then convert it to chosen format
+            let mut ffmpeg_command = FfmpegCommand::new();
+            ffmpeg_command.format("ogg");
+            ffmpeg_command.input(&self.temp_output_audio_filename);
+            ffmpeg_command.arg(&self.saved_filename
+                               .clone())
+                          .overwrite()
+                          .spawn()?
+                          .wait()?;
         }
         Ok(())
     }
@@ -794,8 +783,9 @@ impl Ffmpeg {
             let pid = self.video_process
                           .clone()
                           .ok_or_else(|| anyhow!("Unable to kill the video recording process successfully."))?
-                          .borrow_mut().id();
-            Command::new("taskkill")
+                          .borrow_mut()
+                          .as_inner().id();
+            std::process::Command::new("taskkill")
                 .arg("/PID")
                 .arg(pid.to_string())
                 .arg("/F")
@@ -805,8 +795,9 @@ impl Ffmpeg {
             let pid = self.input_audio_process
                           .clone()
                           .ok_or_else(|| anyhow!("Unable to kill the input audio recording process successfully."))?
-                          .borrow_mut().id();
-            Command::new("taskkill")
+                          .borrow_mut()
+                          .as_inner().id();
+            std::process::Command::new("taskkill")
                 .arg("/PID")
                 .arg(pid.to_string())
                 .arg("/F")
@@ -816,8 +807,9 @@ impl Ffmpeg {
             let pid = self.output_audio_process
                           .clone()
                           .ok_or_else(|| anyhow!("Unable to kill the output audio recording process successfully."))?
-                          .borrow_mut().id();
-            Command::new("taskkill")
+                          .borrow_mut()
+                          .as_inner().id();
+            std::process::Command::new("taskkill")
                 .arg("/PID")
                 .arg(pid.to_string())
                 .arg("/F")

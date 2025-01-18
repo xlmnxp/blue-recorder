@@ -892,7 +892,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                         second_click.clone(),
                     );
                 }
-            } else if _delay_spin.value() as u16 == 0 {
+            } else if _delay_spin.value() as u16 == 0 && !is_wayland() {
                 let _area_capture = area_capture.borrow_mut();
                 disable_input_widgets(_input_widgets.clone());
                 start_timer(record_time_label.clone());
@@ -943,7 +943,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                         },
                     }
                 }
-                if _video_switch.is_active() && !is_wayland() {
+                if _video_switch.is_active() {
                     match _ffmpeg_record_interface.borrow_mut().start_video(
                         _area_capture.x,
                         _area_capture.y,
@@ -1078,6 +1078,17 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
             _play_button.show();
         }
         _record_button.show();
+        match _ffmpeg_record_interface.borrow_mut().clean() {
+             Ok(_) => {
+                // Continue
+            },
+            Err(error) => {
+                let text_buffer = TextBuffer::new(None);
+                text_buffer.set_text(&format!("{}", error));
+                _error_message.set_buffer(Some(&text_buffer));
+                _error_dialog.show();
+            },
+        };
     });
 
     // Delay window button

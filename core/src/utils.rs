@@ -116,6 +116,7 @@ pub fn is_valide(filename: &str) -> Result<bool> {
     let validate = Command::new("ffmpeg")
         .args(["-v", "error",
                "-i", filename,
+               "-c", "copy",
                "-f", "null", "-"
         ]).output()?;
     if validate.status.success() {
