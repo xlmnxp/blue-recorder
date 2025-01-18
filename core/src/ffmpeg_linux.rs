@@ -296,23 +296,28 @@ impl Ffmpeg {
                         return Err(Error::msg("Unable to validate tmp video file."));
                     }
                 }
-                let mut ffmpeg_command = FfmpegCommand::new();
-                ffmpeg_command.input(&self.temp_video_filename);
-                ffmpeg_command.format("ogg");
-                if is_input_audio_record(&self.temp_input_audio_filename) {
-                    ffmpeg_command.input(&self.temp_input_audio_filename);
-                }
-                if is_output_audio_record(&self.temp_output_audio_filename) {
-                    ffmpeg_command.input(&self.temp_output_audio_filename);
-                }
-                ffmpeg_command.args([
-                    "-c:a",
-                    "aac",
-                    &self.filename,
-                ]);
-                ffmpeg_command.overwrite()
-                  .spawn()?
-                  .wait()?;
+                if is_input_audio_record(&self.temp_input_audio_filename) ||
+                    is_output_audio_record(&self.temp_output_audio_filename) {
+                        let mut ffmpeg_command = FfmpegCommand::new();
+                        ffmpeg_command.input(&self.temp_video_filename);
+                        ffmpeg_command.format("ogg");
+                        if is_input_audio_record(&self.temp_input_audio_filename) {
+                            ffmpeg_command.input(&self.temp_input_audio_filename);
+                        }
+                        if is_output_audio_record(&self.temp_output_audio_filename) {
+                            ffmpeg_command.input(&self.temp_output_audio_filename);
+                        }
+                        ffmpeg_command.args([
+                            "-c:a",
+                            "aac",
+                            &self.saved_filename.clone()
+                        ]);
+                        ffmpeg_command.overwrite()
+                                      .spawn()?
+                                      .wait()?;
+                    } else {
+                        std::fs::copy(&self.temp_video_filename, &self.saved_filename)?;
+                    }
             } else {
                 // Validate video file integrity
                 let start_time = Instant::now();
