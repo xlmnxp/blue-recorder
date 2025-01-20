@@ -2,7 +2,7 @@ use anyhow::Result;
 use std::process::Command;
 
 // Select recording mode
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum RecordMode {
     Area,
     Screen,

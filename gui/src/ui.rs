@@ -779,9 +779,12 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         record_delay: delay_spin.clone(),
         record_frames: frames_spin,
         video_record_bitrate: video_bitrate_spin,
+        audio_input_switch: audio_input_switch.clone(),
+        audio_output_switch: audio_output_switch.clone(),
         follow_mouse: follow_mouse_switch.clone(),
         record_mouse: mouse_switch.clone(),
-        show_area: area_switch
+        show_area: area_switch,
+        video_switch: video_switch.clone()
     }));
     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
     let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
@@ -793,8 +796,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
             format_chooser_combobox,
         ),
         output: String::new(),
-        temp_input_audio_filename: String::new(),
-        temp_output_audio_filename: String::new(),
         temp_video_filename: String::new(),
         saved_filename: String::new(),
         height: None,
@@ -805,9 +806,12 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         record_delay: delay_spin.clone(),
         record_frames: frames_spin,
         video_record_bitrate: video_bitrate_spin,
+        audio_input_switch: audio_input_switch.clone(),
+        audio_output_switch: audio_output_switch.clone(),
         follow_mouse: follow_mouse_switch.clone(),
         record_mouse: mouse_switch.clone(),
-        show_area: area_switch
+        show_area: area_switch,
+        video_switch: video_switch.clone()
     }));
 
     // Record button
@@ -817,7 +821,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     record_label.set_label(&get_bundle("record", None));
     let _audio_input_switch = audio_input_switch.clone();
     let _audio_output_switch = audio_output_switch.clone();
-    //let bundle_msg = get_bundle("already-exist", None);
     let _delay_spin = delay_spin.clone();
     let _delay_window = delay_window.clone();
     let _delay_window_button = delay_window_button.clone();
@@ -903,7 +906,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 _play_button.hide();
                 _record_button.hide();
                 _stop_button.show();
-                if _audio_input_switch.is_active() {
+                if _audio_input_switch.is_active() && !_video_switch.is_active() {
                     match _ffmpeg_record_interface.borrow_mut().start_input_audio() {
                         Ok(_) => {
                             // Do nothing
@@ -923,7 +926,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                         },
                     }
                 }
-                if _audio_output_switch.is_active() {
+                if _audio_output_switch.is_active() && !_audio_input_switch.is_active()  && !_video_switch.is_active() {
                     match _ffmpeg_record_interface.borrow_mut().start_output_audio() {
                         Ok(_) => {
                             // Do nothing
@@ -991,7 +994,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         let mut show_play = true;
         _record_time_label.set_visible(false);
         stop_timer(_record_time_label.clone());
-        if _audio_input_switch.is_active() {
+        if _audio_input_switch.is_active() && !_video_switch.is_active() {
             match _ffmpeg_record_interface.borrow_mut().stop_input_audio() {
                 Ok(_) => {
                     // Continue
@@ -1012,7 +1015,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 },
             }
         }
-        if _audio_output_switch.is_active() {
+        if _audio_output_switch.is_active() && !_audio_input_switch.is_active() && !_video_switch.is_active() {
             match _ffmpeg_record_interface.borrow_mut().stop_output_audio() {
                 Ok(_) => {
                     // Continue
@@ -1054,19 +1057,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 },
             }
         }
-        // Save tmp files
-        match _ffmpeg_record_interface.borrow_mut().merge() {
-            Ok(_) => {
-                // Continue
-            },
-            Err(error) => {
-                show_play = false;
-                let text_buffer = TextBuffer::new(None);
-                text_buffer.set_text(&format!("{}", error));
-                _error_message.set_buffer(Some(&text_buffer));
-                _error_dialog.show();
-            },
-        };
         if _video_switch.is_active() {
             _mouse_switch.set_sensitive(true);
             _follow_mouse_switch.set_sensitive(true);
@@ -1078,17 +1068,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
             _play_button.show();
         }
         _record_button.show();
-        match _ffmpeg_record_interface.borrow_mut().clean() {
-             Ok(_) => {
-                // Continue
-            },
-            Err(error) => {
-                let text_buffer = TextBuffer::new(None);
-                text_buffer.set_text(&format!("{}", error));
-                _error_message.set_buffer(Some(&text_buffer));
-                _error_dialog.show();
-            },
-        };
     });
 
     // Delay window button

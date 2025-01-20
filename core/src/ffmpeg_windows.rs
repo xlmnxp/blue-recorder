@@ -37,12 +37,9 @@ pub struct Ffmpeg {
     pub record_delay: u16,
     pub record_frames: u16,
     pub video_record_bitrate: u16,
-    pub audio_input_switch: bool,
-    pub audio_output_switch: bool,
     pub follow_mouse: bool,
     pub record_mouse: bool,
     pub show_area: bool,
-    pub video_switch: bool,
 }
 
 #[cfg(feature = "gtk")]
@@ -304,13 +301,13 @@ impl Ffmpeg {
                         ffmpeg_command.args([
                             "-c:a",
                             "aac",
-                            &self.saved_filename.clone()
+                            &self.filename
                         ]);
                         ffmpeg_command.overwrite()
                                       .spawn()?
                                       .wait()?;
                     } else {
-                        std::fs::copy(&self.temp_video_filename, &self.saved_filename)?;
+                        std::fs::copy(&self.temp_video_filename, &self.filename)?;
                     }
             } else {
                 // Validate video file integrity
