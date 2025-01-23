@@ -14,6 +14,8 @@ async-std = {version = "1.12.0", features = ["attributes"]}
 chrono = { version = "0.4.19", optional = true }
 ffmpeg-sidecar = "2.0.5"
 glib = { version = "0.10.3", optional = true }
+gstreamer = "0.23.4"
 open = "5.1.4"
 subprocess = {version = "0.2.6", optional = true }
 tempfile = "3.10.1"
+zbus = "5.3.0"

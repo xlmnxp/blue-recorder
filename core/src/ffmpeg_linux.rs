@@ -3,6 +3,7 @@ use adw::gtk::{CheckButton, ComboBoxText, Entry, FileChooserNative, SpinButton};
 #[cfg(feature = "gtk")]
 use adw::gtk::prelude::*;
 use anyhow::{anyhow, Error, Result};
+use chrono::Timelike;
 #[cfg(feature = "gtk")]
 use chrono::Utc;
 use ffmpeg_sidecar::child::FfmpegChild;
@@ -18,11 +19,12 @@ use std::time::Duration;
 #[cfg(feature = "cmd")]
 use std::time::Instant;
 
-use crate::utils::{is_video_record, RecordMode};
+use crate::utils::{is_video_record, is_wayland, RecordMode};
 #[cfg(feature = "cmd")]
 use crate::utils::{is_input_audio_record, is_output_audio_record, is_valid};
 #[cfg(feature = "gtk")]
 use crate::utils::validate_video_file;
+use crate::wayland_linux::{CursorModeTypes, RecordTypes, WaylandRecorder};
 
 #[cfg(feature = "cmd")]
 #[derive(Clone)]
@@ -56,6 +58,7 @@ pub struct Ffmpeg {
     pub output: String,
     pub temp_video_filename: String,
     pub saved_filename: String,
+    pub width: Option<u16>,
     pub height: Option<u16>,
     pub input_audio_process: Option<Rc<RefCell<FfmpegChild>>>,
     pub output_audio_process: Option<Rc<RefCell<FfmpegChild>>>,
@@ -70,6 +73,7 @@ pub struct Ffmpeg {
     pub record_mouse: CheckButton,
     pub show_area: CheckButton,
     pub video_switch: CheckButton,
+    pub wayland_recorder: WaylandRecorder,
 }
 
 #[cfg(feature = "cmd")]
@@ -87,6 +91,7 @@ impl Ffmpeg {
             );
             let mut ffmpeg_command = FfmpegCommand::new();
             let format = "x11grab";
+            self.width = Some(width);
             self.height = Some(height);
 
             // Record video to tmp if audio record enabled
@@ -483,6 +488,35 @@ impl Ffmpeg {
         //if mode == RecordMode::Window && !self.follow_mouse.is_active() {
             // TODO pulse = gstreamer for video  && add to cmd linux + add convert function to gstreamer ouput
         //} else {
+        if is_wayland() {
+            let folder_path = Path::new(&self.saved_filename)
+                .parent()
+                .ok_or_else(|| anyhow!("Failed to get parent path."))?;
+            self.temp_video_filename = folder_path
+                .join(format!(".blue-recorder-{}.webm", Utc::now().nanosecond()))
+                .to_string_lossy()
+                .to_string();
+
+            // Start recording
+            let stream = glib::MainContext::default().block_on(self.wayland_recorder.start(
+                self.temp_video_filename.clone(),
+                match mode {
+                    RecordMode::Screen => RecordTypes::Monitor,
+                    RecordMode::Window => RecordTypes::Window,
+                    _ => RecordTypes::MonitorOrWindow,
+                },
+                if self.record_mouse.is_active() {
+                    CursorModeTypes::Show
+                } else {
+                    CursorModeTypes::Hidden
+                },
+            ));
+
+            self.width = Some(width);
+            self.height = Some(height);
+            return Ok(());
+        }
+
         let display = format!("{}+{},{}",
                               std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string())
                               .as_str(),
@@ -491,6 +525,7 @@ impl Ffmpeg {
         );
         let mut ffmpeg_command = FfmpegCommand::new();
         let format = "x11grab";
+        self.width = Some(width);
         self.height = Some(height);
         let filename = self.saved_filename.clone();
         self.output = Path::new(&filename).extension()
@@ -637,6 +672,17 @@ impl Ffmpeg {
                               return Err(Error::msg(format!("{}", error)));
                           },
                       }
+        } else if self.video_switch.is_active() && is_wayland() {
+            glib::MainContext::default().block_on(self.wayland_recorder.stop());
+            match self.merge() {
+                Ok(_) => {
+                    self.clean()?;
+                },
+                Err(error) => {
+                    self.clean()?;
+                    return Err(Error::msg(format!("{}", error)));
+                }
+            }
         }
         Ok(())
     }
