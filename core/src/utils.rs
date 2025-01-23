@@ -2,7 +2,7 @@ use anyhow::Result;
 use std::process::Command;
 
 // Select recording mode
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy)]
 pub enum RecordMode {
     Area,
     Screen,
@@ -112,7 +112,7 @@ pub fn is_snap() -> bool {
 }
 
 // Validate audio/video file integrity
-pub fn is_valide(filename: &str) -> Result<bool> {
+pub fn is_valid(filename: &str) -> Result<bool> {
     let validate = Command::new("ffmpeg")
         .args(["-v", "error",
                "-i", filename,
@@ -181,4 +181,31 @@ pub fn sources_descriptions_list() -> Result<Vec<String>> {
             .collect()
     };
     Ok(sources_descriptions)
+}
+
+#[cfg(feature = "gtk")]
+// Validate video file
+pub fn validate_video_file(filename: String) -> Result<()> {
+    let start_time = std::time::Instant::now();
+    let duration = std::time::Duration::from_secs(300);
+
+    let main_loop = glib::MainLoop::new(None, false);
+    let filename_clone = filename.clone();
+
+    let _main_loop = main_loop.clone();
+    async_std::task::spawn_blocking(move || {
+        while std::time::Instant::now().duration_since(start_time) < duration {
+            if is_valid(&filename_clone).unwrap_or(false) {
+                _main_loop.quit();
+                return Ok(());
+            }
+            // Sleep a bit to avoid busy waiting
+            std::thread::sleep(std::time::Duration::from_millis(100));
+        }
+        Err(anyhow::Error::msg("Unable to validate tmp video file."))
+    });
+
+    main_loop.run();
+
+    Ok(())
 }

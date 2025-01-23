@@ -9,7 +9,7 @@ use blue_recorder_core::ffmpeg_linux::Ffmpeg;
 #[cfg(target_os = "windows")]
 use blue_recorder_core::ffmpeg_windows::Ffmpeg;
 use blue_recorder_core::utils::{disable_input_widgets, enable_input_widgets,
-                                is_overwrite, is_wayland, play_record, RecordMode};
+                                is_overwrite, is_wayland, play_record, RecordMode, validate_video_file};
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
 use blue_recorder_core::utils::{audio_output_source, sources_descriptions_list};
 #[cfg(target_os = "windows")]
@@ -72,12 +72,14 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let delay_ui_src = include_str!("../interfaces/delay.ui").to_string();
     let main_ui_src = include_str!("../interfaces/main.ui").to_string();
     let select_window_ui_src = include_str!("../interfaces/select_window.ui").to_string();
+    let spinner_ui_src = include_str!("../interfaces/spinner.ui").to_string();
 
     let builder: Builder = Builder::from_string(main_ui_src.as_str());
     builder.add_from_string(about_dialog_ui_src.as_str()).unwrap();
     builder.add_from_string(area_selection_ui_src.as_str()).unwrap();
     builder.add_from_string(delay_ui_src.as_str()).unwrap();
     builder.add_from_string(select_window_ui_src.as_str()).unwrap();
+    builder.add_from_string(spinner_ui_src.as_str()).unwrap();
 
     // Get Objects from UI
     let area_apply_label: Label = builder.object("area_apply").unwrap();
@@ -93,9 +95,10 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let about_dialog: AboutDialog = builder.object("about_dialog").unwrap();
     let audio_bitrate_label: Label = builder.object("audio_bitrate_label").unwrap();
     let audio_bitrate_spin: SpinButton = builder.object("audio_bitrate").unwrap();
+    let audio_input_switch: CheckButton = builder.object("audio_input_switch").unwrap();
+    let audio_output_switch: CheckButton = builder.object("speakerswitch").unwrap();
     let audio_source_combobox: ComboBoxText = builder.object("audiosource").unwrap();
     let audio_source_label: Label = builder.object("audio_source_label").unwrap();
-    let audio_input_switch: CheckButton = builder.object("audio_input_switch").unwrap();
     let command_entry: Entry = builder.object("command").unwrap();
     let command_label: Label = builder.object("command_label").unwrap();
     let delay_label: Label = builder.object("delay_label").unwrap();
@@ -126,7 +129,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let select_window: Window = builder.object("select_window").unwrap();
     #[cfg(target_os = "windows")]
     let select_window_label: Label = builder.object("select_window_label").unwrap();
-    let audio_output_switch: CheckButton = builder.object("speakerswitch").unwrap();
+    let spinner_window: Window = builder.object("spinner_window").unwrap();
+    let spinner_label: Label = builder.object("spinner_label").unwrap();
     let stop_button: Button = builder.object("stopbutton").unwrap();
     let stop_label: Label = builder.object("stop_label").unwrap();
     let video_bitrate_label: Label = builder.object("video_bitrate_label").unwrap();
@@ -142,6 +146,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     area_chooser_window.set_title(Some(&get_bundle("area-chooser", None))); // Title is hidden
     error_dialog.set_transient_for(Some(&main_window));
     select_window.set_transient_for(Some(&main_window));
+    spinner_window.set_transient_for(Some(&main_window));
     main_window.set_application(Some(application));
     main_window.set_title(Some(&get_bundle("blue-recorder", None)));
 
@@ -811,7 +816,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         follow_mouse: follow_mouse_switch.clone(),
         record_mouse: mouse_switch.clone(),
         show_area: area_switch,
-        video_switch: video_switch.clone()
+        video_switch: video_switch.clone(),
     }));
 
     // Record button
@@ -977,6 +982,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     });
 
     // Stop record button
+    spinner_label.set_label(&get_bundle("spinner-label", None));
     stop_button.set_tooltip_text(Some(&get_bundle("stop-tooltip", None)));
     stop_label.set_label(&get_bundle("stop-recording", None));
     let _audio_input_switch = audio_input_switch.clone();
@@ -987,10 +993,12 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _mouse_switch = mouse_switch.clone();
     let _play_button = play_button.clone();
     let _record_button = record_button.clone();
+    let _spinner_window = spinner_window.clone();
     let _stop_button = stop_button.clone();
     let _video_switch = video_switch.clone();
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     stop_button.connect_clicked(move |_| {
+        _spinner_window.show();
         let mut show_play = true;
         _record_time_label.set_visible(false);
         stop_timer(_record_time_label.clone());
@@ -1062,12 +1070,25 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
             _follow_mouse_switch.set_sensitive(true);
         }
         enable_input_widgets(input_widgets.clone());
-        _stop_button.hide();
         if show_play {
-            _play_button.set_tooltip_text(Some(&get_bundle("play-tooltip", None)));
-            _play_button.show();
+            let file_name = &_ffmpeg_record_interface.borrow_mut().saved_filename;
+            if validate_video_file(file_name.to_string()).is_ok() {
+                _play_button.set_tooltip_text(Some(&get_bundle("play-tooltip", None)));
+                _play_button.show();
+            }
         }
-        _record_button.show();
+        let stop_button = _stop_button.clone();
+        let record_button = _record_button.clone();
+        glib::idle_add_local(move || {
+            stop_button.hide();
+            record_button.show();
+            glib::Continue(false)
+        });
+    });
+
+    // Hide spinner window
+    record_button.connect_show(move |_| {
+        spinner_window.hide();
     });
 
     // Delay window button

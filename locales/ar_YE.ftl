@@ -99,9 +99,6 @@ error-title = خلل
 # Frames label
 file-name = اسم الملفّ الافتراضي:
 
-# Overwritten file name
-file-name-overwritten = اسم الملف (سيُكتَبُ عليه)
-
 # Follow mouse label
 follow-mouse = اقتفِ أثر مؤشر الفأرة
 
@@ -138,17 +135,20 @@ select-area = اختَر رُّقعة
 select-screen = اختَر الشاشة
 select-window = اختَر نافذة
 
-# Error message
-some-error = حدث ما يُعيقني
-
-# Stop recording button
-stop-recording = أوقِف التسجيل
-
 # Show captured area
 show-area = أظهِر الرُّقعة
 
 # Show mouse label
 show-mouse = أظهِر المؤشر
+
+# Error message
+some-error = حدث ما يُعيقني
+
+# Spinner label
+spinner-label = ...ترقَّب ريثما يُحفَظ الملف
+
+# Stop recording button
+stop-recording = أوقِف التسجيل
 
 # Minimize to tray icon
 tray-minimize = أصغِره إلى المَخبأ

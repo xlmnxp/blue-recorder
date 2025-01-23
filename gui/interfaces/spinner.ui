@@ -18,7 +18,7 @@
 					<object class="GtkBox">
 						<property name="visible">True</property>
 						<property name="can-focus">True</property>
-						<property name="orientation">horizontal</property>
+						<property name="orientation">vertical</property>
 						<property name="halign">center</property>
 						<property name="valign">center</property>
 						<property name="vexpand">True</property>
@@ -29,6 +29,7 @@
 								<property name="can-focus">True</property>
 								<property name="halign">center</property>
 								<property name="valign">center</property>
+								<property name="spinning">True</property>
 							</object>
 						</child>
 						<child>

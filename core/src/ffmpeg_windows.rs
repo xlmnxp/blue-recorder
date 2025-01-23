@@ -16,7 +16,7 @@ use std::rc::Rc;
 use std::thread::sleep;
 use std::time::Duration;
 
-use crate::utils::{is_input_audio_record, is_output_audio_record, is_valide, is_video_record, RecordMode};
+use crate::utils::{is_input_audio_record, is_output_audio_record, is_valid, is_video_record, RecordMode};
 
 #[cfg(feature = "cmd")]
 #[derive(Clone)]
@@ -281,7 +281,7 @@ impl Ffmpeg {
                 let start_time = Instant::now();
                 let duration = Duration::from_secs(60);
                 loop {
-                    if is_valide(&self.temp_video_filename)? {
+                    if is_valid(&self.temp_video_filename)? {
                         break;
                     } else if Instant::now().duration_since(start_time) >= duration {
                         return Err(Error::msg("Unable to validate tmp video file."));
@@ -314,7 +314,7 @@ impl Ffmpeg {
                 let start_time = Instant::now();
                 let duration = Duration::from_secs(60);
                 loop {
-                    if is_valide(&self.temp_video_filename)? {
+                    if is_valid(&self.temp_video_filename)? {
                         break;
                     } else if Instant::now().duration_since(start_time) >= duration {
                         return Err(Error::msg("Unable to validate tmp video file."));
@@ -326,14 +326,21 @@ impl Ffmpeg {
                                      (|| anyhow!("Unable to get height value"))?);
                 let ffmpeg_convert = format!("ffmpeg -i file:{} -filter_complex '{}' \
                                               -loop 0 {} -y", &self.temp_video_filename,filter,&self.filename);
-                std::process::Command::new("sh").arg("-c").arg(&ffmpeg_convert).output()?;
+                match std::process::Command::new("sh").arg("-c").arg(&ffmpeg_convert).status() {
+                    Ok(_) => {
+                        // Do nothing
+                        },
+                    Err(error) => {
+                        return Err(Error::msg(format!("{}", error)));
+                    },
+                }
             }
         } else if is_input_audio_record(&self.temp_input_audio_filename) {
             // Validate audio file integrity
             let start_time = Instant::now();
             let duration = Duration::from_secs(60);
             loop {
-                if is_valide(&self.temp_input_audio_filename)? {
+                if is_valid(&self.temp_input_audio_filename)? {
                     break;
                 } else if Instant::now().duration_since(start_time) >= duration {
                     return Err(Error::msg("Unable to validate tmp video file."));
@@ -358,7 +365,7 @@ impl Ffmpeg {
             let start_time = Instant::now();
             let duration = Duration::from_secs(60);
             loop {
-                if is_valide(&self.temp_output_audio_filename)? {
+                if is_valid(&self.temp_output_audio_filename)? {
                     break;
                 } else if Instant::now().duration_since(start_time) >= duration {
                     return Err(Error::msg("Unable to validate tmp video file."));
@@ -674,7 +681,7 @@ impl Ffmpeg {
                 let start_time = Instant::now();
                 let duration = Duration::from_secs(60);
                 loop {
-                    if is_valide(&self.temp_video_filename)? {
+                    if is_valid(&self.temp_video_filename)? {
                         break;
                     } else if Instant::now().duration_since(start_time) >= duration {
                         return Err(Error::msg("Unable to validate tmp video file."));
@@ -707,7 +714,7 @@ impl Ffmpeg {
                 let start_time = Instant::now();
                 let duration = Duration::from_secs(60);
                 loop {
-                    if is_valide(&self.temp_video_filename)? {
+                    if is_valid(&self.temp_video_filename)? {
                         break;
                     } else if Instant::now().duration_since(start_time) >= duration {
                         return Err(Error::msg("Unable to validate tmp video file."));
@@ -729,7 +736,7 @@ impl Ffmpeg {
             let start_time = Instant::now();
             let duration = Duration::from_secs(60);
             loop {
-                if is_valide(&self.temp_input_audio_filename)? {
+                if is_valid(&self.temp_input_audio_filename)? {
                     break;
                 } else if Instant::now().duration_since(start_time) >= duration {
                     return Err(Error::msg("Unable to validate tmp video file."));
@@ -755,7 +762,7 @@ impl Ffmpeg {
             let start_time = Instant::now();
             let duration = Duration::from_secs(60);
             loop {
-                if is_valide(&self.temp_output_audio_filename)? {
+                if is_valid(&self.temp_output_audio_filename)? {
                     break;
                 } else if Instant::now().duration_since(start_time) >= duration {
                     return Err(Error::msg("Unable to validate tmp video file."));

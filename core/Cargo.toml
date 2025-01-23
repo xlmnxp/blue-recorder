@@ -5,13 +5,14 @@ edition = "2021"
 
 [features]
 cmd = []
-gtk = ["adw", "chrono", "glib", "subprocess", "ffmpeg-sidecar"]
+gtk = ["adw", "chrono", "glib", "subprocess"]
 
 [dependencies]
 adw = { version = "0.2.1", package = "libadwaita", features = ["gtk_v4_6"], optional = true }
 anyhow = "1.0.86"
+async-std = {version = "1.12.0", features = ["attributes"]}
 chrono = { version = "0.4.19", optional = true }
-ffmpeg-sidecar = { version = "2.0.5", optional = true }
+ffmpeg-sidecar = "2.0.5"
 glib = { version = "0.10.3", optional = true }
 open = "5.1.4"
 subprocess = {version = "0.2.6", optional = true }

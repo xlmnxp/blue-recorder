@@ -102,9 +102,6 @@ error-title = Error
 # Frames label
 file-name = Default filename:
 
-# Overwritten file name
-file-name-overwritten = File Name (Will be overwritten)..
-
 # Follow mouse label
 follow-mouse = Follow Mouse
 
@@ -138,17 +135,20 @@ select-area = Select an Area
 select-screen = Select a Screen
 select-window = Select a Window
 
-# Error message
-some-error = Something went wrong
-
-# Stop recording button
-stop-recording = Stop recording
-
 # Show captured area
 show-area = Show Area
 
 # Show mouse label
 show-mouse = Show Mouse
+
+# Error message
+some-error = Something went wrong
+
+# Spinner label
+spinner-label = Please wait while saving the file...
+
+# Stop recording button
+stop-recording = Stop recording
 
 # Minimize to tray icon
 tray-minimize = Minimize to tray
