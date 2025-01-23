@@ -12,6 +12,7 @@ use blue_recorder_core::utils::{disable_input_widgets, enable_input_widgets,
                                 is_overwrite, is_wayland, play_record, RecordMode, validate_video_file};
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
 use blue_recorder_core::utils::{audio_output_source, sources_descriptions_list};
+use blue_recorder_core::wayland_linux::WaylandRecorder;
 #[cfg(target_os = "windows")]
 use cpal::traits::{DeviceTrait, HostTrait};
 use std::cell::RefCell;
@@ -791,6 +792,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         show_area: area_switch,
         video_switch: video_switch.clone()
     }));
+
     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
     let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
         audio_input_id: audio_source_combobox.clone(),
@@ -803,6 +805,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         output: String::new(),
         temp_video_filename: String::new(),
         saved_filename: String::new(),
+        width: None,
         height: None,
         input_audio_process: None,
         output_audio_process: None,
@@ -817,6 +820,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         record_mouse: mouse_switch.clone(),
         show_area: area_switch,
         video_switch: video_switch.clone(),
+        wayland_recorder: glib::MainContext::default().block_on(WaylandRecorder::new())
     }));
 
     // Record button
@@ -832,8 +836,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _error_dialog = error_dialog.clone();
     let _error_message = error_message.clone();
     let _follow_mouse_switch = follow_mouse_switch.clone();
-    let mut _input_widgets = input_widgets.clone();
-    //let main_context = glib::MainContext::default();
+    let mut _input_widgets: Vec<Widget> = input_widgets.clone();
     let _main_window = main_window.clone();
     let _mouse_switch = mouse_switch.clone();
     let _play_button = play_button.clone();
@@ -841,7 +844,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _record_time_label = record_time_label.clone();
     let _stop_button = stop_button.clone();
     let _video_switch = video_switch.clone();
-    //let wayland_record = main_context.block_on(WaylandRecorder::new());
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     let second_click: Rc<RefCell<RecordClick>> = Rc::new(RefCell::new(RecordClick {
         is_record_button_clicked: false,
@@ -900,7 +902,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                         second_click.clone(),
                     );
                 }
-            } else if _delay_spin.value() as u16 == 0 && !is_wayland() {
+            } else if _delay_spin.value() as u16 == 0 {
                 let _area_capture = area_capture.borrow_mut();
                 disable_input_widgets(_input_widgets.clone());
                 start_timer(record_time_label.clone());
