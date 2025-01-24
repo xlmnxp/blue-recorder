@@ -92,7 +92,7 @@ impl Ffmpeg {
             } else {
                 &format!(".{}", &self.output)
             };
-            let video_tempfile = tempfile::Builder::new().prefix("ffmpeg-video-")
+            let video_tempfile = tempfile::Builder::new().prefix(".ffmpeg-video-")
                                                          .suffix(suffix)
                                                          .tempfile()?
                                                          .keep()?;
@@ -188,7 +188,7 @@ impl Ffmpeg {
 
     // Start audio input recording
     pub fn start_input_audio(&mut self) -> Result<()> {
-        let input_audio_tempfile = tempfile::Builder::new().prefix("ffmpeg-audio-")
+        let input_audio_tempfile = tempfile::Builder::new().prefix(".ffmpeg-audio-")
                                                            .suffix(".ogg")
                                                            .tempfile()?
                                                            .keep()?;
@@ -235,7 +235,7 @@ impl Ffmpeg {
 
     // Start audio output recording
     pub fn start_output_audio(&mut self) -> Result<()> {
-        let output_audio_tempfile = tempfile::Builder::new().prefix("ffmpeg-audio-")
+        let output_audio_tempfile = tempfile::Builder::new().prefix(".ffmpeg-audio-")
                                                             .suffix(".ogg")
                                                             .tempfile()?
                                                             .keep()?;
@@ -487,7 +487,7 @@ impl Ffmpeg {
             } else {
                 &format!(".{}", &self.output)
             };
-            let video_tempfile = tempfile::Builder::new().prefix("ffmpeg-video-")
+            let video_tempfile = tempfile::Builder::new().prefix(".ffmpeg-video-")
                                                          .suffix(suffix)
                                                          .tempfile()?
                                                          .keep()?;
@@ -586,7 +586,7 @@ impl Ffmpeg {
 
     // Start audio input recording
     pub fn start_input_audio(&mut self) -> Result<()> {
-        let input_audio_tempfile = tempfile::Builder::new().prefix("ffmpeg-audio-")
+        let input_audio_tempfile = tempfile::Builder::new().prefix(".ffmpeg-audio-")
                                                            .suffix(".ogg")
                                                            .tempfile()?
                                                            .keep()?;
@@ -635,7 +635,7 @@ impl Ffmpeg {
 
     // Start audio output recording
     pub fn start_output_audio(&mut self) -> Result<()> {
-        let output_audio_tempfile = tempfile::Builder::new().prefix("ffmpeg-audio-")
+        let output_audio_tempfile = tempfile::Builder::new().prefix(".ffmpeg-audio-")
                                                             .suffix(".ogg")
                                                             .tempfile()?
                                                             .keep()?;
