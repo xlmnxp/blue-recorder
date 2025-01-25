@@ -24,6 +24,7 @@ use crate::utils::{is_video_record, is_wayland, RecordMode};
 use crate::utils::{is_input_audio_record, is_output_audio_record, is_valid};
 #[cfg(feature = "gtk")]
 use crate::utils::validate_video_file;
+#[cfg(feature = "gtk")]
 use crate::wayland_linux::{CursorModeTypes, RecordTypes, WaylandRecorder};
 
 #[cfg(feature = "cmd")]
@@ -80,7 +81,7 @@ pub struct Ffmpeg {
 impl Ffmpeg {
     // Start video recording
     pub fn start_video(&mut self, x: u16, y: u16, width: u16, height: u16,  mode: RecordMode) -> Result<()> {
-        //if mode == RecordMode::Window && !self.follow_mouse.is_active() {
+        //if let RecordMode::Window == mode && !self.follow_mouse.is_active() {
             // TODO pulse = gstreamer for video  && add to cmd linux + add convert function to gstreamer ouput
         //} else {
             let display = format!("{}+{},{}",
@@ -94,7 +95,7 @@ impl Ffmpeg {
             self.width = Some(width);
             self.height = Some(height);
 
-            // Record video to tmp if audio record enabled
+            // Record video to tmp if output is GIF
             if !self.audio_input_id.is_empty()
                 || !self.audio_output_id.is_empty()
                 || self.output == "gif"
@@ -668,6 +669,9 @@ impl Ffmpeg {
                           Err(error) => {
                               if self.output == "gif" {
                                   self.clean()?;
+                              } else {
+                                  self.temp_video_filename = self.saved_filename.clone();
+                                  self.clean()?;
                               }
                               return Err(Error::msg(format!("{}", error)));
                           },
@@ -730,11 +734,20 @@ impl Ffmpeg {
     pub fn stop_input_audio(&mut self) -> Result<()> {
         // Quit the process to stop recording
         if self.input_audio_process.is_some() {
-            self.input_audio_process
-                .clone()
-                .ok_or_else(|| anyhow!("Not exiting the input audio recording process successfully."))?
-                .borrow_mut()
-                .quit()?;
+            match self.input_audio_process
+                      .clone()
+                      .ok_or_else(|| anyhow!("Not exiting the input audio recording process successfully."))?
+                      .borrow_mut()
+                      .quit() {
+                          Ok(_) => {
+                              // Continue
+                          },
+                          Err(error) => {
+                              self.temp_video_filename = self.saved_filename.clone();
+                              self.clean()?;
+                              return Err(Error::msg(format!("{}", error)));
+                          },
+                      }
         }
         Ok(())
     }
@@ -766,11 +779,20 @@ impl Ffmpeg {
     pub fn stop_output_audio(&mut self) -> Result<()> {
         // Quit the process to stop recording
         if self.output_audio_process.is_some() {
-            self.output_audio_process
-                .clone()
-                .ok_or_else(|| anyhow!("Not exiting the output audio recording process successfully."))?
-                .borrow_mut()
-                .quit()?;
+            match self.output_audio_process
+                      .clone()
+                      .ok_or_else(|| anyhow!("Not exiting the output audio recording process successfully."))?
+                      .borrow_mut()
+                      .quit() {
+                          Ok(_) => {
+                              // Continue
+                            },
+                          Err(error) => {
+                              self.temp_video_filename = self.saved_filename.clone();
+                              self.clean()?;
+                              return Err(Error::msg(format!("{}", error)));
+                          },
+                      }
         }
         Ok(())
     }

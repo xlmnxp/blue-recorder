@@ -12,6 +12,7 @@ use blue_recorder_core::utils::{disable_input_widgets, enable_input_widgets,
                                 is_overwrite, is_wayland, play_record, RecordMode, validate_video_file};
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
 use blue_recorder_core::utils::{audio_output_source, sources_descriptions_list};
+#[cfg(any(target_os = "freebsd", target_os = "linux"))]
 use blue_recorder_core::wayland_linux::WaylandRecorder;
 #[cfg(target_os = "windows")]
 use cpal::traits::{DeviceTrait, HostTrait};
@@ -275,12 +276,15 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     video_switch.connect_toggled(move |switch: &CheckButton| {
         config_management::set_bool("default", "videocheck", switch.is_active());
         if switch.is_active() {
+            #[cfg(any(target_os = "freebsd", target_os = "linux"))]
             _follow_mouse_switch.set_sensitive(true);
             _mouse_switch.set_sensitive(true);
         } else {
             _mouse_switch.set_active(false);
             _mouse_switch.set_sensitive(false);
+            #[cfg(any(target_os = "freebsd", target_os = "linux"))]
             _follow_mouse_switch.set_active(false);
+            #[cfg(any(target_os = "freebsd", target_os = "linux"))]
             _follow_mouse_switch.set_sensitive(false);
         }
     });
@@ -654,7 +658,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     window_grab_button.set_tooltip_text(Some(&get_bundle("window-tooltip", None)));
     window_grab_label.set_label(&get_bundle("select-window", None));
     #[cfg(target_os = "windows")]
-    let mut _window_title: Rc<RefCell<area_capture::Title>> = window_title.clone();
+    let _window_title = window_title.clone();
     window_grab_button.connect_clicked(move |_| {
         let text_buffer = TextBuffer::new(None);
         config_management::set_bool("default", "areacheck", _area_switch.is_active());
@@ -705,6 +709,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     // Disable mouse cursor capture if video record is not active
     if !video_switch.is_active() {
         mouse_switch.set_sensitive(false);
+        #[cfg(any(target_os = "freebsd", target_os = "linux"))]
         follow_mouse_switch.set_sensitive(false);
     }
 
@@ -751,15 +756,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     } else {
         String::new()
     };
-    let mode = if area_grab_button.is_active() {
-        RecordMode::Area
-    } else if window_grab_button.is_active() {
-        RecordMode::Window
-    } else {
-        RecordMode::Screen
-    };
-    #[cfg(target_os = "windows")]
-    let window_title = window_title.borrow_mut().title.clone();
 
     // Init record struct
     #[cfg(target_os = "windows")]
@@ -772,10 +768,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
             format_chooser_combobox,
         ),
         output: String::new(),
-        temp_input_audio_filename: String::new(),
-        temp_output_audio_filename: String::new(),
         temp_video_filename: String::new(),
-        window_title,
         saved_filename: String::new(),
         height: None,
         input_audio_process: None,
@@ -849,15 +842,25 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         is_record_button_clicked: false,
     }));
     record_button.connect_clicked(move |_| {
+        let mode: RecordMode = if area_grab_button.is_active() {
+            RecordMode::Area
+        } else if window_grab_button.is_active() {
+            RecordMode::Window
+        } else {
+            RecordMode::Screen
+        };
+
         // Disable mouse cursor capture during record
         if _video_switch.is_active() {
             _mouse_switch.set_sensitive(false);
+            #[cfg(any(target_os = "freebsd", target_os = "linux"))]
             _follow_mouse_switch.set_sensitive(false);
         }
         match _ffmpeg_record_interface.borrow_mut().get_filename() {
             Err(error) => {
                 if _video_switch.is_active() {
                     _mouse_switch.set_sensitive(true);
+                    #[cfg(any(target_os = "freebsd", target_os = "linux"))]
                     _follow_mouse_switch.set_sensitive(true);
                 }
                 enable_input_widgets(_input_widgets.clone());
@@ -904,6 +907,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 }
             } else if _delay_spin.value() as u16 == 0 {
                 let _area_capture = area_capture.borrow_mut();
+                #[cfg(target_os = "windows")]
+                let _window_title = window_title.borrow_mut();
                 disable_input_widgets(_input_widgets.clone());
                 start_timer(record_time_label.clone());
                 record_time_label.set_visible(true);
@@ -921,6 +926,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                         Err(error) => {
                             if _video_switch.is_active() {
                                 _mouse_switch.set_sensitive(true);
+                                #[cfg(any(target_os = "freebsd", target_os = "linux"))]
                                 _follow_mouse_switch.set_sensitive(true);
                             }
                             enable_input_widgets(_input_widgets.clone());
@@ -941,6 +947,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                         Err(error) => {
                             if _video_switch.is_active() {
                                 _mouse_switch.set_sensitive(true);
+                                #[cfg(any(target_os = "freebsd", target_os = "linux"))]
                                 _follow_mouse_switch.set_sensitive(true);
                             }
                             enable_input_widgets(_input_widgets.clone());
@@ -954,19 +961,31 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     }
                 }
                 if _video_switch.is_active() {
-                    match _ffmpeg_record_interface.borrow_mut().start_video(
+                    #[cfg(target_os = "windows")]
+                    let start_video = _ffmpeg_record_interface.borrow_mut().start_video(
+                        _area_capture.x,
+                        _area_capture.y,
+                        _area_capture.width,
+                        _area_capture.height,
+                        mode,
+                        _window_title.title.clone(),
+                    );
+                    #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+                    let start_video = _ffmpeg_record_interface.borrow_mut().start_video(
                         _area_capture.x,
                         _area_capture.y,
                         _area_capture.width,
                         _area_capture.height,
                         mode
-                    ) {
+                    );
+                    match start_video {
                         Ok(_) => {
                             // Do nothing
                         },
                         Err(error) => {
                             if _video_switch.is_active() {
                                 _mouse_switch.set_sensitive(true);
+                                #[cfg(any(target_os = "freebsd", target_os = "linux"))]
                                 _follow_mouse_switch.set_sensitive(true);
                             }
                             enable_input_widgets(_input_widgets.clone());
@@ -1012,6 +1031,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 Err(error) => {
                     if _video_switch.is_active() {
                         _mouse_switch.set_sensitive(true);
+                        #[cfg(any(target_os = "freebsd", target_os = "linux"))]
                         _follow_mouse_switch.set_sensitive(true);
                     }
                     enable_input_widgets(input_widgets.clone());
@@ -1033,6 +1053,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 Err(error) => {
                     if _video_switch.is_active() {
                         _mouse_switch.set_sensitive(true);
+                        #[cfg(any(target_os = "freebsd", target_os = "linux"))]
                         _follow_mouse_switch.set_sensitive(true);
                     }
                     enable_input_widgets(input_widgets.clone());
@@ -1054,6 +1075,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 Err(error) => {
                     if _video_switch.is_active() {
                         _mouse_switch.set_sensitive(true);
+                        #[cfg(any(target_os = "freebsd", target_os = "linux"))]
                         _follow_mouse_switch.set_sensitive(true);
                     }
                     enable_input_widgets(input_widgets.clone());
@@ -1069,6 +1091,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         }
         if _video_switch.is_active() {
             _mouse_switch.set_sensitive(true);
+            #[cfg(any(target_os = "freebsd", target_os = "linux"))]
             _follow_mouse_switch.set_sensitive(true);
         }
         enable_input_widgets(input_widgets.clone());
