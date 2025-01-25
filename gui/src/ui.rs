@@ -745,7 +745,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
 
     // Disable show area check button
     if !area_grab_button.is_active() {
-        input_widgets.push(area_switch.clone().into());
         area_switch.set_active(false);
         area_switch.set_sensitive(false);
     }
@@ -782,7 +781,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         audio_output_switch: audio_output_switch.clone(),
         follow_mouse: follow_mouse_switch.clone(),
         record_mouse: mouse_switch.clone(),
-        show_area: area_switch,
+        show_area: area_switch.clone(),
         video_switch: video_switch.clone()
     }));
 
@@ -811,7 +810,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         audio_output_switch: audio_output_switch.clone(),
         follow_mouse: follow_mouse_switch.clone(),
         record_mouse: mouse_switch.clone(),
-        show_area: area_switch,
+        show_area: area_switch.clone(),
         video_switch: video_switch.clone(),
         wayland_recorder: glib::MainContext::default().block_on(WaylandRecorder::new())
     }));
@@ -821,6 +820,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     delay_window_title.set_label(&get_bundle("delay-title", None));
     record_button.set_tooltip_text(Some(&get_bundle("record-tooltip", None)));
     record_label.set_label(&get_bundle("record", None));
+    let _area_grab_button = area_grab_button.clone();
+    let _area_switch = area_switch.clone();
     let _audio_input_switch = audio_input_switch.clone();
     let _audio_output_switch = audio_output_switch.clone();
     let _delay_spin = delay_spin.clone();
@@ -842,14 +843,17 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         is_record_button_clicked: false,
     }));
     record_button.connect_clicked(move |_| {
-        let mode: RecordMode = if area_grab_button.is_active() {
+        let mode: RecordMode = if _area_grab_button.is_active() {
             RecordMode::Area
         } else if window_grab_button.is_active() {
             RecordMode::Window
         } else {
             RecordMode::Screen
         };
-
+        // Disable show area check button
+        if _area_grab_button.is_active() {
+            _area_switch.set_sensitive(false);
+        }
         // Disable mouse cursor capture during record
         if _video_switch.is_active() {
             _mouse_switch.set_sensitive(false);
@@ -858,6 +862,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         }
         match _ffmpeg_record_interface.borrow_mut().get_filename() {
             Err(error) => {
+                if _area_grab_button.is_active() {
+                    _area_switch.set_sensitive(true);
+                }
                 if _video_switch.is_active() {
                     _mouse_switch.set_sensitive(true);
                     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
@@ -924,6 +931,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             // Do nothing
                         },
                         Err(error) => {
+                            if _area_grab_button.is_active() {
+                                _area_switch.set_sensitive(true);
+                            }
                             if _video_switch.is_active() {
                                 _mouse_switch.set_sensitive(true);
                                 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
@@ -945,6 +955,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             // Do nothing
                         },
                         Err(error) => {
+                            if _area_grab_button.is_active() {
+                                _area_switch.set_sensitive(true);
+                            }
                             if _video_switch.is_active() {
                                 _mouse_switch.set_sensitive(true);
                                 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
@@ -983,6 +996,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             // Do nothing
                         },
                         Err(error) => {
+                            if _area_grab_button.is_active() {
+                                _area_switch.set_sensitive(true);
+                            }
                             if _video_switch.is_active() {
                                 _mouse_switch.set_sensitive(true);
                                 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
@@ -1029,6 +1045,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     // Continue
                 },
                 Err(error) => {
+                    if area_grab_button.is_active() {
+                        area_switch.set_sensitive(true);
+                    }
                     if _video_switch.is_active() {
                         _mouse_switch.set_sensitive(true);
                         #[cfg(any(target_os = "freebsd", target_os = "linux"))]
@@ -1051,6 +1070,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     // Continue
                 },
                 Err(error) => {
+                    if area_grab_button.is_active() {
+                        area_switch.set_sensitive(true);
+                    }
                     if _video_switch.is_active() {
                         _mouse_switch.set_sensitive(true);
                         #[cfg(any(target_os = "freebsd", target_os = "linux"))]
@@ -1073,6 +1095,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     // Continue
                 },
                 Err(error) => {
+                    if area_grab_button.is_active() {
+                        area_switch.set_sensitive(true);
+                    }
                     if _video_switch.is_active() {
                         _mouse_switch.set_sensitive(true);
                         #[cfg(any(target_os = "freebsd", target_os = "linux"))]
@@ -1088,6 +1113,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     _error_dialog.show();
                 },
             }
+        }
+        if area_grab_button.is_active() {
+            area_switch.set_sensitive(true);
         }
         if _video_switch.is_active() {
             _mouse_switch.set_sensitive(true);

@@ -530,16 +530,16 @@ impl Ffmpeg {
 
         // Record audio input
         if self.audio_input_switch.is_active() {
-            ffmpeg_command.format("pulse")
-                          .input(&self.audio_input_id.active_id()
-                                 .ok_or_else(|| anyhow!("Failed to get audio input ID."))?
-                          );
+            ffmpeg_command.format("dshow");
+            ffmpeg_command.input(format!("audio=\"{}\"", &self.audio_input_id.active_text()
+                                         .ok_or_else(|| anyhow!("Failed to get audio input source."))?)
+            );
         }
 
         // Record audio output
         if self.audio_output_switch.is_active() {
-            ffmpeg_command.format("pulse")
-                          .input(&self.audio_output_id);
+            ffmpeg_command.format("dshow");
+            ffmpeg_command.input(format!("audio=\"{}\"", &self.audio_output_id));
         }
 
         // Disable bitrate if value is zero
@@ -631,7 +631,7 @@ impl Ffmpeg {
                       )
                       .format("ogg");
         if self.audio_output_switch.is_active() {
-            ffmpeg_command.format("pulse")
+            ffmpeg_command.format("dshow")
                           .input(&self.audio_output_id);
         }
         ffmpeg_command.format("ogg");
