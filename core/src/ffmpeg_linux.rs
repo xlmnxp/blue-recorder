@@ -702,8 +702,8 @@ impl Ffmpeg {
         if self.audio_output_switch.is_active() {
             ffmpeg_command.format("pulse")
                           .input(&self.audio_output_id);
+            ffmpeg_command.format("ogg");
         }
-        ffmpeg_command.format("ogg");
 
         // Disable bitrate if value is zero
         if self.audio_record_bitrate.value() as u16 > 0 {

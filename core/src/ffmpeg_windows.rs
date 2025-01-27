@@ -531,7 +531,7 @@ impl Ffmpeg {
         // Record audio input
         if self.audio_input_switch.is_active() {
             ffmpeg_command.format("dshow");
-            ffmpeg_command.input(format!("audio=\"{}\"", &self.audio_input_id.active_text()
+            ffmpeg_command.input(format!("audio={}", &self.audio_input_id.active_text()
                                          .ok_or_else(|| anyhow!("Failed to get audio input source."))?)
             );
         }
@@ -539,7 +539,7 @@ impl Ffmpeg {
         // Record audio output
         if self.audio_output_switch.is_active() {
             ffmpeg_command.format("dshow");
-            ffmpeg_command.input(format!("audio=\"{}\"", &self.audio_output_id));
+            ffmpeg_command.input(format!("audio={}", &self.audio_output_id));
         }
 
         // Disable bitrate if value is zero
@@ -626,12 +626,12 @@ impl Ffmpeg {
     pub fn start_input_audio(&mut self) -> Result<()> {
         let mut ffmpeg_command = FfmpegCommand::new();
         ffmpeg_command.format("dshow")
-                      .input(format!("audio=\"{}\"", &self.audio_input_id.active_text()
+                      .input(format!("audio={}", &self.audio_input_id.active_text()
                              .ok_or_else(|| anyhow!("Failed to get audio input source."))?)
                       );
         if self.audio_output_switch.is_active() {
             ffmpeg_command.format("dshow")
-                          .input(&self.audio_output_id);
+                          .input(format!("audio={}", &self.audio_output_id));
         }
 
         // Disable bitrate if value is zero
@@ -685,7 +685,7 @@ impl Ffmpeg {
     pub fn start_output_audio(&mut self) -> Result<()> {
         let mut ffmpeg_command = FfmpegCommand::new();
         ffmpeg_command.format("dshow")
-                      .input(format!("audio=\"{}\"", &self.audio_output_id));
+                      .input(format!("audio={}", &self.audio_output_id));
 
         // Remove metadate
         ffmpeg_command.args(["-map_metadata", "-1"]);
