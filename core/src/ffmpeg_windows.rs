@@ -628,13 +628,11 @@ impl Ffmpeg {
         ffmpeg_command.format("dshow")
                       .input(format!("audio=\"{}\"", &self.audio_input_id.active_text()
                              .ok_or_else(|| anyhow!("Failed to get audio input source."))?)
-                      )
-                      .format("ogg");
+                      );
         if self.audio_output_switch.is_active() {
             ffmpeg_command.format("dshow")
                           .input(&self.audio_output_id);
         }
-        ffmpeg_command.format("ogg");
 
         // Disable bitrate if value is zero
         if self.audio_record_bitrate.value() as u16 > 0 {
@@ -646,6 +644,8 @@ impl Ffmpeg {
 
         // Remove metadate
         ffmpeg_command.args(["-map_metadata", "-1"]);
+
+        // Output
         ffmpeg_command.arg(&self.saved_filename);
         ffmpeg_command.overwrite();
 
@@ -685,10 +685,12 @@ impl Ffmpeg {
     pub fn start_output_audio(&mut self) -> Result<()> {
         let mut ffmpeg_command = FfmpegCommand::new();
         ffmpeg_command.format("dshow")
-                      .input(format!("audio=\"{}\"", &self.audio_output_id))
-                      .format("ogg");
+                      .input(format!("audio=\"{}\"", &self.audio_output_id));
+
         // Remove metadate
         ffmpeg_command.args(["-map_metadata", "-1"]);
+
+        // Output
         ffmpeg_command.arg(&self.saved_filename);
         ffmpeg_command.overwrite();
 

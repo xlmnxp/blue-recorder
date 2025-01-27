@@ -872,7 +872,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 }
                 enable_input_widgets(_input_widgets.clone());
                 _record_button.show();
+                _record_time_label.set_visible(false);
                 _stop_button.hide();
+                stop_timer(_record_time_label.clone());
                 let text_buffer = TextBuffer::new(None);
                 text_buffer.set_text(&format!("{}", error));
                 _error_message.set_buffer(Some(&text_buffer));
@@ -917,8 +919,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 #[cfg(target_os = "windows")]
                 let _window_title = window_title.borrow_mut();
                 disable_input_widgets(_input_widgets.clone());
-                start_timer(record_time_label.clone());
-                record_time_label.set_visible(true);
+                start_timer(_record_time_label.clone());
+                _record_time_label.set_visible(true);
                 if hide_switch.is_active() {
                     _main_window.minimize();
                 }
@@ -941,7 +943,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             }
                             enable_input_widgets(_input_widgets.clone());
                             _record_button.show();
+                            _record_time_label.set_visible(false);
                             _stop_button.hide();
+                            stop_timer(_record_time_label.clone());
                             let text_buffer = TextBuffer::new(None);
                             text_buffer.set_text(&format!("{}", error));
                             _error_message.set_buffer(Some(&text_buffer));
@@ -965,7 +969,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             }
                             enable_input_widgets(_input_widgets.clone());
                             _record_button.show();
+                            _record_time_label.set_visible(false);
                             _stop_button.hide();
+                            stop_timer(_record_time_label.clone());
                             let text_buffer = TextBuffer::new(None);
                             text_buffer.set_text(&format!("{}", error));
                             _error_message.set_buffer(Some(&text_buffer));
@@ -1006,7 +1012,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             }
                             enable_input_widgets(_input_widgets.clone());
                             _record_button.show();
+                            _record_time_label.set_visible(false);
                             _stop_button.hide();
+                            stop_timer(_record_time_label.clone());
                             let text_buffer = TextBuffer::new(None);
                             text_buffer.set_text(&format!("{}", error));
                             _error_message.set_buffer(Some(&text_buffer));
@@ -1037,8 +1045,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     stop_button.connect_clicked(move |_| {
         _spinner_window.show();
         let mut show_play = true;
-        _record_time_label.set_visible(false);
-        stop_timer(_record_time_label.clone());
+        record_time_label.set_visible(false);
+        stop_timer(record_time_label.clone());
         if _audio_input_switch.is_active() && !_video_switch.is_active() {
             match _ffmpeg_record_interface.borrow_mut().stop_input_audio() {
                 Ok(_) => {
