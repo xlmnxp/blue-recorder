@@ -214,9 +214,21 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     };
 
     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
-    let sources_descriptions: Vec<String> = sources_descriptions_list().unwrap_or_else(|_| Vec::new());
+    let sources_descriptions: Vec<String> = match sources_descriptions_list() {
+        Ok(descriptions) => descriptions,
+        Err(_) => {
+            Vec::new()
+        }
+    };
     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
-    let audio_output_source: String = audio_output_source().unwrap_or_else(|_| String::new());
+    let audio_output_source = match audio_output_source() {
+        Ok(audio_output_source) => {
+            audio_output_source
+        }
+        Err(_) => {
+            String::new()
+        }
+    };
 
     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
     audio_source_combobox.append(Some("default"), &get_bundle("audio-input", None));
@@ -242,7 +254,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     tray_switch.set_label(Some(&get_bundle("tray-minimize", None)));
     video_switch.set_label(Some(&get_bundle("record-video", None)));
     area_switch.set_tooltip_text(Some(&get_bundle("show-area-tooltip", None)));
-    audio_input_switch.set_tooltip_text(Some(&get_bundle("audio-input-tooltip", None)));
+    audio_input_switch.set_tooltip_text(Some(&get_bundle("mic-tooltip", None)));
     #[cfg(target_os = "windows")]
     follow_mouse_switch.set_tooltip_text(Some(&get_bundle("windows-unsupported-tooltip", None)));
     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
@@ -721,13 +733,11 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         screen_grab_button.clone().into(),
         window_grab_button.clone().into(),
         video_switch.clone().into(),
-        audio_input_switch.clone().into(),
         frames_label.clone().into(),
         frames_spin.clone().into(),
         delay_label.clone().into(),
         delay_spin.clone().into(),
         hide_switch.clone().into(),
-        audio_output_switch.clone().into(),
         video_bitrate_label.clone().into(),
         video_bitrate_spin.clone().into(),
         audio_bitrate_label.clone().into(),
@@ -737,6 +747,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         command_label.clone().into(),
         command_entry.clone().into()
     ];
+
     // Temporary solution
     if !is_wayland() {
         // Keep area_selection disaled in wayland
@@ -749,18 +760,29 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         area_switch.set_sensitive(false);
     }
 
-    // Record struct values
-    let audio_output_id = if audio_output_switch.is_active() {
-        audio_output_source
+    // Disable audio input record
+    if sources_descriptions.is_empty() {
+        audio_input_switch.set_active(false);
+        audio_input_switch.set_sensitive(false);
+        audio_input_switch.set_tooltip_text(Some(&get_bundle("no-audio-input-tooltip", None)));
     } else {
-        String::new()
-    };
+        input_widgets.push(audio_input_switch.clone().into());
+    }
+
+    // Disable audio output record
+    if audio_output_source.is_empty() {
+        audio_output_switch.set_active(false);
+        audio_output_switch.set_sensitive(false);
+        audio_output_switch.set_tooltip_text(Some(&get_bundle("no-audio-output-tooltip", None)));
+    } else {
+        input_widgets.push(audio_output_switch.clone().into());
+    }
 
     // Init record struct
     #[cfg(target_os = "windows")]
     let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
         audio_input_id: audio_source_combobox.clone(),
-        audio_output_id,
+        audio_output_id: audio_output_source,
         filename: (
             folder_chooser_native,
             filename_entry,
@@ -788,7 +810,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
     let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
         audio_input_id: audio_source_combobox.clone(),
-        audio_output_id,
+        audio_output_id: audio_output_source,
         filename: (
             folder_chooser_native,
             filename_entry,
