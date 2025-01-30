@@ -34,7 +34,7 @@ sudo apt install build-essential clang cargo x11-utils ffmpeg libadwaita-1-dev l
 Then use `Cargo` to build it:
 ```
 git clone https://github.com/xlmnxp/blue-recorder
-cd <Project Directory>
+cd blue-recorder/
 cargo build --release
 cp -a data gui/interfaces locales target/release
 ```
