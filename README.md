@@ -39,7 +39,7 @@ cargo build --release
 cp -a data gui/interfaces locales target/release
 ```
 Then you will find the executable file at: 
-`<Project Directory>/target/release/blue-recorder`
+`blue-recorder/target/release/blue-recorder`
 
 ## License
 ```
