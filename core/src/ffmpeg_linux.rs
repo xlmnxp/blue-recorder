@@ -939,10 +939,12 @@ impl Ffmpeg {
 
         let audio_args: Vec<String> = if has_input_audio || has_output_audio {
             let br = self.audio_record_bitrate.value() as u16;
+            // WebM only allows Vorbis/Opus; AAC is invalid and causes the mux to fail.
+            let codec = if self.output == "webm" { "libopus" } else { "aac" };
             if br > 0 {
-                vec!["-c:a".into(), "aac".into(), "-b:a".into(), format!("{}K", br)]
+                vec!["-c:a".into(), codec.into(), "-b:a".into(), format!("{}K", br)]
             } else {
-                vec!["-c:a".into(), "aac".into()]
+                vec!["-c:a".into(), codec.into()]
             }
         } else {
             vec![]
