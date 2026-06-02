@@ -130,6 +130,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let app_title: Label = builder.object("app_title").unwrap();
     let processing_box: GtkBox = builder.object("processing_box").unwrap();
     let processing_label: Label = builder.object("processing_label").unwrap();
+    let processing_spinner: adw::gtk::Spinner = builder.object("processing_spinner").unwrap();
     let stop_button: Button = builder.object("stopbutton").unwrap();
     let stop_label: Label = builder.object("stop_label").unwrap();
     let video_bitrate_label: Label = builder.object("video_bitrate_label").unwrap();
@@ -924,6 +925,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 }
                 _play_button.hide();
                 _record_button.hide();
+                _stop_button.set_sensitive(true);
                 _stop_button.show();
                 _main_window.set_deletable(false);
                 if _audio_input_switch.is_active() && !_video_switch.is_active() {
@@ -1046,6 +1048,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _record_button = record_button.clone();
     let _app_title = app_title.clone();
     let _processing_box = processing_box.clone();
+    let _processing_spinner = processing_spinner.clone();
     let _stop_button = stop_button.clone();
     let _video_switch = video_switch.clone();
     let _main_window_stop = main_window.clone();
@@ -1053,10 +1056,16 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     stop_button.connect_clicked(move |button| {
         button.set_sensitive(false);
         _app_title.hide();
+        _processing_spinner.start(); // ensure animation runs even after widget was hidden
         _processing_box.show();
-        let mut show_play = true;
         record_time_label.set_visible(false);
         stop_timer(record_time_label.clone());
+
+        // Flush all pending GTK redraws so the spinner is actually visible on
+        // screen before we enter the blocking stop/merge work below.
+        while glib::MainContext::default().iteration(false) {}
+
+        let mut show_play = true;
         if _audio_input_switch.is_active() && !_video_switch.is_active() {
             match _ffmpeg_record_interface.borrow_mut().stop_input_audio() {
                 Ok(_) => {},
@@ -1137,9 +1146,11 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         let stop_button = _stop_button.clone();
         let record_button = _record_button.clone();
         let processing_box = _processing_box.clone();
+        let processing_spinner = _processing_spinner.clone();
         let app_title = _app_title.clone();
         let main_window = _main_window_stop.clone();
         glib::idle_add_local_once(move || {
+            processing_spinner.stop();
             processing_box.hide();
             app_title.show();
             stop_button.hide();

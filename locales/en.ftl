@@ -145,7 +145,7 @@ show-mouse = Show Mouse
 some-error = Something went wrong
 
 # Spinner label
-spinner-label = Please wait while saving the file...
+spinner-label = Processing...
 
 # Stop recording button
 stop-recording = Stop recording

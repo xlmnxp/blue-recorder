@@ -145,7 +145,7 @@ show-mouse = أظهِر المؤشر
 some-error = حدث ما يُعيقني
 
 # Spinner label
-spinner-label = ...ترقَّب ريثما يُحفَظ الملف
+spinner-label = جارٍ المعالجة...
 
 # Stop recording button
 stop-recording = أوقِف التسجيل

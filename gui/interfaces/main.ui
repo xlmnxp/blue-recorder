@@ -148,23 +148,22 @@
 										<child>
 											<object class="GtkBox" id="processing_box">
 												<property name="visible">False</property>
-												<property name="orientation">vertical</property>
+												<property name="orientation">horizontal</property>
 												<property name="valign">center</property>
-												<property name="spacing">2</property>
+												<property name="spacing">6</property>
 												<child>
 													<object class="GtkSpinner" id="processing_spinner">
 														<property name="visible">True</property>
 														<property name="spinning">True</property>
-														<property name="halign">center</property>
-														<property name="width-request">18</property>
-														<property name="height-request">18</property>
+														<property name="valign">center</property>
+														<property name="width-request">16</property>
+														<property name="height-request">16</property>
 													</object>
 												</child>
 												<child>
 													<object class="GtkLabel" id="processing_label">
 														<property name="visible">True</property>
-														<property name="label">Saving...</property>
-														<property name="halign">center</property>
+														<property name="valign">center</property>
 													</object>
 												</child>
 											</object>
