@@ -130,6 +130,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let app_title: Label = builder.object("app_title").unwrap();
     let processing_box: GtkBox = builder.object("processing_box").unwrap();
     let processing_label: Label = builder.object("processing_label").unwrap();
+    let processing_spinner: adw::gtk::Spinner = builder.object("processing_spinner").unwrap();
     let stop_button: Button = builder.object("stopbutton").unwrap();
     let stop_label: Label = builder.object("stop_label").unwrap();
     let video_bitrate_label: Label = builder.object("video_bitrate_label").unwrap();
@@ -149,7 +150,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     main_window.set_title(Some(&get_bundle("blue-recorder", None))); // used by taskbar
     app_title.set_label(&get_bundle("blue-recorder", None));
 
-    // Hide stop & play buttons
+    // Play button hidden until a recording exists; stop button always visible.
     play_button.hide();
     stop_button.hide();
 
@@ -926,6 +927,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 _record_button.hide();
                 _stop_button.set_sensitive(true);
                 _stop_button.show();
+                _main_window.set_deletable(false);
                 if _audio_input_switch.is_active() && !_video_switch.is_active() {
                     match _ffmpeg_record_interface.borrow_mut().start_input_audio() {
                         Ok(_) => {
@@ -1046,18 +1048,24 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _record_button = record_button.clone();
     let _app_title = app_title.clone();
     let _processing_box = processing_box.clone();
+    let _processing_spinner = processing_spinner.clone();
     let _stop_button = stop_button.clone();
     let _video_switch = video_switch.clone();
     let _main_window_stop = main_window.clone();
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     stop_button.connect_clicked(move |button| {
         button.set_sensitive(false);
-        _main_window_stop.set_deletable(false);
         _app_title.hide();
+        _processing_spinner.start(); // ensure animation runs even after widget was hidden
         _processing_box.show();
-        let mut show_play = true;
         record_time_label.set_visible(false);
         stop_timer(record_time_label.clone());
+
+        // Flush all pending GTK redraws so the spinner is actually visible on
+        // screen before we enter the blocking stop/merge work below.
+        while glib::MainContext::default().iteration(false) {}
+
+        let mut show_play = true;
         if _audio_input_switch.is_active() && !_video_switch.is_active() {
             match _ffmpeg_record_interface.borrow_mut().stop_input_audio() {
                 Ok(_) => {},
@@ -1101,6 +1109,94 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
             }
         }
         if _video_switch.is_active() {
+            // On Wayland, try the non-blocking async path first so the spinner
+            // keeps animating during GStreamer flush and ffmpeg encode.
+            #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+            let async_rx = _ffmpeg_record_interface.borrow_mut().stop_video_async();
+            #[cfg(not(any(target_os = "freebsd", target_os = "linux")))]
+            let async_rx: Option<std::sync::mpsc::Receiver<anyhow::Result<String>>> = None;
+
+            if let Some(rx) = async_rx {
+                // Background thread is running — poll the receiver via a glib
+                // timeout so the main loop stays alive and the spinner animates.
+                let ffmpeg_ref    = _ffmpeg_record_interface.clone();
+                let play_btn      = _play_button.clone();
+                let stop_btn      = _stop_button.clone();
+                let rec_btn       = _record_button.clone();
+                let proc_box      = _processing_box.clone();
+                let proc_spinner  = _processing_spinner.clone();
+                let title         = _app_title.clone();
+                let win           = _main_window_stop.clone();
+                let err_dialog    = _error_dialog.clone();
+                let err_msg       = _error_message.clone();
+                let iw            = input_widgets.clone();
+                let ag_btn        = area_grab_button.clone();
+                let as_sw         = area_switch.clone();
+                let ms_sw         = _mouse_switch.clone();
+                #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+                let fm_sw         = _follow_mouse_switch.clone();
+                let vs_sw         = _video_switch.clone();
+                let bundle_play   = get_bundle("play-tooltip", None);
+                glib::timeout_add_local(std::time::Duration::from_millis(16), move || {
+                    match rx.try_recv() {
+                        Err(std::sync::mpsc::TryRecvError::Empty) => {
+                            // Still running — keep polling.
+                            return glib::ControlFlow::Continue;
+                        }
+                        Ok(result) => {
+                            // Thread finished. Update saved_filename from result.
+                            match result {
+                                Ok(saved) => {
+                                    ffmpeg_ref.borrow_mut().saved_filename = saved.clone();
+                                    if !saved.is_empty() && std::path::Path::new(&saved).exists() {
+                                        play_btn.set_tooltip_text(Some(&bundle_play));
+                                        play_btn.show();
+                                    }
+                                }
+                                Err(e) => {
+                                    if ag_btn.is_active() { as_sw.set_sensitive(true); }
+                                    if vs_sw.is_active() {
+                                        ms_sw.set_sensitive(true);
+                                        #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+                                        fm_sw.set_sensitive(true);
+                                    }
+                                    enable_input_widgets(iw.clone());
+                                    rec_btn.show();
+                                    stop_btn.hide();
+                                    let tb = adw::gtk::TextBuffer::new(None);
+                                    tb.set_text(&format!("{}", e));
+                                    err_msg.set_buffer(Some(&tb));
+                                    err_dialog.show();
+                                    proc_spinner.stop();
+                                    proc_box.hide();
+                                    title.show();
+                                    win.set_deletable(true);
+                                    return glib::ControlFlow::Break;
+                                }
+                            }
+                        }
+                        Err(std::sync::mpsc::TryRecvError::Disconnected) => {}
+                    }
+                    // Success path: restore UI.
+                    if ag_btn.is_active() { as_sw.set_sensitive(true); }
+                    if vs_sw.is_active() {
+                        ms_sw.set_sensitive(true);
+                        #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+                        fm_sw.set_sensitive(true);
+                    }
+                    enable_input_widgets(iw.clone());
+                    proc_spinner.stop();
+                    proc_box.hide();
+                    title.show();
+                    stop_btn.hide();
+                    rec_btn.show();
+                    win.set_deletable(true);
+                    glib::ControlFlow::Break
+                });
+                return; // UI will be restored by the timeout callback above.
+            }
+
+            // Fallback: synchronous path (X11 or no video).
             match _ffmpeg_record_interface.borrow_mut().stop_video() {
                 Ok(_) => {},
                 Err(error) => {
@@ -1114,7 +1210,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     _record_button.show();
                     show_play = false;
                     _stop_button.hide();
-                    let text_buffer = TextBuffer::new(None);
+                    let text_buffer = adw::gtk::TextBuffer::new(None);
                     text_buffer.set_text(&format!("{}", error));
                     _error_message.set_buffer(Some(&text_buffer));
                     _error_dialog.show();
@@ -1138,9 +1234,11 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         let stop_button = _stop_button.clone();
         let record_button = _record_button.clone();
         let processing_box = _processing_box.clone();
+        let processing_spinner = _processing_spinner.clone();
         let app_title = _app_title.clone();
         let main_window = _main_window_stop.clone();
         glib::idle_add_local_once(move || {
+            processing_spinner.stop();
             processing_box.hide();
             app_title.show();
             stop_button.hide();
@@ -1250,10 +1348,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         adw::gtk::Inhibit(true)
     });
 
-    // Stop recording before close the application
-    main_window.connect_close_request(move |main_window| {
+    main_window.connect_close_request(move |win| {
         ffmpeg_record_interface.borrow_mut().kill().unwrap();
-        main_window.destroy();
+        win.destroy();
         adw::gtk::Inhibit(true)
     });
 
