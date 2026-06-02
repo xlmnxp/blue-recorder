@@ -149,7 +149,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     main_window.set_title(Some(&get_bundle("blue-recorder", None))); // used by taskbar
     app_title.set_label(&get_bundle("blue-recorder", None));
 
-    // Hide stop & play buttons
+    // Play button hidden until a recording exists; stop button always visible.
     play_button.hide();
     stop_button.hide();
 
@@ -924,8 +924,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 }
                 _play_button.hide();
                 _record_button.hide();
-                _stop_button.set_sensitive(true);
                 _stop_button.show();
+                _main_window.set_deletable(false);
                 if _audio_input_switch.is_active() && !_video_switch.is_active() {
                     match _ffmpeg_record_interface.borrow_mut().start_input_audio() {
                         Ok(_) => {
@@ -1052,7 +1052,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     stop_button.connect_clicked(move |button| {
         button.set_sensitive(false);
-        _main_window_stop.set_deletable(false);
         _app_title.hide();
         _processing_box.show();
         let mut show_play = true;
@@ -1250,10 +1249,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         adw::gtk::Inhibit(true)
     });
 
-    // Stop recording before close the application
-    main_window.connect_close_request(move |main_window| {
+    main_window.connect_close_request(move |win| {
         ffmpeg_record_interface.borrow_mut().kill().unwrap();
-        main_window.destroy();
+        win.destroy();
         adw::gtk::Inhibit(true)
     });
 
