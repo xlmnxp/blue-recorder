@@ -299,118 +299,67 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         }
     });
 
-    match dark_light::detect().unwrap_or(dark_light::Mode::Unspecified) {
-        // Dark mode
-        dark_light::Mode::Dark => {
-            // Buttons
-            let mut area_icon_path = {
-                let mut current_exec_dir = std::env::current_exe().unwrap();
-                current_exec_dir.pop();
-                current_exec_dir
-            }
-            .join(Path::new("data/screenshot-ui-area-symbolic-white.svg"));
-
-            if !area_icon_path.exists() {
-                area_icon_path = std::fs::canonicalize(Path::new(
-                    &std::env::var("DATA_DIR")
-                        .unwrap_or_else(|_| String::from("data/"))
-                        .add("screenshot-ui-area-symbolic-white.svg"),
-                ))
-                .unwrap();
-            }
-
-            let mut screen_icon_path = {
-                let mut current_exec_dir = std::env::current_exe().unwrap();
-                current_exec_dir.pop();
-                current_exec_dir
-            }
-            .join(Path::new("data/screenshot-ui-display-symbolic-white.svg"));
-
-            if !screen_icon_path.exists() {
-                screen_icon_path = std::fs::canonicalize(Path::new(
-                    &std::env::var("DATA_DIR")
-                        .unwrap_or_else(|_| String::from("data/"))
-                        .add("screenshot-ui-display-symbolic-white.svg"),
-                ))
-                .unwrap();
-            }
-
-            let mut window_icon_path = {
-                let mut current_exec_dir = std::env::current_exe().unwrap();
-                current_exec_dir.pop();
-                current_exec_dir
-            }
-            .join(Path::new("data/screenshot-ui-window-symbolic-white.svg"));
-
-            if !window_icon_path.exists() {
-                window_icon_path = std::fs::canonicalize(Path::new(
-                    &std::env::var("DATA_DIR")
-                        .unwrap_or_else(|_| String::from("data/"))
-                        .add("screenshot-ui-window-symbolic-white.svg"),
-                ))
-                .unwrap();
-            }
-
-            area_grab_icon.set_from_file(Some(area_icon_path));
-            screen_grab_icon.set_from_file(Some(screen_icon_path));
-            window_grab_icon.set_from_file(Some(&window_icon_path));
+    // Resolve an icon file from the data directory, falling back to DATA_DIR env.
+    let resolve_icon = |name: &str| -> std::path::PathBuf {
+        let mut path = {
+            let mut dir = std::env::current_exe().unwrap();
+            dir.pop();
+            dir
         }
-        // any theme
-        _ => {
-            // Buttons
-            let mut area_icon_path = {
-                let mut current_exec_dir = std::env::current_exe().unwrap();
-                current_exec_dir.pop();
-                current_exec_dir
-            }
-            .join(Path::new("data/screenshot-ui-area-symbolic.svg"));
-
-            if !area_icon_path.exists() {
-                area_icon_path = std::fs::canonicalize(Path::new(
-                    &std::env::var("DATA_DIR")
-                        .unwrap_or_else(|_| String::from("data/"))
-                        .add("screenshot-ui-area-symbolic.svg"),
-                ))
-                .unwrap();
-            }
-
-            let mut screen_icon_path = {
-                let mut current_exec_dir = std::env::current_exe().unwrap();
-                current_exec_dir.pop();
-                current_exec_dir
-            }
-            .join(Path::new("data/screenshot-ui-display-symbolic.svg"));
-
-            if !screen_icon_path.exists() {
-                screen_icon_path = std::fs::canonicalize(Path::new(
-                    &std::env::var("DATA_DIR")
-                        .unwrap_or_else(|_| String::from("data/"))
-                        .add("screenshot-ui-display-symbolic.svg"),
-                ))
-                .unwrap();
-            }
-
-            let mut window_icon_path = {
-                let mut current_exec_dir = std::env::current_exe().unwrap();
-                current_exec_dir.pop();
-                current_exec_dir
-            }
-            .join(Path::new("data/screenshot-ui-window-symbolic.svg"));
-
-            if !window_icon_path.exists() {
-                window_icon_path = std::fs::canonicalize(Path::new(
-                    &std::env::var("DATA_DIR")
-                        .unwrap_or_else(|_| String::from("data/"))
-                        .add("screenshot-ui-window-symbolic.svg"),
-                ))
-                .unwrap();
-            }
-
-            area_grab_icon.set_from_file(Some(area_icon_path));
-            screen_grab_icon.set_from_file(Some(screen_icon_path));
-            window_grab_icon.set_from_file(Some(&window_icon_path));
+        .join(Path::new("data").join(name));
+        if !path.exists() {
+            path = std::fs::canonicalize(Path::new(
+                &std::env::var("DATA_DIR")
+                    .unwrap_or_else(|_| String::from("data/"))
+                    .add(name),
+            ))
+            .unwrap_or_else(|_| path);
         }
-    }
+        path
+    };
+
+    // Apply the correct icon set for the current dark/light state and
+    // re-run automatically whenever the user switches colour scheme.
+    let apply_icons = {
+        let area_icon   = area_grab_icon.clone();
+        let screen_icon = screen_grab_icon.clone();
+        let window_icon = window_grab_icon.clone();
+        let resolve     = resolve_icon.clone();
+        move |dark: bool| {
+            let suffix = if dark { "-white" } else { "" };
+            area_icon.set_from_file(Some(resolve(&format!("screenshot-ui-area-symbolic{}.svg",    suffix))));
+            screen_icon.set_from_file(Some(resolve(&format!("screenshot-ui-display-symbolic{}.svg", suffix))));
+            window_icon.set_from_file(Some(resolve(&format!("screenshot-ui-window-symbolic{}.svg",  suffix))));
+        }
+    };
+
+    // A small dynamic provider that sets grab-button label colour based on
+    // the current colour scheme. Loaded once here and reloaded on each change.
+    let grab_color_provider = CssProvider::new();
+    let update_grab_colors = {
+        let p = grab_color_provider.clone();
+        move |dark: bool| {
+            let color = if dark { "#ffffff" } else { "#1a1a1a" };
+            p.load_from_data(
+                format!(
+                    "#area_grab_button:checked label, \
+                     #screen_grab_button:checked label, \
+                     #window_grab_button:checked label {{ color: {}; }}",
+                    color
+                )
+                .as_bytes(),
+            );
+        }
+    };
+
+    let style_manager = adw::StyleManager::default();
+    update_grab_colors(style_manager.is_dark());
+    apply_icons(style_manager.is_dark());
+    style_manager.connect_dark_notify(move |m| {
+        let dark = m.is_dark();
+        update_grab_colors(dark);
+        apply_icons(dark);
+    });
 
     // Spin
     audio_bitrate_spin.set_tooltip_text(Some(&get_bundle("audio-bitrate-tooltip", None)));
@@ -1293,6 +1242,11 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     adw::gtk::StyleContext::add_provider_for_display(
         &display,
         &provider,
+        adw::gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+    );
+    adw::gtk::StyleContext::add_provider_for_display(
+        &display,
+        &grab_color_provider,
         adw::gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
     );
 

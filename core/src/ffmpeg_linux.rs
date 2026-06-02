@@ -752,14 +752,9 @@ impl Ffmpeg {
             if let Some(proc) = self.output_audio_process.clone() {
                 let _ = proc.borrow_mut().quit();
             }
-            // Stop GStreamer pipeline (runs the GLib main loop while waiting).
             glib::MainContext::default().block_on(self.wayland_recorder.stop());
 
-            // Wait for audio processes to fully exit before merging.
-            // We sent SIGTERM above; GStreamer stop takes 1-2 s which is usually
-            // enough, but on slower systems ffmpeg may still be flushing the OGG
-            // container. poll with try_wait() (non-blocking, no pipe-deadlock)
-            // for up to 5 s to ensure the audio files are completely written.
+            // Poll until audio processes exit so their files are fully flushed.
             let audio_deadline = std::time::Instant::now() + Duration::from_secs(5);
             loop {
                 let in_done = self.input_audio_process.as_ref()

@@ -8,7 +8,6 @@ adw = { version = "0.2.1", package = "libadwaita", features = ["gtk_v4_6"] }
 anyhow = "1.0.102"
 async-std = {version = "1.13.2", features = ["attributes"]}
 blue-recorder-core = { path = "../core", features = ["gtk"] }
-dark-light = "2.0.0"
 dirs = "6.0.0"
 fluent-bundle = "0.16.0"
 glib = "0.22.7"
