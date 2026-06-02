@@ -112,19 +112,13 @@
     color: @theme_selected_bg_color;
 }
 
-#spinner {
+#processing_spinner {
     color: @theme_selected_bg_color;
 }
 
-#spinner_window {
-    background: none;
-    border: none;
-    border-radius: 0px;
-    font-weight: bold;
-}
-
-#spinner_label {
+#processing_label {
     color: @theme_selected_bg_color;
+    font-size: 0.72em;
 }
 
 #stop_button {

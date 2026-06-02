@@ -23,8 +23,6 @@ use crate::utils::{is_video_record, is_wayland, RecordMode};
 #[cfg(feature = "cmd")]
 use crate::utils::{is_input_audio_record, is_output_audio_record, is_valid};
 #[cfg(feature = "gtk")]
-use crate::utils::validate_video_file;
-#[cfg(feature = "gtk")]
 use crate::wayland_linux::{CursorModeTypes, RecordTypes, WaylandRecorder};
 
 #[cfg(feature = "cmd")]
@@ -58,6 +56,8 @@ pub struct Ffmpeg {
     pub filename: (FileChooserNative, Entry, ComboBoxText),
     pub output: String,
     pub temp_video_filename: String,
+    pub temp_input_audio_filename: String,
+    pub temp_output_audio_filename: String,
     pub saved_filename: String,
     pub width: Option<u16>,
     pub height: Option<u16>,
@@ -458,6 +458,7 @@ impl Ffmpeg {
     }
 }
 
+
 #[cfg(feature = "gtk")]
 impl Ffmpeg {
     // Get file name
@@ -490,16 +491,26 @@ impl Ffmpeg {
             // TODO pulse = gstreamer for video  && add to cmd linux + add convert function to gstreamer ouput
         //} else {
         if is_wayland() {
+            let filename = self.saved_filename.clone();
+            self.output = Path::new(&filename)
+                .extension()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .to_string();
+
+            // All GStreamer pipelines (VAAPI, NVENC, VP8) use matroskamux → .mkv.
+            // MKV is a universal container; ffmpeg can copy or transcode from it
+            // regardless of which video codec the pipeline chose.
             let folder_path = Path::new(&self.saved_filename)
                 .parent()
                 .ok_or_else(|| anyhow!("Failed to get parent path."))?;
             self.temp_video_filename = folder_path
-                .join(format!(".blue-recorder-{}.webm", Utc::now().nanosecond()))
+                .join(format!(".blue-recorder-{}.mkv", Utc::now().nanosecond()))
                 .to_string_lossy()
                 .to_string();
 
-            // Start recording
-            let stream = glib::MainContext::default().block_on(self.wayland_recorder.start(
+            // Start Wayland screen-cast via the XDG portal
+            glib::MainContext::default().block_on(self.wayland_recorder.start(
                 self.temp_video_filename.clone(),
                 match mode {
                     RecordMode::Screen => RecordTypes::Monitor,
@@ -511,7 +522,65 @@ impl Ffmpeg {
                 } else {
                     CursorModeTypes::Hidden
                 },
+                self.record_frames.value() as u16,
             ));
+
+            // If the user closed/cancelled the portal picker, the pipeline was
+            // never started — clean up and signal cancellation to the UI.
+            if !self.wayland_recorder.is_active() {
+                self.temp_video_filename.clear();
+                return Err(Error::msg("__cancelled__"));
+            }
+
+            // Record audio input to a temp file alongside the Wayland video
+            if self.audio_input_switch.is_active() {
+                let audio_tempfile = tempfile::Builder::new()
+                    .prefix(".blue-recorder-audio-in-")
+                    .suffix(".ogg")
+                    .tempfile()?
+                    .keep()?;
+                self.temp_input_audio_filename = Path::new(&audio_tempfile.1)
+                    .to_string_lossy()
+                    .to_string();
+                let mut cmd = FfmpegCommand::new();
+                cmd.format("pulse")
+                   .input(
+                       &self.audio_input_id
+                           .active_id()
+                           .ok_or_else(|| anyhow!("Failed to get audio input ID."))?,
+                   )
+                   .format("ogg")
+                   .args(["-map_metadata", "-1"])
+                   .arg(&self.temp_input_audio_filename)
+                   .overwrite();
+                if self.audio_record_bitrate.value() as u16 > 0 {
+                    cmd.args(["-b:a", &format!("{}K", self.audio_record_bitrate.value() as u16)]);
+                }
+                self.input_audio_process = Some(Rc::new(RefCell::new(cmd.spawn()?)));
+            }
+
+            // Record audio output to a temp file alongside the Wayland video
+            if self.audio_output_switch.is_active() {
+                let audio_tempfile = tempfile::Builder::new()
+                    .prefix(".blue-recorder-audio-out-")
+                    .suffix(".ogg")
+                    .tempfile()?
+                    .keep()?;
+                self.temp_output_audio_filename = Path::new(&audio_tempfile.1)
+                    .to_string_lossy()
+                    .to_string();
+                let mut cmd = FfmpegCommand::new();
+                cmd.format("pulse")
+                   .input(&self.audio_output_id)
+                   .format("ogg")
+                   .args(["-map_metadata", "-1"])
+                   .arg(&self.temp_output_audio_filename)
+                   .overwrite();
+                if self.audio_record_bitrate.value() as u16 > 0 {
+                    cmd.args(["-b:a", &format!("{}K", self.audio_record_bitrate.value() as u16)]);
+                }
+                self.output_audio_process = Some(Rc::new(RefCell::new(cmd.spawn()?)));
+            }
 
             self.width = Some(width);
             self.height = Some(height);
@@ -677,6 +746,18 @@ impl Ffmpeg {
                           },
                       }
         } else if self.video_switch.is_active() && is_wayland() {
+            // Signal audio processes to stop (non-blocking).
+            if let Some(proc) = self.input_audio_process.clone() {
+                let _ = proc.borrow_mut().quit();
+            }
+            if let Some(proc) = self.output_audio_process.clone() {
+                let _ = proc.borrow_mut().quit();
+            }
+            // Stop GStreamer pipeline on a background thread — the block_on
+            // here runs the GLib main loop while awaiting, so the UI stays
+            // responsive. GStreamer typically takes 1-2 s to flush; by the
+            // time stop() returns, the audio ffmpeg processes have had
+            // enough time to finalise their files too.
             glib::MainContext::default().block_on(self.wayland_recorder.stop());
             match self.merge() {
                 Ok(_) => {
@@ -799,40 +880,133 @@ impl Ffmpeg {
 
     // Merge tmp to target format
     pub fn merge(&mut self) -> Result<()> {
-        if is_video_record(&self.temp_video_filename) {
-            // Validate video file integrity
-            match validate_video_file(self.temp_video_filename.clone()) {
-                Ok(_) => {
-                    // Convert MP4 to GIF
-                    let filter = format!("fps={},scale={}:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse",
-                                         self.record_frames.value() as u16,
-                                         self.height.ok_or_else
-                                         (|| anyhow!("Unable to get height value"))?);
-                    let ffmpeg_convert = format!("ffmpeg -i file:{} -filter_complex '{}' \
-                                                  -loop 0 {} -y", &self.temp_video_filename,filter,
-                                                 &self.saved_filename
-                                                 .clone());
-                    match std::process::Command::new("sh").arg("-c").arg(&ffmpeg_convert).output() {
-                        Ok(_) => {
-                            // Do nothing
-                        },
-                        Err(error) => {
-                            return Err(Error::msg(format!("{}", error)));
-                        },
-                    }
-                },
-                Err(error) => {
-                    return Err(Error::msg(format!("{}", error)));
-                },
+        if !is_video_record(&self.temp_video_filename) {
+            return Ok(());
+        }
+
+        // Do NOT call validate_video_file here — it runs a nested GLib main loop
+        // while we're inside a borrow_mut(), which risks a double-borrow panic.
+        // Let ffmpeg handle invalid input gracefully instead.
+
+        if self.output == "gif" {
+            let filter = format!(
+                "fps={fps},scale={h}:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse",
+                fps = self.record_frames.value() as u16,
+                h = self.height.ok_or_else(|| anyhow!("Unable to get height value"))?,
+            );
+            let cmd = format!(
+                "ffmpeg -i file:{src} -filter_complex '{filter}' -loop 0 {dst} -y",
+                src = self.temp_video_filename,
+                dst = self.saved_filename,
+            );
+            std::process::Command::new("sh")
+                .arg("-c")
+                .arg(&cmd)
+                .output()
+                .map_err(|e| Error::msg(format!("{}", e)))?;
+            return Ok(());
+        }
+
+        // Non-GIF: transcode/copy temp file → final container, optionally with audio.
+
+        // Abort early with a clear message if GStreamer produced nothing.
+        let source_bytes = std::fs::metadata(&self.temp_video_filename)
+            .map(|m| m.len())
+            .unwrap_or(0);
+        if source_bytes == 0 {
+            return Err(Error::msg(
+                "The captured video file is empty — the GStreamer recording pipeline \
+                 did not produce any data. Check that PipeWire and the screen-cast \
+                 portal are working correctly."
+            ));
+        }
+
+        let has_input_audio = !self.temp_input_audio_filename.is_empty()
+            && Path::new(&self.temp_input_audio_filename).exists();
+        let has_output_audio = !self.temp_output_audio_filename.is_empty()
+            && Path::new(&self.temp_output_audio_filename).exists();
+
+        let audio_args: Vec<String> = if has_input_audio || has_output_audio {
+            let br = self.audio_record_bitrate.value() as u16;
+            if br > 0 {
+                vec!["-c:a".into(), "aac".into(), "-b:a".into(), format!("{}K", br)]
+            } else {
+                vec!["-c:a".into(), "aac".into()]
+            }
+        } else {
+            vec![]
+        };
+
+        // Try `copy` first — zero re-encode cost when the captured codec is
+        // already compatible with the target container (e.g. H.264 → mp4/mkv,
+        // VP8 → webm/mkv). If the container rejects the codec, ffmpeg exits
+        // without creating the output file and we fall back to software encode.
+        let video_codecs: Vec<&str> = match self.output.as_str() {
+            "webm" | "mkv" => vec!["copy"],
+            _ => vec!["copy", "libx264", "libx265", "mpeg4"],
+        };
+
+        for codec in &video_codecs {
+            let mut cmd = FfmpegCommand::new();
+            cmd.input(&self.temp_video_filename);
+            if has_input_audio  { cmd.input(&self.temp_input_audio_filename); }
+            if has_output_audio { cmd.input(&self.temp_output_audio_filename); }
+
+            cmd.args(["-c:v", codec]);
+            match *codec {
+                "libx264" | "libx265" => { cmd.args(["-preset", "fast", "-crf", "23"]); }
+                "mpeg4"               => { cmd.args(["-qscale:v", "3"]); }
+                _                     => {}
+            }
+
+            let audio_refs: Vec<&str> = audio_args.iter().map(|s| s.as_str()).collect();
+            cmd.args(&audio_refs)
+               .args(["-map_metadata", "-1"])
+               .arg(&self.saved_filename)
+               .overwrite();
+
+            let _ = std::fs::remove_file(&self.saved_filename);
+            let _ = cmd.spawn().and_then(|mut child| child.wait());
+
+            if Path::new(&self.saved_filename).exists() {
+                return Ok(());
             }
         }
-        Ok(())
+
+        // Absolute last resort: copy the raw capture so the recording is never lost.
+        // Prefix with '.' to keep it hidden until the user explicitly opens it.
+        let stem = Path::new(&self.saved_filename)
+            .file_stem()
+            .unwrap_or_default()
+            .to_string_lossy();
+        let webm_name = format!(".{}.webm", stem);
+        let webm_path = Path::new(&self.saved_filename)
+            .parent()
+            .unwrap_or_else(|| Path::new("."))
+            .join(&webm_name)
+            .to_string_lossy()
+            .to_string();
+        if std::fs::copy(&self.temp_video_filename, &webm_path).is_ok() {
+            self.saved_filename = webm_path;
+            return Ok(());
+        }
+
+        Err(Error::msg(
+            "Failed to encode the recording. Please install ffmpeg with libx264 \
+             or mpeg4 support (any standard ffmpeg package includes mpeg4)."
+        ))
     }
 
-    // Clean tmp
+    // Clean tmp files
     pub fn clean(&mut self) -> Result<()> {
-        if Path::new(&self.temp_video_filename).try_exists()? {
-            std::fs::remove_file(&self.temp_video_filename)?;
+        for tmp in [
+            &self.temp_video_filename,
+            &self.temp_input_audio_filename,
+            &self.temp_output_audio_filename,
+        ] {
+            if !tmp.is_empty() && Path::new(tmp).try_exists()? {
+                std::fs::remove_file(tmp)?;
+            }
         }
         Ok(())
     }

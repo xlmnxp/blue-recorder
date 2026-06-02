@@ -129,6 +129,48 @@
 										<property name="can-focus">True</property>
 									</object>
 								</child>
+								<child type="title">
+									<object class="GtkBox" id="title_area">
+										<property name="visible">True</property>
+										<property name="orientation">vertical</property>
+										<property name="valign">center</property>
+										<property name="spacing">1</property>
+										<child>
+											<object class="GtkLabel" id="app_title">
+												<property name="visible">True</property>
+												<property name="label">Blue Recorder</property>
+												<property name="halign">center</property>
+												<style>
+													<class name="title"/>
+												</style>
+											</object>
+										</child>
+										<child>
+											<object class="GtkBox" id="processing_box">
+												<property name="visible">False</property>
+												<property name="orientation">vertical</property>
+												<property name="valign">center</property>
+												<property name="spacing">2</property>
+												<child>
+													<object class="GtkSpinner" id="processing_spinner">
+														<property name="visible">True</property>
+														<property name="spinning">True</property>
+														<property name="halign">center</property>
+														<property name="width-request">18</property>
+														<property name="height-request">18</property>
+													</object>
+												</child>
+												<child>
+													<object class="GtkLabel" id="processing_label">
+														<property name="visible">True</property>
+														<property name="label">Saving...</property>
+														<property name="halign">center</property>
+													</object>
+												</child>
+											</object>
+										</child>
+									</object>
+								</child>
 								<child>
 									<object class="GtkButton" id="playbutton">
 										<property name="icon_name">media-playback-start</property>

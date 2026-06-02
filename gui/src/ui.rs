@@ -1,6 +1,6 @@
 use adw::{Application, Window};
 use adw::gio::File;
-use adw::gtk::{AboutDialog, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry, Expander, FileChooserNative,
+use adw::gtk::{AboutDialog, Box as GtkBox, Builder, Button, CheckButton, ComboBoxText, CssProvider, Entry, Expander, FileChooserNative,
                FileChooserAction, Image, Label, MessageDialog, SpinButton, TextBuffer, TextView, ToggleButton, Widget};
 use adw::prelude::*;
 use anyhow::Result;
@@ -9,7 +9,7 @@ use blue_recorder_core::ffmpeg_linux::Ffmpeg;
 #[cfg(target_os = "windows")]
 use blue_recorder_core::ffmpeg_windows::Ffmpeg;
 use blue_recorder_core::utils::{disable_input_widgets, enable_input_widgets,
-                                is_overwrite, is_wayland, play_record, RecordMode, validate_video_file};
+                                is_overwrite, is_wayland, play_record, RecordMode};
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
 use blue_recorder_core::utils::{audio_output_source, sources_descriptions_list};
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
@@ -74,14 +74,11 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let delay_ui_src = include_str!("../interfaces/delay.ui").to_string();
     let main_ui_src = include_str!("../interfaces/main.ui").to_string();
     let select_window_ui_src = include_str!("../interfaces/select_window.ui").to_string();
-    let spinner_ui_src = include_str!("../interfaces/spinner.ui").to_string();
-
     let builder: Builder = Builder::from_string(main_ui_src.as_str());
     builder.add_from_string(about_dialog_ui_src.as_str()).unwrap();
     builder.add_from_string(area_selection_ui_src.as_str()).unwrap();
     builder.add_from_string(delay_ui_src.as_str()).unwrap();
     builder.add_from_string(select_window_ui_src.as_str()).unwrap();
-    builder.add_from_string(spinner_ui_src.as_str()).unwrap();
 
     // Get Objects from UI
     let area_apply_label: Label = builder.object("area_apply").unwrap();
@@ -131,8 +128,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let select_window: Window = builder.object("select_window").unwrap();
     #[cfg(target_os = "windows")]
     let select_window_label: Label = builder.object("select_window_label").unwrap();
-    let spinner_window: Window = builder.object("spinner_window").unwrap();
-    let spinner_label: Label = builder.object("spinner_label").unwrap();
+    let app_title: Label = builder.object("app_title").unwrap();
+    let processing_box: GtkBox = builder.object("processing_box").unwrap();
+    let processing_label: Label = builder.object("processing_label").unwrap();
     let stop_button: Button = builder.object("stopbutton").unwrap();
     let stop_label: Label = builder.object("stop_label").unwrap();
     let video_bitrate_label: Label = builder.object("video_bitrate_label").unwrap();
@@ -148,9 +146,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     area_chooser_window.set_title(Some(&get_bundle("area-chooser", None))); // Title is hidden
     error_dialog.set_transient_for(Some(&main_window));
     select_window.set_transient_for(Some(&main_window));
-    spinner_window.set_transient_for(Some(&main_window));
     main_window.set_application(Some(application));
-    main_window.set_title(Some(&get_bundle("blue-recorder", None)));
+    main_window.set_title(Some(&get_bundle("blue-recorder", None))); // used by taskbar
+    app_title.set_label(&get_bundle("blue-recorder", None));
 
     // Hide stop & play buttons
     play_button.hide();
@@ -301,7 +299,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         }
     });
 
-    match dark_light::detect() {
+    match dark_light::detect().unwrap_or(dark_light::Mode::Unspecified) {
         // Dark mode
         dark_light::Mode::Dark => {
             // Buttons
@@ -542,34 +540,39 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     folder_chooser_image.set_icon_name(Some(folder_chooser_icon));
     folder_chooser_button.set_tooltip_text(Some(&get_bundle("folder-tooltip", None)));
     // Show file chooser dialog
-    folder_chooser_button.connect_clicked(glib::clone!(@strong folder_chooser_native => move |_| {
-        let error_dialog = _error_dialog.clone();
-        let error_message = _error_message.clone();
-        folder_chooser_native.connect_response
-                             (glib::clone!(@strong folder_chooser_native, @strong folder_chooser_label,
-                                           @strong folder_chooser_image => move |_, response| {
-                                               let text_buffer = TextBuffer::new(None);
-                                               if response == adw::gtk::ResponseType::Accept {
-                                                   if folder_chooser_native.file().is_none() {
-                                                       text_buffer.set_text("Failed to get save file path.");
-                                                       error_message.set_buffer(Some(&text_buffer));
-                                                       error_dialog.show();
-                                                   }
-                                                   let folder_chooser = folder_chooser_native.file().unwrap_or_else
-                                                       (||
-                                                        File::for_path(&config_management::get(
-                                                            "default", "folder",
-                                                        ))); // Default
-
-                                                   let folder_chooser_name = folder_chooser.basename().unwrap();
-                                                   folder_chooser_label.set_label(&folder_chooser_name.to_string_lossy());
-                                                   let folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
-                                                   folder_chooser_image.set_icon_name(Some(folder_chooser_icon));
-                                               };
-                                               folder_chooser_native.hide();
-                                           }));
-        folder_chooser_native.show();
-    }));
+    {
+        let fcn = folder_chooser_native.clone();
+        let fcl = folder_chooser_label.clone();
+        let fci = folder_chooser_image.clone();
+        let ed = _error_dialog.clone();
+        let em = _error_message.clone();
+        folder_chooser_button.connect_clicked(move |_| {
+            let fcn_inner = fcn.clone();
+            let fcl_inner = fcl.clone();
+            let fci_inner = fci.clone();
+            let ed_inner = ed.clone();
+            let em_inner = em.clone();
+            fcn.connect_response(move |_, response| {
+                let text_buffer = TextBuffer::new(None);
+                if response == adw::gtk::ResponseType::Accept {
+                    if fcn_inner.file().is_none() {
+                        text_buffer.set_text("Failed to get save file path.");
+                        em_inner.set_buffer(Some(&text_buffer));
+                        ed_inner.show();
+                    }
+                    let folder_chooser = fcn_inner.file().unwrap_or_else(|| {
+                        File::for_path(&config_management::get("default", "folder"))
+                    });
+                    let folder_chooser_name = folder_chooser.basename().unwrap();
+                    fcl_inner.set_label(&folder_chooser_name.to_string_lossy());
+                    let folder_chooser_icon = config_management::folder_icon(folder_chooser_name.to_str());
+                    fci_inner.set_icon_name(Some(folder_chooser_icon));
+                }
+                fcn_inner.hide();
+            });
+            fcn.show();
+        });
+    }
 
     // --- connections
     // Show dialog window when about button clicked then hide it after close
@@ -690,7 +693,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 let error_dialog = _error_dialog.clone();
                 let _select_window = select_window.clone();
                 let window_title = _window_title.clone();
-                glib::timeout_add_local(1000, move || {
+                glib::timeout_add_local(std::time::Duration::from_millis(1000), move || {
                     let clicked = area_capture::check_input();
                     if clicked {
                         _select_window.hide();
@@ -699,12 +702,12 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             error_message.set_buffer(Some(&text_buffer));
                             error_dialog.show();
                         }
-                        return glib::source::Continue(false);
+                        return glib::ControlFlow::Break;
                     } else if !clicked {
                         _select_window.hide();
-                        return glib::source::Continue(false);
+                        return glib::ControlFlow::Break;
                     }
-                    glib::source::Continue(true)
+                    glib::ControlFlow::Continue
                 });
             }
 
@@ -818,6 +821,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         ),
         output: String::new(),
         temp_video_filename: String::new(),
+        temp_input_audio_filename: String::new(),
+        temp_output_audio_filename: String::new(),
         saved_filename: String::new(),
         width: None,
         height: None,
@@ -948,6 +953,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 }
                 _play_button.hide();
                 _record_button.hide();
+                _stop_button.set_sensitive(true);
                 _stop_button.show();
                 if _audio_input_switch.is_active() && !_video_switch.is_active() {
                     match _ffmpeg_record_interface.borrow_mut().start_input_audio() {
@@ -1037,10 +1043,14 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             _record_time_label.set_visible(false);
                             _stop_button.hide();
                             stop_timer(_record_time_label.clone());
-                            let text_buffer = TextBuffer::new(None);
-                            text_buffer.set_text(&format!("{}", error));
-                            _error_message.set_buffer(Some(&text_buffer));
-                            _error_dialog.show();
+                            // "__cancelled__" means the user dismissed the portal
+                            // picker — not an error, so don't show the error dialog.
+                            if error.to_string() != "__cancelled__" {
+                                let text_buffer = TextBuffer::new(None);
+                                text_buffer.set_text(&format!("{}", error));
+                                _error_message.set_buffer(Some(&text_buffer));
+                                _error_dialog.show();
+                            }
                         },
                     }
                 }
@@ -1049,7 +1059,10 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     });
 
     // Stop record button
-    spinner_label.set_label(&get_bundle("spinner-label", None));
+    processing_label.set_label(&get_bundle("spinner-label", None));
+    processing_label.set_wrap(true);
+    processing_label.set_max_width_chars(16);
+    processing_label.set_justify(adw::gtk::Justification::Center);
     stop_button.set_tooltip_text(Some(&get_bundle("stop-tooltip", None)));
     stop_label.set_label(&get_bundle("stop-recording", None));
     let _audio_input_switch = audio_input_switch.clone();
@@ -1060,24 +1073,25 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _mouse_switch = mouse_switch.clone();
     let _play_button = play_button.clone();
     let _record_button = record_button.clone();
-    let _spinner_window = spinner_window.clone();
+    let _app_title = app_title.clone();
+    let _processing_box = processing_box.clone();
     let _stop_button = stop_button.clone();
     let _video_switch = video_switch.clone();
+    let _main_window_stop = main_window.clone();
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
-    stop_button.connect_clicked(move |_| {
-        _spinner_window.show();
+    stop_button.connect_clicked(move |button| {
+        button.set_sensitive(false);
+        _main_window_stop.set_deletable(false);
+        _app_title.hide();
+        _processing_box.show();
         let mut show_play = true;
         record_time_label.set_visible(false);
         stop_timer(record_time_label.clone());
         if _audio_input_switch.is_active() && !_video_switch.is_active() {
             match _ffmpeg_record_interface.borrow_mut().stop_input_audio() {
-                Ok(_) => {
-                    // Continue
-                },
+                Ok(_) => {},
                 Err(error) => {
-                    if area_grab_button.is_active() {
-                        area_switch.set_sensitive(true);
-                    }
+                    if area_grab_button.is_active() { area_switch.set_sensitive(true); }
                     if _video_switch.is_active() {
                         _mouse_switch.set_sensitive(true);
                         #[cfg(any(target_os = "freebsd", target_os = "linux"))]
@@ -1096,13 +1110,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         }
         if _audio_output_switch.is_active() && !_audio_input_switch.is_active() && !_video_switch.is_active() {
             match _ffmpeg_record_interface.borrow_mut().stop_output_audio() {
-                Ok(_) => {
-                    // Continue
-                },
+                Ok(_) => {},
                 Err(error) => {
-                    if area_grab_button.is_active() {
-                        area_switch.set_sensitive(true);
-                    }
+                    if area_grab_button.is_active() { area_switch.set_sensitive(true); }
                     if _video_switch.is_active() {
                         _mouse_switch.set_sensitive(true);
                         #[cfg(any(target_os = "freebsd", target_os = "linux"))]
@@ -1121,13 +1131,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         }
         if _video_switch.is_active() {
             match _ffmpeg_record_interface.borrow_mut().stop_video() {
-                Ok(_) => {
-                    // Continue
-                },
+                Ok(_) => {},
                 Err(error) => {
-                    if area_grab_button.is_active() {
-                        area_switch.set_sensitive(true);
-                    }
+                    if area_grab_button.is_active() { area_switch.set_sensitive(true); }
                     if _video_switch.is_active() {
                         _mouse_switch.set_sensitive(true);
                         #[cfg(any(target_os = "freebsd", target_os = "linux"))]
@@ -1144,9 +1150,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 },
             }
         }
-        if area_grab_button.is_active() {
-            area_switch.set_sensitive(true);
-        }
+        if area_grab_button.is_active() { area_switch.set_sensitive(true); }
         if _video_switch.is_active() {
             _mouse_switch.set_sensitive(true);
             #[cfg(any(target_os = "freebsd", target_os = "linux"))]
@@ -1154,24 +1158,24 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         }
         enable_input_widgets(input_widgets.clone());
         if show_play {
-            let file_name = &_ffmpeg_record_interface.borrow_mut().saved_filename;
-            if validate_video_file(file_name.to_string()).is_ok() {
+            let file_name = _ffmpeg_record_interface.borrow_mut().saved_filename.clone();
+            if !file_name.is_empty() && std::path::Path::new(&file_name).exists() {
                 _play_button.set_tooltip_text(Some(&get_bundle("play-tooltip", None)));
                 _play_button.show();
             }
         }
         let stop_button = _stop_button.clone();
         let record_button = _record_button.clone();
-        glib::idle_add_local(move || {
+        let processing_box = _processing_box.clone();
+        let app_title = _app_title.clone();
+        let main_window = _main_window_stop.clone();
+        glib::idle_add_local_once(move || {
+            processing_box.hide();
+            app_title.show();
             stop_button.hide();
             record_button.show();
-            glib::Continue(false)
+            main_window.set_deletable(true);
         });
-    });
-
-    // Hide spinner window
-    record_button.connect_show(move |_| {
-        spinner_window.hide();
     });
 
     // Delay window button
