@@ -337,15 +337,35 @@ impl Ffmpeg {
             _              => vec!["libx264", "libx265", "mpeg4"],
         };
 
-        let ffmpeg_bin = ffmpeg_sidecar::paths::ffmpeg_path();
+        // Use sidecar binary if it exists, otherwise fall back to system ffmpeg.
+        let ffmpeg_bin = {
+            let sidecar = ffmpeg_sidecar::paths::ffmpeg_path();
+            if sidecar.exists() { sidecar } else { std::path::PathBuf::from("ffmpeg") }
+        };
+
         for codec in &video_codecs {
             let mut args: Vec<String> = vec!["-i".into(), self.temp_video_filename.clone()];
             if has_input_audio  { args.extend(["-i".into(), self.temp_input_audio_filename.clone()]); }
             if has_output_audio { args.extend(["-i".into(), self.temp_output_audio_filename.clone()]); }
             args.extend(["-c:v".into(), (*codec).into()]);
             match *codec {
-                "libx264" | "libx265" => args.extend(["-preset".into(), "fast".into(), "-crf".into(), "23".into()]),
-                "mpeg4"               => args.extend(["-qscale:v".into(), "3".into()]),
+                "libx264" | "libx265" => {
+                    // libx264/libx265 require even dimensions. A captured window can
+                    // have odd width/height, which causes ffmpeg to exit with error
+                    // and leave a corrupted partial file. The crop filter trims one
+                    // pixel on odd dimensions to guarantee divisibility by 2.
+                    args.extend([
+                        "-vf".into(), "crop=trunc(iw/2)*2:trunc(ih/2)*2".into(),
+                        "-preset".into(), "fast".into(),
+                        "-crf".into(), "23".into(),
+                    ]);
+                }
+                "mpeg4" => {
+                    args.extend([
+                        "-vf".into(), "crop=trunc(iw/2)*2:trunc(ih/2)*2".into(),
+                        "-qscale:v".into(), "3".into(),
+                    ]);
+                }
                 _ => {}
             }
             args.extend(audio_args.clone());
@@ -354,8 +374,17 @@ impl Ffmpeg {
             args.push("-y".into());
 
             let _ = std::fs::remove_file(&self.saved_filename);
-            let _ = std::process::Command::new(&ffmpeg_bin).args(&args).output();
-            if Path::new(&self.saved_filename).exists() { return Ok(()); }
+            // Check exit status — ffmpeg can create a partial file before failing,
+            // which appears corrupted. Only accept the output if ffmpeg succeeded.
+            let succeeded = std::process::Command::new(&ffmpeg_bin)
+                .args(&args)
+                .output()
+                .map(|o| o.status.success())
+                .unwrap_or(false);
+            if succeeded && Path::new(&self.saved_filename).exists() {
+                return Ok(());
+            }
+            let _ = std::fs::remove_file(&self.saved_filename);
         }
 
         // Last resort: preserve raw capture as hidden .webm
