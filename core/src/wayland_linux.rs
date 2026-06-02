@@ -3,6 +3,7 @@ use futures_util::StreamExt;
 use gst::prelude::*;
 use gstreamer as gst;
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicU32, Ordering};
 use zbus::{
     message,
     proxy,
@@ -87,13 +88,20 @@ impl WaylandRecorder {
     ) -> (i32, i32) {
         self.filename = filename;
 
-        // create_session returns the request path — we filter the message stream
-        // to only accept signals on our own request paths, preventing stale
-        // messages from other apps' portal sessions from being processed.
+        // Use a session-unique counter so every recording session gets different
+        // request paths. Fixed tokens caused stale Response signals from the
+        // previous session (same path) to be processed immediately, making the
+        // portal picker appear to be skipped and producing bad recordings.
+        static SESSION: AtomicU32 = AtomicU32::new(0);
+        let sid = SESSION.fetch_add(1, Ordering::Relaxed);
+        let tok_session = format!("br_s{}_sess", sid);
+        let tok_select  = format!("br_s{}_sel",  sid);
+        let tok_start   = format!("br_s{}_start", sid);
+
         let create_request = self.screen_cast_proxy
             .create_session(HashMap::from([
-                ("handle_token", Value::from("blue_recorder_1")),
-                ("session_handle_token", Value::from("blue_recorder_1")),
+                ("handle_token",         Value::from(tok_session.as_str())),
+                ("session_handle_token", Value::from(tok_session.as_str())),
             ]))
             .await
             .expect("failed to create session");
@@ -156,6 +164,8 @@ impl WaylandRecorder {
                         response.clone(),
                         record_type,
                         cursor_mode_type,
+                        &tok_select,
+                        &tok_start,
                     )
                     .await
                     .expect("failed to handle session");
@@ -205,6 +215,8 @@ impl WaylandRecorder {
         response: HashMap<&str, Value<'_>>,
         record_type: RecordTypes,
         cursor_mode_type: CursorModeTypes,
+        tok_select: &str,
+        tok_start: &str,
     ) -> Result<(OwnedObjectPath, OwnedObjectPath)> {
         let session_handle = response
             .get("session_handle")
@@ -219,7 +231,7 @@ impl WaylandRecorder {
             .select_sources(
                 ObjectPath::try_from(session_handle.clone())?,
                 HashMap::from([
-                    ("handle_token", Value::from("blue_recorder_2")),
+                    ("handle_token", Value::from(tok_select)),
                     (
                         "types",
                         Value::from(match record_type {
@@ -246,7 +258,7 @@ impl WaylandRecorder {
             .start(
                 ObjectPath::try_from(session_handle)?,
                 "",
-                HashMap::from([("handle_token", Value::from("blue_recorder_3"))]),
+                HashMap::from([("handle_token", Value::from(tok_start))]),
             )
             .await?;
 

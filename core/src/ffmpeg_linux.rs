@@ -3,7 +3,6 @@ use adw::gtk::{CheckButton, ComboBoxText, Entry, FileChooserNative, SpinButton};
 #[cfg(feature = "gtk")]
 use adw::gtk::prelude::*;
 use anyhow::{anyhow, Error, Result};
-use chrono::Timelike;
 #[cfg(feature = "gtk")]
 use chrono::Utc;
 use ffmpeg_sidecar::child::FfmpegChild;
@@ -498,14 +497,14 @@ impl Ffmpeg {
                 .to_string_lossy()
                 .to_string();
 
-            // All GStreamer pipelines (VAAPI, NVENC, VP8) use matroskamux → .mkv.
-            // MKV is a universal container; ffmpeg can copy or transcode from it
-            // regardless of which video codec the pipeline chose.
-            let folder_path = Path::new(&self.saved_filename)
-                .parent()
-                .ok_or_else(|| anyhow!("Failed to get parent path."))?;
-            self.temp_video_filename = folder_path
-                .join(format!(".blue-recorder-{}.mkv", Utc::now().nanosecond()))
+            // Store the intermediate capture in the system temp dir (/tmp) so it
+            // never appears in the user's save folder during recording.
+            let video_tempfile = tempfile::Builder::new()
+                .prefix(".blue-recorder-video-")
+                .suffix(".mkv")
+                .tempfile()?
+                .keep()?;
+            self.temp_video_filename = Path::new(&video_tempfile.1)
                 .to_string_lossy()
                 .to_string();
 
@@ -937,36 +936,40 @@ impl Ffmpeg {
             vec![]
         };
 
-        // Try `copy` first — zero re-encode cost when the captured codec is
-        // already compatible with the target container (e.g. H.264 → mp4/mkv,
-        // VP8 → webm/mkv). If the container rejects the codec, ffmpeg exits
-        // without creating the output file and we fall back to software encode.
+        // For webm/mkv the captured codec (VP9 or H.264) can be copied as-is.
+        // For every other container (mp4, avi, wmv, nut …) we must transcode
+        // to a codec the container actually expects — never copy, because that
+        // would keep VP9 inside an mp4, which players report as "WebM video".
         let video_codecs: Vec<&str> = match self.output.as_str() {
             "webm" | "mkv" => vec!["copy"],
-            _ => vec!["copy", "libx264", "libx265", "mpeg4"],
+            _ => vec!["libx264", "libx265", "mpeg4"],
         };
 
-        for codec in &video_codecs {
-            let mut cmd = FfmpegCommand::new();
-            cmd.input(&self.temp_video_filename);
-            if has_input_audio  { cmd.input(&self.temp_input_audio_filename); }
-            if has_output_audio { cmd.input(&self.temp_output_audio_filename); }
+        // Use std::process::Command (not FfmpegCommand) so that .output() reads
+        // stdout+stderr to completion — FfmpegChild::wait() can deadlock when
+        // ffmpeg writes error messages faster than we drain the pipe.
+        let ffmpeg_bin = ffmpeg_sidecar::paths::ffmpeg_path();
 
-            cmd.args(["-c:v", codec]);
+        for codec in &video_codecs {
+            let mut args: Vec<String> = vec![
+                "-i".into(), self.temp_video_filename.clone(),
+            ];
+            if has_input_audio  { args.extend(["-i".into(), self.temp_input_audio_filename.clone()]); }
+            if has_output_audio { args.extend(["-i".into(), self.temp_output_audio_filename.clone()]); }
+
+            args.extend(["-c:v".into(), (*codec).into()]);
             match *codec {
-                "libx264" | "libx265" => { cmd.args(["-preset", "fast", "-crf", "23"]); }
-                "mpeg4"               => { cmd.args(["-qscale:v", "3"]); }
+                "libx264" | "libx265" => args.extend(["-preset".into(), "fast".into(), "-crf".into(), "23".into()]),
+                "mpeg4"               => args.extend(["-qscale:v".into(), "3".into()]),
                 _                     => {}
             }
-
-            let audio_refs: Vec<&str> = audio_args.iter().map(|s| s.as_str()).collect();
-            cmd.args(&audio_refs)
-               .args(["-map_metadata", "-1"])
-               .arg(&self.saved_filename)
-               .overwrite();
+            args.extend(audio_args.clone());
+            args.extend(["-map_metadata".into(), "-1".into()]);
+            args.push(self.saved_filename.clone());
+            args.push("-y".into());
 
             let _ = std::fs::remove_file(&self.saved_filename);
-            let _ = cmd.spawn().and_then(|mut child| child.wait());
+            let _ = std::process::Command::new(&ffmpeg_bin).args(&args).output();
 
             if Path::new(&self.saved_filename).exists() {
                 return Ok(());
