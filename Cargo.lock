@@ -425,6 +425,7 @@ dependencies = [
  "anyhow",
  "async-std",
  "blue-recorder-core",
+ "chrono",
  "cpal",
  "dirs",
  "display-info",
@@ -434,6 +435,7 @@ dependencies = [
  "regex",
  "rust-ini",
  "secfmt",
+ "subprocess",
  "winapi",
  "x-win",
 ]
@@ -444,14 +446,10 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-std",
- "chrono",
  "ffmpeg-sidecar",
  "futures-util",
- "glib 0.22.7",
  "gstreamer",
- "libadwaita",
  "open",
- "subprocess",
  "tempfile",
  "zbus",
 ]

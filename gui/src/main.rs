@@ -2,6 +2,7 @@ pub mod area_capture;
 pub mod config_management;
 pub mod fluent;
 pub mod timer;
+pub mod utils;
 mod ui;
 
 use adw::Application;

@@ -8,10 +8,7 @@ use anyhow::Result;
 use blue_recorder_core::ffmpeg_linux::Ffmpeg;
 #[cfg(target_os = "windows")]
 use blue_recorder_core::ffmpeg_windows::Ffmpeg;
-use blue_recorder_core::utils::{disable_input_widgets, enable_input_widgets,
-                                is_overwrite, is_wayland, play_record, RecordMode};
-#[cfg(any(target_os = "freebsd", target_os = "linux"))]
-use blue_recorder_core::utils::{audio_output_source, sources_descriptions_list};
+use blue_recorder_core::utils::{is_wayland, play_record, RecordMode};
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
 use blue_recorder_core::wayland_linux::WaylandRecorder;
 #[cfg(target_os = "windows")]
@@ -23,6 +20,8 @@ use std::rc::Rc;
 
 use crate::{area_capture, config_management, fluent::get_bundle};
 use crate::timer::{RecordClick, recording_delay, start_timer, stop_timer};
+use crate::utils::{audio_output_source, build_filename, disable_input_widgets,
+                   enable_input_widgets, is_overwrite, sources_descriptions_list};
 
 pub fn run_ui(application: &Application) {
     // Error dialog
@@ -730,65 +729,61 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         input_widgets.push(audio_output_switch.clone().into());
     }
 
-    // Init record struct
-    #[cfg(target_os = "windows")]
-    let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
-        audio_input_id: audio_source_combobox.clone(),
-        audio_output_id: audio_output_source,
-        filename: (
-            folder_chooser_native,
-            filename_entry,
-            format_chooser_combobox,
-        ),
-        output: String::new(),
-        temp_video_filename: String::new(),
-        saved_filename: String::new(),
-        height: None,
-        input_audio_process: None,
-        output_audio_process: None,
-        video_process: None,
-        audio_record_bitrate: audio_bitrate_spin,
-        record_delay: delay_spin.clone(),
-        record_frames: frames_spin,
-        video_record_bitrate: video_bitrate_spin,
-        audio_input_switch: audio_input_switch.clone(),
-        audio_output_switch: audio_output_switch.clone(),
-        follow_mouse: follow_mouse_switch.clone(),
-        record_mouse: mouse_switch.clone(),
-        show_area: area_switch.clone(),
-        video_switch: video_switch.clone()
-    }));
-
+    // Init record struct — all fields are plain data; widgets are read just
+    // before recording starts via apply_recording_config() below.
     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
     let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
-        audio_input_id: audio_source_combobox.clone(),
+        audio_input_id: String::new(),
         audio_output_id: audio_output_source,
-        filename: (
-            folder_chooser_native,
-            filename_entry,
-            format_chooser_combobox,
-        ),
+        filename: String::new(),
         output: String::new(),
+        audio_record_bitrate: 0,
+        record_delay: 0,
+        record_frames: 0,
+        video_record_bitrate: 0,
+        audio_input_enabled: false,
+        audio_output_enabled: false,
+        follow_mouse: false,
+        record_mouse: false,
+        show_area: false,
+        video_enabled: false,
+        saved_filename: String::new(),
         temp_video_filename: String::new(),
         temp_input_audio_filename: String::new(),
         temp_output_audio_filename: String::new(),
-        saved_filename: String::new(),
         width: None,
         height: None,
         input_audio_process: None,
         output_audio_process: None,
         video_process: None,
-        audio_record_bitrate: audio_bitrate_spin,
-        record_delay: delay_spin.clone(),
-        record_frames: frames_spin,
-        video_record_bitrate: video_bitrate_spin,
-        audio_input_switch: audio_input_switch.clone(),
-        audio_output_switch: audio_output_switch.clone(),
-        follow_mouse: follow_mouse_switch.clone(),
-        record_mouse: mouse_switch.clone(),
-        show_area: area_switch.clone(),
-        video_switch: video_switch.clone(),
-        wayland_recorder: glib::MainContext::default().block_on(WaylandRecorder::new())
+        wayland_recorder: async_std::task::block_on(WaylandRecorder::new()),
+    }));
+
+    #[cfg(target_os = "windows")]
+    let ffmpeg_record_interface: Rc<RefCell<Ffmpeg>> = Rc::new(RefCell::new(Ffmpeg {
+        audio_input_id: String::new(),
+        audio_output_id: audio_output_source,
+        filename: String::new(),
+        output: String::new(),
+        audio_record_bitrate: 0,
+        record_delay: 0,
+        record_frames: 0,
+        video_record_bitrate: 0,
+        audio_input_enabled: false,
+        audio_output_enabled: false,
+        follow_mouse: false,
+        record_mouse: false,
+        show_area: false,
+        video_enabled: false,
+        saved_filename: String::new(),
+        temp_video_filename: String::new(),
+        temp_input_audio_filename: String::new(),
+        temp_output_audio_filename: String::new(),
+        width: None,
+        height: None,
+        input_audio_process: None,
+        output_audio_process: None,
+        video_process: None,
     }));
 
     // Record button
@@ -815,6 +810,18 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _stop_button = stop_button.clone();
     let _video_switch = video_switch.clone();
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
+    // Widgets read at record-time to populate the plain-data Ffmpeg struct
+    let _folder_chooser_native = folder_chooser_native.clone();
+    let _filename_entry = filename_entry.clone();
+    let _format_chooser_combobox = format_chooser_combobox.clone();
+    let _audio_source_combobox = audio_source_combobox.clone();
+    let _audio_bitrate_spin = audio_bitrate_spin.clone();
+    let _delay_spin2 = delay_spin.clone();
+    let _frames_spin = frames_spin.clone();
+    let _video_bitrate_spin = video_bitrate_spin.clone();
+    let _follow_mouse_switch2 = follow_mouse_switch.clone();
+    let _mouse_switch2 = mouse_switch.clone();
+    let _area_switch2 = area_switch.clone();
     let second_click: Rc<RefCell<RecordClick>> = Rc::new(RefCell::new(RecordClick {
         is_record_button_clicked: false,
     }));
@@ -826,56 +833,71 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         } else {
             RecordMode::Screen
         };
-        // Disable show area check button
-        if _area_grab_button.is_active() {
-            _area_switch.set_sensitive(false);
-        }
-        // Disable mouse cursor capture during record
+        if _area_grab_button.is_active() { _area_switch.set_sensitive(false); }
         if _video_switch.is_active() {
             _mouse_switch.set_sensitive(false);
             #[cfg(any(target_os = "freebsd", target_os = "linux"))]
             _follow_mouse_switch.set_sensitive(false);
         }
-        match _ffmpeg_record_interface.borrow_mut().get_filename() {
-            Err(error) => {
-                if _area_grab_button.is_active() {
-                    _area_switch.set_sensitive(true);
-                }
-                if _video_switch.is_active() {
-                    _mouse_switch.set_sensitive(true);
-                    #[cfg(any(target_os = "freebsd", target_os = "linux"))]
-                    _follow_mouse_switch.set_sensitive(true);
-                }
-                enable_input_widgets(_input_widgets.clone());
-                _record_button.show();
-                _record_time_label.set_visible(false);
-                _stop_button.hide();
-                stop_timer(_record_time_label.clone());
-                let text_buffer = TextBuffer::new(None);
-                text_buffer.set_text(&format!("{}", error));
-                _error_message.set_buffer(Some(&text_buffer));
-                _error_dialog.show();
-            },
-            Ok(_) => {
-                // Continue
-            },
+
+        // Compute the output path from widgets (replaces the old get_filename()).
+        let folder = _folder_chooser_native.file()
+            .and_then(|f| f.path())
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_default();
+        let computed_filename = build_filename(
+            &folder,
+            &_filename_entry.text(),
+            &_format_chooser_combobox.active_id().map(|s| s.to_string()).unwrap_or_default(),
+        );
+        if computed_filename.is_empty() || folder.is_empty() {
+            if _area_grab_button.is_active() { _area_switch.set_sensitive(true); }
+            if _video_switch.is_active() {
+                _mouse_switch.set_sensitive(true);
+                #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+                _follow_mouse_switch.set_sensitive(true);
+            }
+            enable_input_widgets(_input_widgets.clone());
+            _record_button.show();
+            _record_time_label.set_visible(false);
+            _stop_button.hide();
+            stop_timer(_record_time_label.clone());
+            return;
         }
+
+        // Push current widget values into the plain-data struct before recording.
+        {
+            let mut rec = _ffmpeg_record_interface.borrow_mut();
+            rec.filename             = computed_filename.clone();
+            rec.audio_input_id       = _audio_source_combobox.active_id()
+                                           .map(|s| s.to_string()).unwrap_or_default();
+            rec.audio_record_bitrate = _audio_bitrate_spin.value() as u16;
+            rec.record_delay         = _delay_spin2.value() as u16;
+            rec.record_frames        = _frames_spin.value() as u16;
+            rec.video_record_bitrate = _video_bitrate_spin.value() as u16;
+            rec.audio_input_enabled  = _audio_input_switch.is_active();
+            rec.audio_output_enabled = _audio_output_switch.is_active();
+            rec.follow_mouse         = _follow_mouse_switch2.is_active();
+            rec.record_mouse         = _mouse_switch2.is_active();
+            rec.show_area            = _area_switch2.is_active();
+            rec.video_enabled        = _video_switch.is_active();
+        }
+
         if !_audio_input_switch.is_active() &&
             !_audio_output_switch.is_active() &&
             !_video_switch.is_active() ||
             !second_click.borrow_mut().is_clicked() &&
             _delay_spin.value() as u16 == 0 &&
             !is_overwrite(&get_bundle("already-exist", None),
-                          &_ffmpeg_record_interface.borrow_mut().saved_filename,
-                          _main_window.clone()
-            )
+                          &computed_filename,
+                          _main_window.clone())
         {
             // Do nothing
         } else {
             _delay_window_button.set_active(false);
             if _delay_spin.value() as u16 > 0 {
                 if !is_overwrite(&get_bundle("already-exist", None),
-                                 &_ffmpeg_record_interface.borrow_mut().saved_filename,
+                                 &computed_filename,
                                  _main_window.clone())
                 {
                     //Do nothing
