@@ -1109,6 +1109,94 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
             }
         }
         if _video_switch.is_active() {
+            // On Wayland, try the non-blocking async path first so the spinner
+            // keeps animating during GStreamer flush and ffmpeg encode.
+            #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+            let async_rx = _ffmpeg_record_interface.borrow_mut().stop_video_async();
+            #[cfg(not(any(target_os = "freebsd", target_os = "linux")))]
+            let async_rx: Option<std::sync::mpsc::Receiver<anyhow::Result<String>>> = None;
+
+            if let Some(rx) = async_rx {
+                // Background thread is running — poll the receiver via a glib
+                // timeout so the main loop stays alive and the spinner animates.
+                let ffmpeg_ref    = _ffmpeg_record_interface.clone();
+                let play_btn      = _play_button.clone();
+                let stop_btn      = _stop_button.clone();
+                let rec_btn       = _record_button.clone();
+                let proc_box      = _processing_box.clone();
+                let proc_spinner  = _processing_spinner.clone();
+                let title         = _app_title.clone();
+                let win           = _main_window_stop.clone();
+                let err_dialog    = _error_dialog.clone();
+                let err_msg       = _error_message.clone();
+                let iw            = input_widgets.clone();
+                let ag_btn        = area_grab_button.clone();
+                let as_sw         = area_switch.clone();
+                let ms_sw         = _mouse_switch.clone();
+                #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+                let fm_sw         = _follow_mouse_switch.clone();
+                let vs_sw         = _video_switch.clone();
+                let bundle_play   = get_bundle("play-tooltip", None);
+                glib::timeout_add_local(std::time::Duration::from_millis(16), move || {
+                    match rx.try_recv() {
+                        Err(std::sync::mpsc::TryRecvError::Empty) => {
+                            // Still running — keep polling.
+                            return glib::ControlFlow::Continue;
+                        }
+                        Ok(result) => {
+                            // Thread finished. Update saved_filename from result.
+                            match result {
+                                Ok(saved) => {
+                                    ffmpeg_ref.borrow_mut().saved_filename = saved.clone();
+                                    if !saved.is_empty() && std::path::Path::new(&saved).exists() {
+                                        play_btn.set_tooltip_text(Some(&bundle_play));
+                                        play_btn.show();
+                                    }
+                                }
+                                Err(e) => {
+                                    if ag_btn.is_active() { as_sw.set_sensitive(true); }
+                                    if vs_sw.is_active() {
+                                        ms_sw.set_sensitive(true);
+                                        #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+                                        fm_sw.set_sensitive(true);
+                                    }
+                                    enable_input_widgets(iw.clone());
+                                    rec_btn.show();
+                                    stop_btn.hide();
+                                    let tb = adw::gtk::TextBuffer::new(None);
+                                    tb.set_text(&format!("{}", e));
+                                    err_msg.set_buffer(Some(&tb));
+                                    err_dialog.show();
+                                    proc_spinner.stop();
+                                    proc_box.hide();
+                                    title.show();
+                                    win.set_deletable(true);
+                                    return glib::ControlFlow::Break;
+                                }
+                            }
+                        }
+                        Err(std::sync::mpsc::TryRecvError::Disconnected) => {}
+                    }
+                    // Success path: restore UI.
+                    if ag_btn.is_active() { as_sw.set_sensitive(true); }
+                    if vs_sw.is_active() {
+                        ms_sw.set_sensitive(true);
+                        #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+                        fm_sw.set_sensitive(true);
+                    }
+                    enable_input_widgets(iw.clone());
+                    proc_spinner.stop();
+                    proc_box.hide();
+                    title.show();
+                    stop_btn.hide();
+                    rec_btn.show();
+                    win.set_deletable(true);
+                    glib::ControlFlow::Break
+                });
+                return; // UI will be restored by the timeout callback above.
+            }
+
+            // Fallback: synchronous path (X11 or no video).
             match _ffmpeg_record_interface.borrow_mut().stop_video() {
                 Ok(_) => {},
                 Err(error) => {
@@ -1122,7 +1210,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     _record_button.show();
                     show_play = false;
                     _stop_button.hide();
-                    let text_buffer = TextBuffer::new(None);
+                    let text_buffer = adw::gtk::TextBuffer::new(None);
                     text_buffer.set_text(&format!("{}", error));
                     _error_message.set_buffer(Some(&text_buffer));
                     _error_dialog.show();

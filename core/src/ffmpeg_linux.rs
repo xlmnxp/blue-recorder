@@ -11,6 +11,102 @@ use crate::utils::{is_video_record, is_wayland, RecordMode};
 
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
 use crate::wayland_linux::{CursorModeTypes, RecordTypes, WaylandRecorder};
+#[cfg(any(target_os = "freebsd", target_os = "linux"))]
+use gstreamer::{self as gst, prelude::ElementExt};
+
+/// Standalone merge called from the background thread in stop_video_async().
+/// Takes only Send plain-data parameters so no Rc/RefCell crosses thread boundary.
+#[cfg(any(target_os = "freebsd", target_os = "linux"))]
+pub fn merge_standalone(
+    temp_video: &str, temp_in_audio: &str, temp_out_audio: &str,
+    saved_filename: &str, output: &str,
+    record_frames: u16, height: Option<u16>, audio_bitrate: u16,
+) -> Result<String> {
+    use anyhow::anyhow;
+
+    if !is_video_record(temp_video) { return Ok(saved_filename.to_string()); }
+
+    let source_bytes = std::fs::metadata(temp_video).map(|m| m.len()).unwrap_or(0);
+    if source_bytes == 0 {
+        return Err(Error::msg(
+            "The captured video file is empty — GStreamer did not produce any data."
+        ));
+    }
+
+    if output == "gif" {
+        let h = height.ok_or_else(|| anyhow!("Unable to get height value"))?;
+        let filter = format!(
+            "fps={fps},scale={h}:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse",
+            fps = record_frames, h = h,
+        );
+        let cmd = format!(
+            "ffmpeg -i file:{src} -filter_complex '{filter}' -loop 0 {dst} -y",
+            src = temp_video, dst = saved_filename,
+        );
+        std::process::Command::new("sh").arg("-c").arg(&cmd).output()
+            .map_err(|e| Error::msg(format!("{}", e)))?;
+        return Ok(saved_filename.to_string());
+    }
+
+    let has_in  = !temp_in_audio.is_empty()  && Path::new(temp_in_audio).exists();
+    let has_out = !temp_out_audio.is_empty() && Path::new(temp_out_audio).exists();
+    let audio_codec = if output == "webm" { "libopus" } else { "aac" };
+    let audio_args: Vec<String> = if has_in || has_out {
+        if audio_bitrate > 0 {
+            vec!["-c:a".into(), audio_codec.into(), "-b:a".into(), format!("{}K", audio_bitrate)]
+        } else {
+            vec!["-c:a".into(), audio_codec.into()]
+        }
+    } else { vec![] };
+
+    let video_codecs: Vec<&str> = match output {
+        "webm" | "mkv" => vec!["copy"],
+        _              => vec!["libx264", "libx265", "mpeg4"],
+    };
+
+    let ffmpeg_bin = {
+        let s = ffmpeg_sidecar::paths::ffmpeg_path();
+        if s.exists() { s } else { std::path::PathBuf::from("ffmpeg") }
+    };
+
+    let out = saved_filename.to_string();
+    for codec in &video_codecs {
+        let mut args: Vec<String> = vec!["-i".into(), temp_video.into()];
+        if has_in  { args.extend(["-i".into(), temp_in_audio.into()]); }
+        if has_out { args.extend(["-i".into(), temp_out_audio.into()]); }
+        args.extend(["-c:v".into(), (*codec).into()]);
+        match *codec {
+            "libx264" | "libx265" => args.extend([
+                "-vf".into(), "crop=trunc(iw/2)*2:trunc(ih/2)*2".into(),
+                "-preset".into(), "fast".into(), "-crf".into(), "23".into(),
+            ]),
+            "mpeg4" => args.extend([
+                "-vf".into(), "crop=trunc(iw/2)*2:trunc(ih/2)*2".into(),
+                "-qscale:v".into(), "3".into(),
+            ]),
+            _ => {}
+        }
+        args.extend(audio_args.clone());
+        args.extend(["-map_metadata".into(), "-1".into()]);
+        args.push(out.clone());
+        args.push("-y".into());
+
+        let _ = std::fs::remove_file(&out);
+        let ok = std::process::Command::new(&ffmpeg_bin).args(&args).output()
+            .map(|o| o.status.success()).unwrap_or(false);
+        if ok && Path::new(&out).exists() { return Ok(out); }
+        let _ = std::fs::remove_file(&out);
+    }
+
+    let stem = Path::new(saved_filename).file_stem().unwrap_or_default().to_string_lossy();
+    let webm = Path::new(saved_filename).parent().unwrap_or_else(|| Path::new("."))
+        .join(format!(".{}.webm", stem)).to_string_lossy().to_string();
+    if std::fs::copy(temp_video, &webm).is_ok() { return Ok(webm); }
+
+    Err(Error::msg(
+        "Failed to encode the recording. Please install ffmpeg with libx264 or mpeg4 support."
+    ))
+}
 
 /// All recording configuration and runtime state in one plain-data struct.
 /// GUI layers populate the configuration fields before calling start_* methods;
@@ -226,6 +322,76 @@ impl Ffmpeg {
         Ok(())
     }
 
+    /// Non-blocking Wayland stop: extracts all Send data from the struct,
+    /// spawns a background thread for GStreamer + merge, and returns a channel
+    /// receiver the GUI can poll with glib::timeout_add_local so the spinner
+    /// stays animated.  On completion the receiver yields Ok(saved_filename)
+    /// or Err.  For X11 / non-video this falls through to the synchronous path.
+    #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+    pub fn stop_video_async(
+        &mut self,
+    ) -> Option<std::sync::mpsc::Receiver<Result<String>>> {
+        if !self.video_enabled || !is_wayland() {
+            return None; // caller should use stop_video() directly
+        }
+
+        // Quit audio processes (non-blocking, happens on main thread).
+        if let Some(p) = self.input_audio_process.clone()  { let _ = p.borrow_mut().quit(); }
+        if let Some(p) = self.output_audio_process.clone() { let _ = p.borrow_mut().quit(); }
+
+        let has_audio = self.input_audio_process.is_some() || self.output_audio_process.is_some();
+
+        // Move the GStreamer pipeline and portal handle to the thread.
+        // gst::Pipeline is Send; Connection and String are Send.
+        let (pipeline, connection, session_path) = self.wayland_recorder.take_for_stop();
+
+        // Clone all merge parameters as plain Send values.
+        let temp_video    = self.temp_video_filename.clone();
+        let temp_in_audio = self.temp_input_audio_filename.clone();
+        let temp_out_audio= self.temp_output_audio_filename.clone();
+        let saved         = self.saved_filename.clone();
+        let output        = self.output.clone();
+        let frames        = self.record_frames;
+        let height        = self.height;
+        let audio_br      = self.audio_record_bitrate;
+
+        let (tx, rx) = std::sync::mpsc::channel::<Result<String>>();
+        std::thread::spawn(move || {
+            // 1. Stop GStreamer pipeline.
+            if let Some(p) = pipeline { let _ = p.set_state(gst::State::Null); }
+
+            // 2. Close the portal session.
+            if !session_path.is_empty() {
+                async_std::task::block_on(async {
+                    let _ = connection.call_method(
+                        Some("org.freedesktop.portal.Desktop"),
+                        session_path.as_str(),
+                        Some("org.freedesktop.portal.Session"),
+                        "Close",
+                        &(),
+                    ).await;
+                });
+            }
+
+            // 3. Audio processes were SIGTERM'd before this thread started.
+            // A short sleep is enough — ffmpeg exits within ~200 ms of SIGTERM.
+            if has_audio { sleep(Duration::from_millis(500)); }
+
+            // 4. Merge / encode.
+            let result = merge_standalone(
+                &temp_video, &temp_in_audio, &temp_out_audio,
+                &saved, &output, frames, height, audio_br,
+            );
+            // Clean up temp files.
+            for f in [&temp_video, &temp_in_audio, &temp_out_audio] {
+                if !f.is_empty() { let _ = std::fs::remove_file(f); }
+            }
+            let _ = tx.send(result);
+        });
+
+        Some(rx)
+    }
+
     pub fn start_input_audio(&mut self) -> Result<()> {
         let mut cmd = FfmpegCommand::new();
         cmd.format("pulse").input(&self.audio_input_id).format("ogg");
@@ -374,8 +540,6 @@ impl Ffmpeg {
             args.push("-y".into());
 
             let _ = std::fs::remove_file(&self.saved_filename);
-            // Check exit status — ffmpeg can create a partial file before failing,
-            // which appears corrupted. Only accept the output if ffmpeg succeeded.
             let succeeded = std::process::Command::new(&ffmpeg_bin)
                 .args(&args)
                 .output()

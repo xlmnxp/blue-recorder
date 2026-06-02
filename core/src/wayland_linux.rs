@@ -61,6 +61,16 @@ impl WaylandRecorder {
         self.pipeline.is_some()
     }
 
+    /// Extract the data needed to stop recording off the main thread.
+    /// Takes ownership of the pipeline and session info, leaving the recorder
+    /// in a clean idle state.
+    pub fn take_for_stop(&mut self) -> (Option<gst::Pipeline>, zbus::Connection, String) {
+        let pipeline     = self.pipeline.take();
+        let connection   = self.connection.clone();
+        let session_path = std::mem::take(&mut self.session_path);
+        (pipeline, connection, session_path)
+    }
+
     pub async fn new() -> Self {
         let connection = Connection::session()
             .await
@@ -191,7 +201,21 @@ impl WaylandRecorder {
 
     pub async fn stop(&mut self) {
         if let Some(pipeline) = self.pipeline.take() {
-            let _ = pipeline.set_state(gst::State::Null);
+            // Run blocking set_state(Null) on a background thread so the async
+            // executor stays free.  We poll a flag via the async runtime so
+            // the caller (glib::MainContext::block_on) keeps processing events.
+            use std::sync::{Arc, atomic::{AtomicBool, Ordering}};
+            let done  = Arc::new(AtomicBool::new(false));
+            let done2 = done.clone();
+            std::thread::spawn(move || {
+                let _ = pipeline.set_state(gst::State::Null);
+                done2.store(true, Ordering::Release);
+            });
+            // async_std::task::sleep yields to the executor each tick so the
+            // GLib main loop can repaint while GStreamer flushes.
+            while !done.load(Ordering::Acquire) {
+                async_std::task::sleep(std::time::Duration::from_millis(16)).await;
+            }
         }
 
         if !self.session_path.is_empty() {
