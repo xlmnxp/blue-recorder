@@ -2,7 +2,6 @@ extern crate dirs;
 extern crate glib;
 extern crate ini;
 
-use glib::get_user_data_dir;
 use ini::Ini;
 use std::path::{Path, PathBuf};
 
@@ -24,7 +23,7 @@ fn default() {
     set("default",
         "folder",
         &String::from(
-            glib::get_user_special_dir(glib::UserDirectory::Videos)
+            glib::user_special_dir(glib::UserDirectory::Videos)
                 .unwrap_or_else(|| {
                     PathBuf::from(
                         std::env::var("HOME")
@@ -67,7 +66,7 @@ pub fn folder_icon(folder_chooser_name: Option<&str>) -> &str {
 
 // Get value
 pub fn get(selection: &str, key: &str) -> String {
-    let config_path: PathBuf = Path::new(&get_user_data_dir().unwrap())
+    let config_path: PathBuf = Path::new(&glib::user_data_dir())
         .join("blue-recorder")
         .join("config.ini");
     String::from(
@@ -85,7 +84,7 @@ pub fn get_bool(selection: &str, key: &str) -> bool {
 
 // Init configs
 pub fn initialize() -> PathBuf {
-    let config_path: PathBuf = Path::new(&get_user_data_dir().unwrap())
+    let config_path: PathBuf = Path::new(&glib::user_data_dir())
         .join("blue-recorder")
         .join("config.ini");
 
@@ -105,7 +104,7 @@ pub fn initialize() -> PathBuf {
 
 // Merge previous version
 fn merge_previous_version() -> Option<PathBuf> {
-    let config_path: PathBuf = Path::new(&get_user_data_dir().unwrap())
+    let config_path: PathBuf = Path::new(&glib::user_data_dir())
         .join("blue-recorder")
         .join("config.ini");
 
@@ -126,7 +125,7 @@ fn merge_previous_version() -> Option<PathBuf> {
 
 // Set value
 pub fn set(selection: &str, key: &str, value: &str) -> bool {
-    let config_path: PathBuf = Path::new(&get_user_data_dir().unwrap())
+    let config_path: PathBuf = Path::new(&glib::user_data_dir())
         .join("blue-recorder")
         .join("config.ini");
     let mut config_init = Ini::load_from_file(&config_path).unwrap_or_default();

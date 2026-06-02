@@ -5,20 +5,19 @@ edition = "2021"
 
 [dependencies]
 adw = { version = "0.2.1", package = "libadwaita", features = ["gtk_v4_6"] }
-anyhow = "1.0.86"
-async-std = {version = "1.12.0", features = ["attributes"]}
+anyhow = "1.0.102"
+async-std = {version = "1.13.2", features = ["attributes"]}
 blue-recorder-core = { path = "../core", features = ["gtk"] }
-dark-light = "1.0.0"
-dirs = "4.0.0"
-fluent-bundle = "0.15.3"
-glib = "0.10.3"
-regex = "1.4.3"
-rust-ini = "0.16"
+dirs = "6.0.0"
+fluent-bundle = "0.16.0"
+glib = "0.22.7"
+regex = "1.12.3"
+rust-ini = "0.21"
 secfmt = "0.1.1"
 
 # Windows-only dependency
 [target.'cfg(windows)'.dependencies]
-cpal = "0.15.3"
-display-info = "0.5.1"
+cpal = "0.17.3"
+display-info = "0.5.9"
 winapi = { version = "0.3", features = ["winuser"] }
-x-win = "2.0.2"
+x-win = "5.7.0"

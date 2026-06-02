@@ -63,7 +63,7 @@ pub fn enable_input_widgets(input_widgets: Vec<adw::gtk::Widget>) {
 // Execute command after finish recording
 pub fn exec(command: &str) -> Result<()> {
     if !command.trim().is_empty() {
-        subprocess::Exec::shell(command.trim()).popen()?;
+        subprocess::Exec::shell(command.trim()).start()?;
     }
     Ok(())
 }
@@ -187,25 +187,33 @@ pub fn sources_descriptions_list() -> Result<Vec<String>> {
 // Validate video file
 pub fn validate_video_file(filename: String) -> Result<()> {
     let start_time = std::time::Instant::now();
-    let duration = std::time::Duration::from_secs(300);
+    let timeout = std::time::Duration::from_secs(60);
 
     let main_loop = glib::MainLoop::new(None, false);
     let filename_clone = filename.clone();
-
     let _main_loop = main_loop.clone();
+
+    // Track whether validation succeeded (shared between thread and caller)
+    let ok = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let ok_clone = ok.clone();
+
     async_std::task::spawn_blocking(move || {
-        while std::time::Instant::now().duration_since(start_time) < duration {
+        while std::time::Instant::now().duration_since(start_time) < timeout {
             if is_valid(&filename_clone).unwrap_or(false) {
-                _main_loop.quit();
-                return Ok(());
+                ok_clone.store(true, std::sync::atomic::Ordering::Relaxed);
+                break;
             }
-            // Sleep a bit to avoid busy waiting
             std::thread::sleep(std::time::Duration::from_millis(100));
         }
-        Err(anyhow::Error::msg("Unable to validate tmp video file."))
+        // Always quit the main loop so we never hang
+        _main_loop.quit();
     });
 
     main_loop.run();
 
-    Ok(())
+    if ok.load(std::sync::atomic::Ordering::Relaxed) {
+        Ok(())
+    } else {
+        Err(anyhow::Error::msg("Unable to validate the recorded file."))
+    }
 }

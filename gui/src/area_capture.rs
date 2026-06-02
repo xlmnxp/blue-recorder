@@ -8,7 +8,7 @@ use anyhow::anyhow;
 use anyhow::Result;
 #[cfg(target_os = "windows")]
 use display_info::DisplayInfo;
-use glib::Continue;
+use glib::ControlFlow;
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
 use regex::Regex;
 use std::cell::RefCell;
@@ -179,13 +179,13 @@ pub fn show_size(area_chooser_window: Window, area_size_bottom_label: Label, are
     let size_labels = Rc::new(RefCell::new((area_size_top_label, area_size_bottom_label)));
 
     // Use a timeout to periodically check the window size
-    glib::timeout_add_local(1000, {
+    glib::timeout_add_local(std::time::Duration::from_millis(1000), {
         let area_chooser_window = area_chooser_window.clone();
         let size_labels = size_labels.clone();
 
         move || {
             if !area_chooser_window.is_active() {
-                return Continue(false); // Stop the timeout
+                return ControlFlow::Break;
             }
 
             let mut area_capture = AreaCapture::new().unwrap();
@@ -197,12 +197,11 @@ pub fn show_size(area_chooser_window: Window, area_size_bottom_label: Label, are
             #[cfg(target_os = "windows")]
             let size = area_capture.get_active_window().unwrap();
 
-            // Update the labels
             let (top_label, bottom_label) = size_labels.borrow_mut().to_owned();
             top_label.set_text(&format!("{}x{}", size.width, size.height));
             bottom_label.set_text(&format!("{}x{}", size.width, size.height));
 
-            Continue(true) // Continue the timeout
+            ControlFlow::Continue
         }
     });
 
