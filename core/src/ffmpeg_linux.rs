@@ -39,12 +39,31 @@ pub fn merge_standalone(
             "fps={fps},scale={h}:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse",
             fps = record_frames, h = h,
         );
-        let cmd = format!(
-            "ffmpeg -i file:{src} -filter_complex '{filter}' -loop 0 {dst} -y",
-            src = temp_video, dst = saved_filename,
-        );
-        std::process::Command::new("sh").arg("-c").arg(&cmd).output()
+        let mut child = FfmpegCommand::new()
+            .input(temp_video)
+            .args(["-filter_complex", &filter, "-loop", "0", saved_filename, "-y"])
+            .spawn()
             .map_err(|e| Error::msg(format!("{}", e)))?;
+        for _ in child.iter().map_err(|e| Error::msg(format!("{}", e)))? {}
+        return Ok(saved_filename.to_string());
+    }
+
+    if output == "apng" {
+        let fps = if record_frames > 0 { record_frames } else { 15 };
+        let filter = format!(
+            "fps={fps},scale=trunc(iw/2)*2:-2:flags=lanczos,format=rgb24",
+        );
+        let mut child = FfmpegCommand::new()
+            .input(temp_video)
+            .args(["-vf", &filter, "-plays", "0", saved_filename, "-y"])
+            .spawn()
+            .map_err(|e| Error::msg(format!("{}", e)))?;
+        for _ in child.iter().map_err(|e| Error::msg(format!("{}", e)))? {}
+        if !Path::new(saved_filename).exists() {
+            return Err(Error::msg(
+                "APNG encoding failed. Make sure ffmpeg is built with apng support."
+            ));
+        }
         return Ok(saved_filename.to_string());
     }
 
@@ -226,7 +245,7 @@ impl Ffmpeg {
         self.width  = Some(width);
         self.height = Some(height);
 
-        if self.output == "gif" {
+        if self.output == "gif" || self.output == "apng" {
             let tf = tempfile::Builder::new()
                 .prefix(".ffmpeg-video-").suffix(".mp4")
                 .tempfile()?.keep()?;
@@ -264,7 +283,13 @@ impl Ffmpeg {
         }
 
         cmd.args(["-map_metadata", "-1"]);
-        cmd.args([if self.output == "gif" { &self.temp_video_filename } else { &self.saved_filename }]);
+        // Set output framerate so the container header matches the capture rate.
+        // Without this the container reports the codec default (often 60 fps) even
+        // though the actual content is at the user-requested rate.
+        if self.record_frames > 0 {
+            cmd.args(["-r", &self.record_frames.to_string()]);
+        }
+        cmd.args([if self.output == "gif" || self.output == "apng" { &self.temp_video_filename } else { &self.saved_filename }]);
         cmd.overwrite();
 
         sleep(Duration::from_secs(self.record_delay as u64));
@@ -279,7 +304,7 @@ impl Ffmpeg {
                 .borrow_mut().quit()
             {
                 Ok(_) => {
-                    if self.output == "gif" {
+                    if self.output == "gif" || self.output == "apng" {
                         match self.merge() {
                             Ok(_)  => self.clean()?,
                             Err(e) => { self.clean()?; return Err(Error::msg(format!("{}", e))); }
@@ -287,7 +312,7 @@ impl Ffmpeg {
                     }
                 }
                 Err(e) => {
-                    if self.output == "gif" { self.clean()?; }
+                    if self.output == "gif" || self.output == "apng" { self.clean()?; }
                     else { self.temp_video_filename = self.saved_filename.clone(); self.clean()?; }
                     return Err(Error::msg(format!("{}", e)));
                 }
@@ -465,13 +490,31 @@ impl Ffmpeg {
                 fps = self.record_frames,
                 h   = self.height.ok_or_else(|| anyhow!("Unable to get height value"))?,
             );
-            let cmd = format!(
-                "ffmpeg -i file:{src} -filter_complex '{filter}' -loop 0 {dst} -y",
-                src = self.temp_video_filename,
-                dst = self.saved_filename,
-            );
-            std::process::Command::new("sh").arg("-c").arg(&cmd).output()
+            let mut child = FfmpegCommand::new()
+                .input(&self.temp_video_filename)
+                .args(["-filter_complex", &filter, "-loop", "0", &self.saved_filename, "-y"])
+                .spawn()
                 .map_err(|e| Error::msg(format!("{}", e)))?;
+            for _ in child.iter().map_err(|e| Error::msg(format!("{}", e)))? {}
+            return Ok(());
+        }
+
+        if self.output == "apng" {
+            let fps = if self.record_frames > 0 { self.record_frames } else { 15 };
+            let filter = format!(
+                "fps={fps},scale=trunc(iw/2)*2:-2:flags=lanczos,format=rgb24",
+            );
+            let mut child = FfmpegCommand::new()
+                .input(&self.temp_video_filename)
+                .args(["-vf", &filter, "-plays", "0", &self.saved_filename, "-y"])
+                .spawn()
+                .map_err(|e| Error::msg(format!("{}", e)))?;
+            for _ in child.iter().map_err(|e| Error::msg(format!("{}", e)))? {}
+            if !Path::new(&self.saved_filename).exists() {
+                return Err(Error::msg(
+                    "APNG encoding failed. Make sure ffmpeg is built with apng support."
+                ));
+            }
             return Ok(());
         }
 

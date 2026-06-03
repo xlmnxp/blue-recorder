@@ -145,6 +145,7 @@ show-mouse = أظهِر المؤشر
 some-error = حدث ما يُعيقني
 
 # Spinner label
+apng-format = APNG (صور PNG متحركة)
 spinner-label = جارٍ المعالجة...
 
 # Stop recording button

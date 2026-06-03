@@ -396,10 +396,21 @@ fn probe_encoder(element_name: &str) -> bool {
 /// All pipelines use matroskamux (.mkv) so ffmpeg can handle them uniformly
 /// regardless of the codec chosen.
 fn select_pipeline(node_id: u32, fps: u16, filename: &str) -> gst::Pipeline {
+    let fps_cap = if fps > 0 { fps } else { 30 };
+    // video/x-raw,max-framerate is NOT a standard GStreamer caps field and is
+    // silently ignored — PipeWire would keep delivering at 60 fps and the
+    // encoder would declare 60 fps in the stream header.
+    //
+    // Instead: videorate drop-only=true drops excess frames without duplicating
+    // (so no artificial latency), then video/x-raw,framerate=N/1 negotiates
+    // the exact rate downstream so the encoder and muxer declare it correctly.
     let src = format!(
         "pipewiresrc path={node_id} do-timestamp=true \
+         ! videorate drop-only=true \
+         ! video/x-raw,framerate={fps_cap}/1 \
          ! queue leaky=downstream max-size-buffers=2 max-size-time=0 max-size-bytes=0",
         node_id = node_id,
+        fps_cap = fps_cap,
     );
 
     // VP9 quality: cpu-used=5 balances real-time speed and quality (0=best, 9=fastest).
