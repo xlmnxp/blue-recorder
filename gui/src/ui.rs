@@ -195,6 +195,16 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     format_chooser_combobox.append(Some("nut"), &get_bundle("nut-format", None));
     format_chooser_combobox.append(Some("apng"), &get_bundle("apng-format", None));
     format_chooser_combobox.set_active(Some(config_management::get("default", "format").parse::<u32>().unwrap_or(0u32)));
+    // Reflect audio-disabled state if gif/apng was the last-saved format.
+    {
+        let initial_fmt = format_chooser_combobox.active_id()
+            .map(|s| s.to_string())
+            .unwrap_or_default();
+        if matches!(initial_fmt.as_str(), "gif" | "apng") {
+            audio_input_switch.set_sensitive(false);
+            audio_output_switch.set_sensitive(false);
+        }
+    }
 
     // Get audio sources
     #[cfg(target_os = "windows")]
@@ -368,12 +378,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     frames_spin.set_tooltip_text(Some(&get_bundle("frames-tooltip", None)));
     video_bitrate_spin.set_tooltip_text(Some(&get_bundle("video-bitrate-tooltip", None)));
     frames_spin.set_value(
-        config_management::get("default",
-                               &format!
-                               ("frame-{}",
-                                &format_chooser_combobox.active().unwrap().to_string()))
+        config_management::get("default", "frames")
             .parse::<f64>()
-            .unwrap_or(0f64),
+            .unwrap_or(30f64),
     );
     audio_bitrate_spin.set_value(
         config_management::get("default", "audiobitrate")
@@ -397,6 +404,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _format_chooser_combobox = format_chooser_combobox.clone();
     let _frames_spin = frames_spin.clone();
     let _video_bitrate_spin = video_bitrate_spin.clone();
+    let _audio_input_switch_fmt = audio_input_switch.clone();
+    let _audio_output_switch_fmt = audio_output_switch.clone();
     format_chooser_combobox.connect_changed(move |_| {
         let format_chooser_combobox = _format_chooser_combobox.clone();
         if _format_chooser_combobox.active_text().is_some() {
@@ -404,14 +413,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 "default",
                 "format",
                 &_format_chooser_combobox.active().unwrap().to_string(),
-            );
-            _frames_spin.set_value(
-                config_management::get("default",
-                                       &format!
-                                       ("frame-{}",
-                                        &format_chooser_combobox.active().unwrap().to_string()))
-                    .parse::<f64>()
-                    .unwrap_or(0f64),
             );
             _video_bitrate_spin.set_value(
                 config_management::get("default",
@@ -421,6 +422,14 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                     .parse::<f64>()
                     .unwrap_or(0f64),
             );
+
+            // GIF and APNG carry no audio — disable mic when selected.
+            let fmt = _format_chooser_combobox.active_id()
+                .map(|s| s.to_string())
+                .unwrap_or_default();
+            let no_audio = matches!(fmt.as_str(), "gif" | "apng");
+            _audio_input_switch_fmt.set_sensitive(!no_audio);
+            _audio_output_switch_fmt.set_sensitive(!no_audio);
         }
     });
 
@@ -439,11 +448,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let _frames_spin = frames_spin.to_owned();
     let _format_chooser_combobox = format_chooser_combobox.clone();
     frames_spin.connect_value_changed(move |_| {
-        config_management::set("default",
-                               &format!
-                               ("frame-{}",
-                                &_format_chooser_combobox.active().unwrap().to_string()),
-                               _frames_spin.value().to_string().as_str());
+        config_management::set("default", "frames", _frames_spin.value().to_string().as_str());
     });
     let _format_chooser_combobox = format_chooser_combobox.clone();
     let _video_bitrate_spin = video_bitrate_spin.to_owned();

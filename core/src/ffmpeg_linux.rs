@@ -283,6 +283,12 @@ impl Ffmpeg {
         }
 
         cmd.args(["-map_metadata", "-1"]);
+        // Set output framerate so the container header matches the capture rate.
+        // Without this the container reports the codec default (often 60 fps) even
+        // though the actual content is at the user-requested rate.
+        if self.record_frames > 0 {
+            cmd.args(["-r", &self.record_frames.to_string()]);
+        }
         cmd.args([if self.output == "gif" || self.output == "apng" { &self.temp_video_filename } else { &self.saved_filename }]);
         cmd.overwrite();
 

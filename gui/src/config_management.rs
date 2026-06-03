@@ -9,7 +9,6 @@ use std::path::{Path, PathBuf};
 fn default() {
     for format in 0..8 {
         set_default_video_bitrate(&format.to_string());
-        set_default_frame(&format.to_string());
     }
 
     set("default", "areacheck", "1");
@@ -20,6 +19,7 @@ fn default() {
     set("default", "filename", "");
     set("default", "followmousecheck", "0");
     set("default", "format", "0");
+    set("default", "frames", "60");
     set("default",
         "folder",
         &String::from(
@@ -138,34 +138,11 @@ pub fn set_bool(selection: &str, key: &str, value: bool) -> bool {
     set(selection, key, if value { "1" } else { "0" })
 }
 
-// Default framerate values
-pub fn set_default_frame(format: &str) -> bool {
-    let rate = match format {
-        "0" => self::set("default", "frame-0", "60"),
-        "1" => self::set("default", "frame-1", "60"),
-        "2" => self::set("default", "frame-2", "60"),
-        "3" => self::set("default", "frame-3", "10"),
-        "4" => self::set("default", "frame-4", "2"),
-        "5" => self::set("default", "frame-5", "2"),
-        "6" => self::set("default", "frame-6", "0"),
-        "7" => self::set("default", "frame-7", "15"),
-        _ => self::set("default", "frame-0", "0"), // Default value (disabled)
-    };
-    rate
-}
+// Default bitrate values indexed by format number (0 = unlimited).
+const DEFAULT_BITRATES: &[u32] = &[0, 0, 0, 0, 0, 0, 0, 0];
 
-// Default bitrate values
 pub fn set_default_video_bitrate(format: &str) -> bool {
-    let rate = match format {
-        "0" => self::set("default", "videobitrate-0", "0"),
-        "1" => self::set("default", "videobitrate-1", "0"),
-        "2" => self::set("default", "videobitrate-2", "0"),
-        "3" => self::set("default", "videobitrate-3", "0"),
-        "4" => self::set("default", "videobitrate-4", "0"),
-        "5" => self::set("default", "videobitrate-5", "0"),
-        "6" => self::set("default", "videobitrate-6", "0"),
-        "7" => self::set("default", "videobitrate-7", "0"),
-        _ => self::set("default", "videobitrate-0", "0"), // Default value (disabled)
-    };
-    rate
+    let idx = format.parse::<usize>().unwrap_or(0);
+    let br = DEFAULT_BITRATES.get(idx).copied().unwrap_or(0);
+    self::set("default", &format!("videobitrate-{}", idx), &br.to_string())
 }
