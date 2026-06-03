@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 
 // Default values
 fn default() {
-    for format in 0..7 {
+    for format in 0..8 {
         set_default_video_bitrate(&format.to_string());
         set_default_frame(&format.to_string());
     }
@@ -148,6 +148,7 @@ pub fn set_default_frame(format: &str) -> bool {
         "4" => self::set("default", "frame-4", "2"),
         "5" => self::set("default", "frame-5", "2"),
         "6" => self::set("default", "frame-6", "0"),
+        "7" => self::set("default", "frame-7", "15"),
         _ => self::set("default", "frame-0", "0"), // Default value (disabled)
     };
     rate
@@ -163,6 +164,7 @@ pub fn set_default_video_bitrate(format: &str) -> bool {
         "4" => self::set("default", "videobitrate-4", "0"),
         "5" => self::set("default", "videobitrate-5", "0"),
         "6" => self::set("default", "videobitrate-6", "0"),
+        "7" => self::set("default", "videobitrate-7", "0"),
         _ => self::set("default", "videobitrate-0", "0"), // Default value (disabled)
     };
     rate

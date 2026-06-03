@@ -193,6 +193,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     format_chooser_combobox.append(Some("avi"), &get_bundle("avi-format", None));
     format_chooser_combobox.append(Some("wmv"), &get_bundle("wmv-format", None));
     format_chooser_combobox.append(Some("nut"), &get_bundle("nut-format", None));
+    format_chooser_combobox.append(Some("apng"), &get_bundle("apng-format", None));
     format_chooser_combobox.set_active(Some(config_management::get("default", "format").parse::<u32>().unwrap_or(0u32)));
 
     // Get audio sources
