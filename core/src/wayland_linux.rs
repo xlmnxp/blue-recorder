@@ -187,7 +187,12 @@ impl WaylandRecorder {
             }
 
             if response.contains_key("streams") {
-                let crop = if select_area { run_slurp() } else { None };
+                let monitor = parse_monitor_geometry(&response);
+                let crop = if select_area {
+                    run_slurp(monitor.0, monitor.1, monitor.2, monitor.3)
+                } else {
+                    None
+                };
                 let (w, h) = self
                     .record_screen_cast(response.clone(), framerate, crop)
                     .await
@@ -353,22 +358,51 @@ impl WaylandRecorder {
 // Area selection via slurp
 // ---------------------------------------------------------------------------
 
-/// Run `slurp` and return the selected crop region, or `None` if slurp is not
-/// installed, the user cancelled, or parsing fails.
-fn run_slurp() -> Option<(u16, u16, u16, u16)> {
-    let out = std::process::Command::new("slurp")
-        .arg("-f").arg("%x %y %w %h")
-        .output()
-        .ok()?;
-    if !out.status.success() {
-        return None;
+/// Extract (monitor_x, monitor_y, monitor_w, monitor_h) from a portal streams
+/// response. Falls back to (0, 0, 0, 0) for any missing field.
+fn parse_monitor_geometry(response: &HashMap<&str, Value<'_>>) -> (i32, i32, i32, i32) {
+    let (mut x, mut y, mut w, mut h) = (0i32, 0i32, 0i32, 0i32);
+    let Some(streams) = response.get("streams") else { return (x, y, w, h) };
+    let Ok(stream_vec) = streams.clone().downcast::<Vec<Value>>() else { return (x, y, w, h) };
+    let Some(first) = stream_vec.into_iter().next() else { return (x, y, w, h) };
+    let Ok(structure) = first.downcast::<Structure>() else { return (x, y, w, h) };
+    let fields = structure.fields();
+    let Some(props_value) = fields.get(1) else { return (x, y, w, h) };
+    let Ok(dict) = props_value.clone().downcast::<Dict>() else { return (x, y, w, h) };
+
+    if let Ok(Some(s)) = dict.get::<Str, Structure>(&Str::from("size")) {
+        let dims: Vec<i32> = s.fields().iter().filter_map(|f| f.clone().downcast::<i32>().ok()).collect();
+        if dims.len() >= 2 { w = dims[0]; h = dims[1]; }
     }
+    if let Ok(Some(s)) = dict.get::<Str, Structure>(&Str::from("position")) {
+        let dims: Vec<i32> = s.fields().iter().filter_map(|f| f.clone().downcast::<i32>().ok()).collect();
+        if dims.len() >= 2 { x = dims[0]; y = dims[1]; }
+    }
+    (x, y, w, h)
+}
+
+/// Open `slurp` with the selected monitor's region piped to stdin so it is
+/// highlighted and the user is visually guided to draw within it.
+/// Returns stream-relative crop coordinates (offset-adjusted), or `None` if
+/// slurp is not installed or the user cancelled.
+fn run_slurp(monitor_x: i32, monitor_y: i32, monitor_w: i32, monitor_h: i32) -> Option<(u16, u16, u16, u16)> {
+    use std::io::Write;
+    let region = format!("{},{} {}x{}", monitor_x, monitor_y, monitor_w, monitor_h);
+    let mut child = std::process::Command::new("slurp")
+        .arg("-f").arg("%x %y %w %h")
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .spawn().ok()?;
+    child.stdin.take()?.write_all(region.as_bytes()).ok()?;
+    let out = child.wait_with_output().ok()?;
+    if !out.status.success() { return None; }
     let s = String::from_utf8_lossy(&out.stdout);
-    let nums: Vec<u16> = s.split_whitespace()
-        .filter_map(|t| t.parse().ok())
-        .collect();
+    let nums: Vec<i32> = s.split_whitespace().filter_map(|t| t.parse().ok()).collect();
     if nums.len() != 4 { return None; }
-    Some((nums[0], nums[1], nums[2], nums[3]))
+    // Subtract monitor offset to get coordinates relative to the stream origin.
+    let cx = (nums[0] - monitor_x).max(0) as u16;
+    let cy = (nums[1] - monitor_y).max(0) as u16;
+    Some((cx, cy, nums[2] as u16, nums[3] as u16))
 }
 
 // ---------------------------------------------------------------------------
