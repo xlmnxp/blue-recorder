@@ -27,12 +27,6 @@ pub fn enable_input_widgets(widgets: Vec<Widget>) {
     for w in widgets { w.set_sensitive(true); }
 }
 
-pub fn exec(command: &str) -> Result<()> {
-    if !command.trim().is_empty() {
-        subprocess::Exec::shell(command.trim()).start()?;
-    }
-    Ok(())
-}
 
 pub fn is_overwrite(msg: &str, filename: &str, window: Window) -> bool {
     if !std::path::Path::new(filename).exists() {

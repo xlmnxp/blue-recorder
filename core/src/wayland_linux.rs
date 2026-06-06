@@ -95,6 +95,7 @@ impl WaylandRecorder {
         record_type: RecordTypes,
         cursor_mode_type: CursorModeTypes,
         framerate: u16,
+        select_area: bool,
     ) -> (i32, i32) {
         self.filename = filename;
 
@@ -186,8 +187,9 @@ impl WaylandRecorder {
             }
 
             if response.contains_key("streams") {
+                let crop = if select_area { run_slurp() } else { None };
                 let (w, h) = self
-                    .record_screen_cast(response.clone(), framerate)
+                    .record_screen_cast(response.clone(), framerate, crop)
                     .await
                     .expect("failed to record screen cast");
                 width = w;
@@ -293,6 +295,7 @@ impl WaylandRecorder {
         &mut self,
         response: HashMap<&str, Value<'_>>,
         framerate: u16,
+        crop: Option<(u16, u16, u16, u16)>,
     ) -> Result<(i32, i32)> {
         let streams = response.get("streams").expect("missing streams");
 
@@ -338,12 +341,34 @@ impl WaylandRecorder {
 
         let fps = if framerate > 0 { framerate } else { 30 };
 
-        let pipeline = select_pipeline(node_id, fps, &self.filename);
+        let pipeline = select_pipeline(node_id, fps, &self.filename, width, height, crop);
         pipeline.set_state(gst::State::Playing).expect("failed to start pipeline");
         self.pipeline = Some(pipeline);
 
         Ok((width, height))
     }
+}
+
+// ---------------------------------------------------------------------------
+// Area selection via slurp
+// ---------------------------------------------------------------------------
+
+/// Run `slurp` and return the selected crop region, or `None` if slurp is not
+/// installed, the user cancelled, or parsing fails.
+fn run_slurp() -> Option<(u16, u16, u16, u16)> {
+    let out = std::process::Command::new("slurp")
+        .arg("-f").arg("%x %y %w %h")
+        .output()
+        .ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    let s = String::from_utf8_lossy(&out.stdout);
+    let nums: Vec<u16> = s.split_whitespace()
+        .filter_map(|t| t.parse().ok())
+        .collect();
+    if nums.len() != 4 { return None; }
+    Some((nums[0], nums[1], nums[2], nums[3]))
 }
 
 // ---------------------------------------------------------------------------
@@ -395,7 +420,14 @@ fn probe_encoder(element_name: &str) -> bool {
 ///
 /// All pipelines use matroskamux (.mkv) so ffmpeg can handle them uniformly
 /// regardless of the codec chosen.
-fn select_pipeline(node_id: u32, fps: u16, filename: &str) -> gst::Pipeline {
+fn select_pipeline(
+    node_id: u32,
+    fps: u16,
+    filename: &str,
+    stream_width: i32,
+    stream_height: i32,
+    crop: Option<(u16, u16, u16, u16)>,
+) -> gst::Pipeline {
     let fps_cap = if fps > 0 { fps } else { 30 };
     // video/x-raw,max-framerate is NOT a standard GStreamer caps field and is
     // silently ignored — PipeWire would keep delivering at 60 fps and the
@@ -404,13 +436,27 @@ fn select_pipeline(node_id: u32, fps: u16, filename: &str) -> gst::Pipeline {
     // Instead: videorate drop-only=true drops excess frames without duplicating
     // (so no artificial latency), then video/x-raw,framerate=N/1 negotiates
     // the exact rate downstream so the encoder and muxer declare it correctly.
+    let crop_filter = if let Some((cx, cy, cw, ch)) = crop {
+        let sw = stream_width.max(0) as u32;
+        let sh = stream_height.max(0) as u32;
+        let left   = cx as u32;
+        let top    = cy as u32;
+        let right  = sw.saturating_sub(left).saturating_sub(cw as u32);
+        let bottom = sh.saturating_sub(top).saturating_sub(ch as u32);
+        format!("! videocrop left={left} top={top} right={right} bottom={bottom} ")
+    } else {
+        String::new()
+    };
+
     let src = format!(
         "pipewiresrc path={node_id} do-timestamp=true \
          ! videorate drop-only=true \
          ! video/x-raw,framerate={fps_cap}/1 \
+         {crop_filter}\
          ! queue leaky=downstream max-size-buffers=2 max-size-time=0 max-size-bytes=0",
         node_id = node_id,
         fps_cap = fps_cap,
+        crop_filter = crop_filter,
     );
 
     // VP9 quality: cpu-used=5 balances real-time speed and quality (0=best, 9=fastest).
