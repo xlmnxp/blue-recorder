@@ -163,11 +163,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     audio_source_combobox.set_tooltip_text(Some(&get_bundle("audio-source-tooltip", None)));
     format_chooser_combobox.set_tooltip_text(Some(&get_bundle("format-tooltip", None)));
 
-    // Temporary solution
     if is_wayland() {
-        // Hide window grab button in Wayland
-        area_grab_button.set_sensitive(false);
-        area_grab_button.set_tooltip_text(Some(&get_bundle("wayland-tooltip", None)));
+        area_grab_button.set_tooltip_text(Some(&get_bundle("area-tooltip", None)));
     }
     // Disable follow mouse option
     #[cfg(target_os = "windows")]
@@ -548,25 +545,27 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
 
     area_grab_label.set_label(&get_bundle("select-area", None));
     let _area_chooser_window = area_chooser_window.clone();
-    let mut _area_capture = area_capture.clone();
     let _area_switch = area_switch.clone();
     let _error_dialog = error_dialog.clone();
     let _error_message = error_message.clone();
     area_grab_button.connect_clicked(move |_| {
         config_management::set("default", "mode", "area");
-        _area_chooser_window.show();
-        if area_capture::show_size(
-            _area_chooser_window.clone(),
-            area_size_bottom_label.clone(),
-            area_size_top_label.clone(),
-        ).is_err() {
-            let text_buffer = TextBuffer::new(None);
-            text_buffer.set_text("Failed to get area size value.");
-            _error_message.set_buffer(Some(&text_buffer));
-            _error_dialog.show();
+        if !is_wayland() {
+            _area_chooser_window.show();
+            if area_capture::show_size(
+                _area_chooser_window.clone(),
+                area_size_bottom_label.clone(),
+                area_size_top_label.clone(),
+            ).is_err() {
+                let text_buffer = TextBuffer::new(None);
+                text_buffer.set_text("Failed to get area size value.");
+                _error_message.set_buffer(Some(&text_buffer));
+                _error_dialog.show();
+            }
+            _area_switch.set_active(config_management::get_bool("default", "areacheck"));
+            _area_switch.set_sensitive(true);
         }
-        _area_switch.set_active(config_management::get_bool("default", "areacheck"));
-        _area_switch.set_sensitive(true);
+        // On Wayland, slurp runs after the portal monitor picker closes.
     });
 
     area_apply_label.set_label(&get_bundle("apply", None));
@@ -706,11 +705,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         command_entry.clone().into()
     ];
 
-    // Temporary solution
-    if !is_wayland() {
-        // Keep area_selection disaled in wayland
-        input_widgets.push(area_grab_button.clone().into());
-    }
+    input_widgets.push(area_grab_button.clone().into());
 
     // Disable show area check button
     if !area_grab_button.is_active() {

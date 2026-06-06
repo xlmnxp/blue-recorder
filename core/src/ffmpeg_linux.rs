@@ -188,12 +188,12 @@ impl Ffmpeg {
             async_std::task::block_on(self.wayland_recorder.start(
                 self.temp_video_filename.clone(),
                 match mode {
-                    RecordMode::Screen => RecordTypes::Monitor,
                     RecordMode::Window => RecordTypes::Window,
-                    _ => RecordTypes::MonitorOrWindow,
+                    _ => RecordTypes::Monitor,
                 },
                 if self.record_mouse { CursorModeTypes::Show } else { CursorModeTypes::Hidden },
                 self.record_frames,
+                matches!(mode, RecordMode::Area),
             ));
 
             if !self.wayland_recorder.is_active() {
