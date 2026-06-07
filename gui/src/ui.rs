@@ -758,7 +758,12 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         input_audio_process: None,
         output_audio_process: None,
         video_process: None,
-        wayland_recorder: async_std::task::block_on(WaylandRecorder::new()),
+        wayland_recorder: {
+            let mut rec = async_std::task::block_on(WaylandRecorder::new());
+            #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+            rec.set_monitor_logical_sizes(area_capture::get_monitor_logical_sizes());
+            rec
+        },
     }));
 
     #[cfg(target_os = "windows")]

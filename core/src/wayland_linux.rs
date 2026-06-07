@@ -53,17 +53,18 @@ pub struct WaylandRecorder {
     session_path: String,
     pipeline: Option<gst::Pipeline>,
     filename: String,
+    monitor_logical_sizes: Vec<(i32, i32, i32)>,
 }
 
 impl WaylandRecorder {
-    /// Returns true if the GStreamer pipeline is running (recording is active).
     pub fn is_active(&self) -> bool {
         self.pipeline.is_some()
     }
 
-    /// Extract the data needed to stop recording off the main thread.
-    /// Takes ownership of the pipeline and session info, leaving the recorder
-    /// in a clean idle state.
+    pub fn set_monitor_logical_sizes(&mut self, sizes: Vec<(i32, i32, i32)>) {
+        self.monitor_logical_sizes = sizes;
+    }
+
     pub fn take_for_stop(&mut self) -> (Option<gst::Pipeline>, zbus::Connection, String) {
         let pipeline     = self.pipeline.take();
         let connection   = self.connection.clone();
@@ -86,6 +87,7 @@ impl WaylandRecorder {
             session_path: String::new(),
             filename: String::from("blue_recorder.mkv"),
             pipeline: None,
+            monitor_logical_sizes: Vec::new(),
         }
     }
 
@@ -99,10 +101,6 @@ impl WaylandRecorder {
     ) -> (i32, i32) {
         self.filename = filename;
 
-        // Use a session-unique counter so every recording session gets different
-        // request paths. Fixed tokens caused stale Response signals from the
-        // previous session (same path) to be processed immediately, making the
-        // portal picker appear to be skipped and producing bad recordings.
         static SESSION: AtomicU32 = AtomicU32::new(0);
         let sid = SESSION.fetch_add(1, Ordering::Relaxed);
         let tok_session = format!("br_s{}_sess", sid);
@@ -189,7 +187,7 @@ impl WaylandRecorder {
             if response.contains_key("streams") {
                 let monitor = parse_monitor_geometry(&response);
                 let crop = if select_area {
-                    run_slurp(monitor.0, monitor.1, monitor.2, monitor.3)
+                    run_slurp(monitor.0, monitor.1, monitor.2, monitor.3, &self.monitor_logical_sizes)
                 } else {
                     None
                 };
@@ -354,12 +352,6 @@ impl WaylandRecorder {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Area selection via slurp
-// ---------------------------------------------------------------------------
-
-/// Extract (monitor_x, monitor_y, monitor_w, monitor_h) from a portal streams
-/// response. Falls back to (0, 0, 0, 0) for any missing field.
 fn parse_monitor_geometry(response: &HashMap<&str, Value<'_>>) -> (i32, i32, i32, i32) {
     let (mut x, mut y, mut w, mut h) = (0i32, 0i32, 0i32, 0i32);
     let Some(streams) = response.get("streams") else { return (x, y, w, h) };
@@ -381,13 +373,109 @@ fn parse_monitor_geometry(response: &HashMap<&str, Value<'_>>) -> (i32, i32, i32
     (x, y, w, h)
 }
 
-/// Open `slurp` with the selected monitor's region piped to stdin so it is
-/// highlighted and the user is visually guided to draw within it.
-/// Returns stream-relative crop coordinates (offset-adjusted), or `None` if
-/// slurp is not installed or the user cancelled.
-fn run_slurp(monitor_x: i32, monitor_y: i32, monitor_w: i32, monitor_h: i32) -> Option<(u16, u16, u16, u16)> {
+fn get_monitor_scale(target_x: i32, target_y: i32, portal_physical_w: i32,
+                     monitor_logical_sizes: &[(i32, i32, i32)]) -> f64 {
+    stored_scale(target_x, target_y, portal_physical_w, monitor_logical_sizes)
+        .or_else(|| wlr_randr_scale(target_x, target_y))
+        .or_else(|| sway_scale(target_x, target_y))
+        .or_else(|| hyprland_scale(target_x, target_y))
+        .unwrap_or(1.0)
+}
+
+fn stored_scale(target_x: i32, target_y: i32, physical_w: i32,
+                monitor_logical_sizes: &[(i32, i32, i32)]) -> Option<f64> {
+    for &(lx, ly, lw) in monitor_logical_sizes {
+        if lx != target_x || ly != target_y || lw <= 0 || physical_w <= 0 { continue; }
+        let scale = physical_w as f64 / lw as f64;
+        if scale >= 0.5 && scale <= 8.0 {
+            return Some(scale);
+        }
+    }
+    None
+}
+
+fn wlr_randr_scale(target_x: i32, target_y: i32) -> Option<f64> {
+    let out = std::process::Command::new("wlr-randr").output().ok()?;
+    if !out.status.success() { return None; }
+    let text = String::from_utf8_lossy(&out.stdout);
+
+    let mut found_pos = false;
+    for line in text.lines() {
+        let t = line.trim();
+        if t.starts_with("position: ") {
+            let p = &t["position: ".len()..];
+            let nums: Vec<i32> = p.split(',').filter_map(|s| s.trim().parse().ok()).collect();
+            found_pos = nums.len() >= 2 && nums[0] == target_x && nums[1] == target_y;
+        } else if found_pos && t.starts_with("scale: ") {
+            return t["scale: ".len()..].trim().parse::<f64>().ok();
+        }
+    }
+    None
+}
+
+fn sway_scale(target_x: i32, target_y: i32) -> Option<f64> {
+    let out = std::process::Command::new("swaymsg")
+        .args(["-t", "get_outputs"])
+        .output()
+        .ok()?;
+    if !out.status.success() { return None; }
+    let text = String::from_utf8_lossy(&out.stdout);
+
+    for chunk in text.split("},{") {
+        let x_pat_a = format!("\"x\":{}", target_x);
+        let x_pat_b = format!("\"x\": {}", target_x);
+        let y_pat_a = format!("\"y\":{}", target_y);
+        let y_pat_b = format!("\"y\": {}", target_y);
+        let has_x = chunk.contains(&x_pat_a) || chunk.contains(&x_pat_b);
+        let has_y = chunk.contains(&y_pat_a) || chunk.contains(&y_pat_b);
+        if !has_x || !has_y { continue; }
+        if let Some(idx) = chunk.find("\"scale\"") {
+            let after = &chunk[idx + 7..];
+            let colon = after.find(':')?;
+            let val = after[colon + 1..].trim();
+            let end = val.find(|c: char| !c.is_ascii_digit() && c != '.').unwrap_or(val.len());
+            return val[..end].parse::<f64>().ok();
+        }
+    }
+    None
+}
+
+fn hyprland_scale(target_x: i32, target_y: i32) -> Option<f64> {
+    let out = std::process::Command::new("hyprctl")
+        .arg("monitors")
+        .output()
+        .ok()?;
+    if !out.status.success() { return None; }
+    let text = String::from_utf8_lossy(&out.stdout);
+
+    let pos_pattern = format!(" at {}x{}", target_x, target_y);
+    let mut in_block = false;
+    for line in text.lines() {
+        if line.contains(&pos_pattern) {
+            in_block = true;
+        } else if in_block {
+            let t = line.trim();
+            if t.starts_with("scale:") {
+                return t["scale:".len()..].trim().parse::<f64>().ok();
+            }
+            if !line.starts_with('\t') && !line.starts_with(' ') && !line.is_empty() {
+                in_block = false;
+            }
+        }
+    }
+    None
+}
+
+fn run_slurp(monitor_x: i32, monitor_y: i32, monitor_w: i32, monitor_h: i32,
+             monitor_logical_sizes: &[(i32, i32, i32)]) -> Option<(u16, u16, u16, u16)> {
     use std::io::Write;
-    let region = format!("{},{} {}x{}", monitor_x, monitor_y, monitor_w, monitor_h);
+
+    let scale = get_monitor_scale(monitor_x, monitor_y, monitor_w, monitor_logical_sizes);
+
+    let logical_w = (monitor_w as f64 / scale).round() as i32;
+    let logical_h = (monitor_h as f64 / scale).round() as i32;
+
+    let region = format!("{},{} {}x{}", monitor_x, monitor_y, logical_w, logical_h);
     let mut child = std::process::Command::new("slurp")
         .arg("-f").arg("%x %y %w %h")
         .stdin(std::process::Stdio::piped())
@@ -396,22 +484,19 @@ fn run_slurp(monitor_x: i32, monitor_y: i32, monitor_w: i32, monitor_h: i32) -> 
     child.stdin.take()?.write_all(region.as_bytes()).ok()?;
     let out = child.wait_with_output().ok()?;
     if !out.status.success() { return None; }
+
     let s = String::from_utf8_lossy(&out.stdout);
-    let nums: Vec<i32> = s.split_whitespace().filter_map(|t| t.parse().ok()).collect();
+    let nums: Vec<f64> = s.split_whitespace().filter_map(|t| t.parse().ok()).collect();
     if nums.len() != 4 { return None; }
-    // Subtract monitor offset to get coordinates relative to the stream origin.
-    let cx = (nums[0] - monitor_x).max(0) as u16;
-    let cy = (nums[1] - monitor_y).max(0) as u16;
-    Some((cx, cy, nums[2] as u16, nums[3] as u16))
+
+    let cx = ((nums[0] - monitor_x as f64) * scale).round().max(0.0) as u16;
+    let cy = ((nums[1] - monitor_y as f64) * scale).round().max(0.0) as u16;
+    let cw = (nums[2] * scale).round() as u16;
+    let ch = (nums[3] * scale).round() as u16;
+
+    Some((cx, cy, cw, ch))
 }
 
-// ---------------------------------------------------------------------------
-// Encoder selection
-// ---------------------------------------------------------------------------
-
-/// Probe an encoder with a synthetic video source and a fakesink so no real
-/// files are created and no PipeWire connection is needed.
-/// Returns true if the encoder initialises and produces frames without errors.
 fn probe_encoder(element_name: &str) -> bool {
     if gst::ElementFactory::find(element_name).is_none() {
         return false;
@@ -448,12 +533,6 @@ fn probe_encoder(element_name: &str) -> bool {
     ok
 }
 
-/// Build and return the capture pipeline for the first working encoder.
-/// Probing uses a synthetic source + fakesink so no output file is touched
-/// until recording actually begins.
-///
-/// All pipelines use matroskamux (.mkv) so ffmpeg can handle them uniformly
-/// regardless of the codec chosen.
 fn select_pipeline(
     node_id: u32,
     fps: u16,
@@ -463,13 +542,6 @@ fn select_pipeline(
     crop: Option<(u16, u16, u16, u16)>,
 ) -> gst::Pipeline {
     let fps_cap = if fps > 0 { fps } else { 30 };
-    // video/x-raw,max-framerate is NOT a standard GStreamer caps field and is
-    // silently ignored — PipeWire would keep delivering at 60 fps and the
-    // encoder would declare 60 fps in the stream header.
-    //
-    // Instead: videorate drop-only=true drops excess frames without duplicating
-    // (so no artificial latency), then video/x-raw,framerate=N/1 negotiates
-    // the exact rate downstream so the encoder and muxer declare it correctly.
     let crop_filter = if let Some((cx, cy, cw, ch)) = crop {
         let sw = stream_width.max(0) as u32;
         let sh = stream_height.max(0) as u32;
@@ -493,8 +565,6 @@ fn select_pipeline(
         crop_filter = crop_filter,
     );
 
-    // VP9 quality: cpu-used=5 balances real-time speed and quality (0=best, 9=fastest).
-    // end-usage=cbr + target-bitrate=8000000 gives ~8 Mbps — good for 1080p.
     let vp9_opts = format!(
         "deadline=1 cpu-used=5 lag-in-frames=0 end-usage=cbr \
          target-bitrate=8000000 error-resilient=1 threads=4 keyframe-max-dist={fps}",

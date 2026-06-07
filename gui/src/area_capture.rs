@@ -166,6 +166,21 @@ impl Title {
 }
 
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+pub fn get_monitor_logical_sizes() -> Vec<(i32, i32, i32)> {
+    use adw::gtk::gdk::prelude::*;
+    let Some(display) = adw::gtk::gdk::Display::default() else { return Vec::new() };
+    let monitors = display.monitors();
+    let mut result = Vec::new();
+    for i in 0..monitors.n_items() {
+        let Some(item) = monitors.item(i) else { continue };
+        let Ok(monitor) = item.downcast::<adw::gtk::gdk::Monitor>() else { continue };
+        let geom = monitor.geometry();
+        result.push((geom.x(), geom.y(), geom.width()));
+    }
+    result
+}
+
+#[cfg(any(target_os = "freebsd", target_os = "linux"))]
 fn xwininfo_to_coordinate(xwininfo_output: String) -> Result<(u16, u16, u16, u16)> {
     let x: u16 = Regex::new(r"A.*X:\s+(\d+)\n")?
         .captures(xwininfo_output.as_str())
