@@ -139,6 +139,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let window_grab_button: ToggleButton = builder.object("window_grab_button").unwrap();
     let window_grab_icon: Image = builder.object("window_grab_icon").unwrap();
     let window_grab_label: Label = builder.object("window_grab_label").unwrap();
+    let advanced_expander: Expander = builder.object("advanced_settings_expander").unwrap();
 
     // --- default properties
     // Windows
@@ -525,6 +526,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
             fcn.show();
         });
     }
+
+    // Advanced settings expander
+    advanced_expander.set_label(Some(&get_bundle("advanced-settings", None)));
 
     // --- connections
     // Show dialog window when about button clicked then hide it after close

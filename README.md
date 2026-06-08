@@ -1,6 +1,6 @@
 # Blue Recorder [![Made With Rust](https://img.shields.io/static/v1?label=MADE%20WITH&message=Rust&color=red&style=for-the-badge&logo=Rust)](https://GitHub.com/xlmnxp/blue-recorder) [![GitHub contributors](https://img.shields.io/github/contributors/xlmnxp/blue-recorder.svg?style=for-the-badge)](https://GitHub.com/xlmnxp/blue-recorder/graphs/contributors)
 
-<img src="screenshots/screenshot1.png"/>
+<img src="screenshots/screenshot.png"/>
 
 A simple desktop recorder built using GTK4 and FFmpeg. 
 

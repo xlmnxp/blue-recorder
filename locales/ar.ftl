@@ -1,6 +1,9 @@
 # About button
 about = عن البرنامج
 
+# Advanced settings button
+advanced-settings = إعدادات متقدمة
+
 # Credits button
 address-abdullah-al-baroty = Abdullah Al-Baroty <albaroty@gmail.com>
 address-ahmad-gharib = Ahmad Gharib
@@ -22,10 +25,10 @@ address-salem-yaslem = Salem Yaslem <s@sy.sa>
 address-suliman-altassan = Suliman Altassan <suliman@dismail.de>
 address-william-grunow = William Grunow
 # sections
-authors = برمجه:
-patreon = الداعمين على پاتريون:
-design = صممه:
-translate = ترجمه:
+authors = برمجه
+patreon = الداعمين على پاتريون
+design = صممه
+translate = ترجمه
 
 # Overwrite warning 
 already-exist = موجودٌ هذا الملف، أفتأذن بالكتابة عليه؟
@@ -37,13 +40,13 @@ apply = اخترها
 area-chooser = مُحَدِّد الرُّقعة
 
 # Audio bitrate label
-audio-bitrate = جودة الصوت:
+audio-bitrate = جودة الصوت
 
 # Audio source input
 audio-input = مدخل الصوت المعهود
 
 # Audio source label
-audio-source = مدخل الصوت:
+audio-source = مدخل الصوت
 
 # Auto hide label
 auto-hide = توارَ من تلقاء نفسك
@@ -70,13 +73,13 @@ close = أغلِق
 copy-right = © 2021 Salem Yaslem
 
 # Run command label
-default-command = أمرٌ يُنفَّذ عند الانتهاء:
+default-command = أمرٌ يُنفَّذ عند الانتهاء
 
 # Default output folder
-default-folder = مَقَرُّ التسجيلات:
+default-folder = مَقَرُّ التسجيلات
 
 # Delay label
-delay = المهلة:
+delay = المهلة
 
 # Delay message
 delay-title = سيبدأ التسجيل في غضون
@@ -97,13 +100,13 @@ enter-command = اكتب الأمر هاهنا..
 error-title = خلل
 
 # Frames label
-file-name = اسم الملفّ الافتراضي:
+file-name = اسم الملفّ الافتراضي
 
 # Follow mouse label
 follow-mouse = اقتفِ أثر مؤشر الفأرة
 
 # Frames label
-frames = الصور في الثانية:
+frames = الصور في الثانية
 
 # License
 license-website = http://www.gnu.org/licenses/
@@ -128,7 +131,7 @@ record-speaker = سجل صوت السماعة
 record-video = سجل الصورة
 
 # Run command label
-run-command = أمرٌ ينفذ عند الانتهاء:
+run-command = أمرٌ ينفذ عند الانتهاء
 
 # Selection buttons
 select-area = اختَر رُّقعة
@@ -155,7 +158,7 @@ stop-recording = أوقِف التسجيل
 tray-minimize = أصغِره إلى المَخبأ
 
 # Video bitrate label
-video-bitrate = جودة الصورة:
+video-bitrate = جودة الصورة
 
 # Website link
 website = الموقع
