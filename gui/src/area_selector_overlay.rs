@@ -157,7 +157,23 @@ pub fn select_area(
     window.present();
 
     main_loop.run();
-    window.close();
+
+    // Hide and tear the overlay down, then give the compositor real wall-clock
+    // time to actually unmap and redraw without it before returning. Without
+    // this, the screen-cast stream — already live by the time area selection
+    // runs — can capture a frame that still shows our overlay, so it ends up
+    // baked into the recording. Unmapping over Wayland is asynchronous, so
+    // there's no synchronous "wait until gone"; a short timed pump is the
+    // pragmatic fix (this matches the kind of delay slurp itself incurs by
+    // being a separate process that has to exit and get unmapped first).
+    window.set_visible(false);
+    window.destroy();
+    let settle_loop = glib::MainLoop::new(None, false);
+    glib::source::timeout_add_local_once(std::time::Duration::from_millis(150), {
+        let settle_loop = settle_loop.clone();
+        move || settle_loop.quit()
+    });
+    settle_loop.run();
 
     result.take()
 }

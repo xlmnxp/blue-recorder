@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use futures_util::StreamExt;
 use gst::prelude::*;
 use gstreamer as gst;
@@ -168,9 +168,10 @@ impl WaylandRecorder {
             }
 
             if response.contains_key("session_handle") {
-                let (select_req, start_req) = self
+                let start_req = self
                     .handle_session(
                         self.screen_cast_proxy.clone(),
+                        &mut message_stream,
                         response.clone(),
                         record_type,
                         cursor_mode_type,
@@ -180,7 +181,6 @@ impl WaylandRecorder {
                     .await
                     .expect("failed to handle session");
 
-                our_paths.push(select_req.to_string());
                 our_paths.push(start_req.to_string());
                 continue;
             }
@@ -248,12 +248,13 @@ impl WaylandRecorder {
     async fn handle_session(
         &mut self,
         screen_cast_proxy: ScreenCastProxy<'_>,
+        message_stream: &mut MessageStream,
         response: HashMap<&str, Value<'_>>,
         record_type: RecordTypes,
         cursor_mode_type: CursorModeTypes,
         tok_select: &str,
         tok_start: &str,
-    ) -> Result<(OwnedObjectPath, OwnedObjectPath)> {
+    ) -> Result<OwnedObjectPath> {
         let session_handle = response
             .get("session_handle")
             .expect("missing session_handle")
@@ -290,6 +291,14 @@ impl WaylandRecorder {
             )
             .await?;
 
+        // The portal completes SelectSources asynchronously — its own Response
+        // signal on `select_request` is the only reliable signal that sources
+        // are actually selected. Calling Start before that lands races with
+        // the portal and can fail with "Sources not selected" (seen mostly
+        // under the snap, where the extra D-Bus proxy hop adds enough latency
+        // to expose the race).
+        wait_for_request_response(message_stream, &select_request).await?;
+
         let start_request = screen_cast_proxy
             .start(
                 ObjectPath::try_from(session_handle)?,
@@ -298,7 +307,7 @@ impl WaylandRecorder {
             )
             .await?;
 
-        Ok((select_request, start_request))
+        Ok(start_request)
     }
 
     async fn record_screen_cast(
@@ -360,6 +369,58 @@ impl WaylandRecorder {
     }
 }
 
+/// Blocks until the `org.freedesktop.portal.Request::Response` signal for
+/// `request_path` arrives, returning an error if the request failed/was
+/// cancelled (non-zero response code) or the stream ended first.
+async fn wait_for_request_response(
+    message_stream: &mut MessageStream,
+    request_path: &OwnedObjectPath,
+) -> Result<()> {
+    let request_path = request_path.to_string();
+
+    while let Some(msg) = message_stream.next().await {
+        let msg = match msg {
+            Ok(m) => m,
+            Err(_) => continue,
+        };
+
+        if msg.message_type() != message::Type::Signal {
+            continue;
+        }
+
+        let header = msg.header();
+        let is_response = header
+            .interface()
+            .map(|i| i.as_str() == "org.freedesktop.portal.Request")
+            .unwrap_or(false)
+            && header
+                .member()
+                .map(|m| m.as_str() == "Response")
+                .unwrap_or(false);
+
+        if !is_response {
+            continue;
+        }
+
+        let signal_path = header
+            .path()
+            .map(|p| p.to_string())
+            .unwrap_or_default();
+        if signal_path != request_path {
+            continue;
+        }
+
+        let body = msg.body();
+        let (response_num, _response): (u32, HashMap<&str, Value>) = body.deserialize()?;
+        if response_num != 0 {
+            return Err(anyhow!("select_sources request failed or was cancelled"));
+        }
+        return Ok(());
+    }
+
+    Err(anyhow!("message stream ended while waiting for select_sources response"))
+}
+
 fn parse_monitor_geometry(response: &HashMap<&str, Value<'_>>) -> (i32, i32, i32, i32) {
     let (mut x, mut y, mut w, mut h) = (0i32, 0i32, 0i32, 0i32);
     let Some(streams) = response.get("streams") else { return (x, y, w, h) };
@@ -381,7 +442,26 @@ fn parse_monitor_geometry(response: &HashMap<&str, Value<'_>>) -> (i32, i32, i32
     (x, y, w, h)
 }
 
+/// Probing spins up a real test pipeline and waits up to 600ms for it to play
+/// through, so memoize the result per element — the available hardware
+/// encoders don't change over the process lifetime, and re-probing on every
+/// recording start added a noticeable delay after area selection.
 fn probe_encoder(element_name: &str) -> bool {
+    use std::collections::HashMap;
+    use std::sync::{Mutex, OnceLock};
+    static CACHE: OnceLock<Mutex<HashMap<String, bool>>> = OnceLock::new();
+    let cache = CACHE.get_or_init(|| Mutex::new(HashMap::new()));
+
+    if let Some(&cached) = cache.lock().unwrap().get(element_name) {
+        return cached;
+    }
+
+    let result = probe_encoder_uncached(element_name);
+    cache.lock().unwrap().insert(element_name.to_string(), result);
+    result
+}
+
+fn probe_encoder_uncached(element_name: &str) -> bool {
     if gst::ElementFactory::find(element_name).is_none() {
         return false;
     }
@@ -432,7 +512,7 @@ fn select_pipeline(
         ""
     };
     let src = format!(
-        "pipewiresrc path={node_id} do-timestamp=true min-buffers=1 max-buffers=4 \
+        "pipewiresrc path={node_id} do-timestamp=true min-buffers=1 max-buffers=8 \
          ! videorate drop-only=true \
          ! video/x-raw,framerate={fps_cap}/1 \
          {crop_element}\

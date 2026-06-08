@@ -963,6 +963,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             _record_button.show();
                             _record_time_label.set_visible(false);
                             _stop_button.hide();
+                            _main_window.set_deletable(true);
                             stop_timer(_record_time_label.clone());
                             let text_buffer = TextBuffer::new(None);
                             text_buffer.set_text(&format!("{}", error));
@@ -989,6 +990,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             _record_button.show();
                             _record_time_label.set_visible(false);
                             _stop_button.hide();
+                            _main_window.set_deletable(true);
                             stop_timer(_record_time_label.clone());
                             let text_buffer = TextBuffer::new(None);
                             text_buffer.set_text(&format!("{}", error));
@@ -1038,6 +1040,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             _record_button.show();
                             _record_time_label.set_visible(false);
                             _stop_button.hide();
+                            _main_window.set_deletable(true);
                             stop_timer(_record_time_label.clone());
                             // "__cancelled__" means the user dismissed the portal
                             // picker — not an error, so don't show the error dialog.
