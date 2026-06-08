@@ -452,7 +452,7 @@ fn select_pipeline(
         ""
     };
     let src = format!(
-        "pipewiresrc path={node_id} do-timestamp=true \
+        "pipewiresrc path={node_id} do-timestamp=true min-buffers=1 max-buffers=4 \
          ! videorate drop-only=true \
          ! video/x-raw,framerate={fps_cap}/1 \
          {crop_element}\
