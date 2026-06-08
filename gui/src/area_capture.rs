@@ -166,7 +166,7 @@ impl Title {
 }
 
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
-pub fn get_monitor_logical_sizes() -> Vec<(i32, i32, i32)> {
+pub fn get_monitor_logical_sizes() -> Vec<(i32, i32, i32, i32)> {
     use adw::gtk::gdk::prelude::*;
     let Some(display) = adw::gtk::gdk::Display::default() else { return Vec::new() };
     let monitors = display.monitors();
@@ -175,7 +175,7 @@ pub fn get_monitor_logical_sizes() -> Vec<(i32, i32, i32)> {
         let Some(item) = monitors.item(i) else { continue };
         let Ok(monitor) = item.downcast::<adw::gtk::gdk::Monitor>() else { continue };
         let geom = monitor.geometry();
-        result.push((geom.x(), geom.y(), geom.width()));
+        result.push((geom.x(), geom.y(), geom.width(), geom.height()));
     }
     result
 }

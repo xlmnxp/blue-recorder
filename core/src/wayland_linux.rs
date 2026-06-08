@@ -53,7 +53,7 @@ pub struct WaylandRecorder {
     session_path: String,
     pipeline: Option<gst::Pipeline>,
     filename: String,
-    monitor_logical_sizes: Vec<(i32, i32, i32)>,
+    monitor_logical_sizes: Vec<(i32, i32, i32, i32)>,
 }
 
 impl WaylandRecorder {
@@ -61,7 +61,7 @@ impl WaylandRecorder {
         self.pipeline.is_some()
     }
 
-    pub fn set_monitor_logical_sizes(&mut self, sizes: Vec<(i32, i32, i32)>) {
+    pub fn set_monitor_logical_sizes(&mut self, sizes: Vec<(i32, i32, i32, i32)>) {
         self.monitor_logical_sizes = sizes;
     }
 
@@ -186,13 +186,19 @@ impl WaylandRecorder {
 
             if response.contains_key("streams") {
                 let monitor = parse_monitor_geometry(&response);
+                // Look up the GDK logical dimensions for this monitor.
+                // These match slurp's coordinate space (from zxdg_output_v1.logical_size).
+                let (gdk_lw, gdk_lh) = self.monitor_logical_sizes.iter()
+                    .find(|&&(lx, ly, _, _)| lx == monitor.0 && ly == monitor.1)
+                    .map(|&(_, _, lw, lh)| (lw, lh))
+                    .unwrap_or((monitor.2, monitor.3));
                 let crop = if select_area {
-                    run_slurp(monitor.0, monitor.1, monitor.2, monitor.3, &self.monitor_logical_sizes)
+                    run_slurp(monitor.0, monitor.1, gdk_lw, gdk_lh)
                 } else {
                     None
                 };
                 let (w, h) = self
-                    .record_screen_cast(response.clone(), framerate, crop)
+                    .record_screen_cast(response.clone(), framerate, crop, gdk_lw, gdk_lh)
                     .await
                     .expect("failed to record screen cast");
                 width = w;
@@ -299,6 +305,8 @@ impl WaylandRecorder {
         response: HashMap<&str, Value<'_>>,
         framerate: u16,
         crop: Option<(u16, u16, u16, u16)>,
+        gdk_lw: i32,
+        gdk_lh: i32,
     ) -> Result<(i32, i32)> {
         let streams = response.get("streams").expect("missing streams");
 
@@ -343,8 +351,7 @@ impl WaylandRecorder {
         }
 
         let fps = if framerate > 0 { framerate } else { 30 };
-
-        let pipeline = select_pipeline(node_id, fps, &self.filename, width, height, crop);
+        let pipeline = select_pipeline(node_id, fps, &self.filename, crop, gdk_lw, gdk_lh);
         pipeline.set_state(gst::State::Playing).expect("failed to start pipeline");
         self.pipeline = Some(pipeline);
 
@@ -373,108 +380,8 @@ fn parse_monitor_geometry(response: &HashMap<&str, Value<'_>>) -> (i32, i32, i32
     (x, y, w, h)
 }
 
-fn get_monitor_scale(target_x: i32, target_y: i32, portal_physical_w: i32,
-                     monitor_logical_sizes: &[(i32, i32, i32)]) -> f64 {
-    stored_scale(target_x, target_y, portal_physical_w, monitor_logical_sizes)
-        .or_else(|| wlr_randr_scale(target_x, target_y))
-        .or_else(|| sway_scale(target_x, target_y))
-        .or_else(|| hyprland_scale(target_x, target_y))
-        .unwrap_or(1.0)
-}
-
-fn stored_scale(target_x: i32, target_y: i32, physical_w: i32,
-                monitor_logical_sizes: &[(i32, i32, i32)]) -> Option<f64> {
-    for &(lx, ly, lw) in monitor_logical_sizes {
-        if lx != target_x || ly != target_y || lw <= 0 || physical_w <= 0 { continue; }
-        let scale = physical_w as f64 / lw as f64;
-        if scale >= 0.5 && scale <= 8.0 {
-            return Some(scale);
-        }
-    }
-    None
-}
-
-fn wlr_randr_scale(target_x: i32, target_y: i32) -> Option<f64> {
-    let out = std::process::Command::new("wlr-randr").output().ok()?;
-    if !out.status.success() { return None; }
-    let text = String::from_utf8_lossy(&out.stdout);
-
-    let mut found_pos = false;
-    for line in text.lines() {
-        let t = line.trim();
-        if t.starts_with("position: ") {
-            let p = &t["position: ".len()..];
-            let nums: Vec<i32> = p.split(',').filter_map(|s| s.trim().parse().ok()).collect();
-            found_pos = nums.len() >= 2 && nums[0] == target_x && nums[1] == target_y;
-        } else if found_pos && t.starts_with("scale: ") {
-            return t["scale: ".len()..].trim().parse::<f64>().ok();
-        }
-    }
-    None
-}
-
-fn sway_scale(target_x: i32, target_y: i32) -> Option<f64> {
-    let out = std::process::Command::new("swaymsg")
-        .args(["-t", "get_outputs"])
-        .output()
-        .ok()?;
-    if !out.status.success() { return None; }
-    let text = String::from_utf8_lossy(&out.stdout);
-
-    for chunk in text.split("},{") {
-        let x_pat_a = format!("\"x\":{}", target_x);
-        let x_pat_b = format!("\"x\": {}", target_x);
-        let y_pat_a = format!("\"y\":{}", target_y);
-        let y_pat_b = format!("\"y\": {}", target_y);
-        let has_x = chunk.contains(&x_pat_a) || chunk.contains(&x_pat_b);
-        let has_y = chunk.contains(&y_pat_a) || chunk.contains(&y_pat_b);
-        if !has_x || !has_y { continue; }
-        if let Some(idx) = chunk.find("\"scale\"") {
-            let after = &chunk[idx + 7..];
-            let colon = after.find(':')?;
-            let val = after[colon + 1..].trim();
-            let end = val.find(|c: char| !c.is_ascii_digit() && c != '.').unwrap_or(val.len());
-            return val[..end].parse::<f64>().ok();
-        }
-    }
-    None
-}
-
-fn hyprland_scale(target_x: i32, target_y: i32) -> Option<f64> {
-    let out = std::process::Command::new("hyprctl")
-        .arg("monitors")
-        .output()
-        .ok()?;
-    if !out.status.success() { return None; }
-    let text = String::from_utf8_lossy(&out.stdout);
-
-    let pos_pattern = format!(" at {}x{}", target_x, target_y);
-    let mut in_block = false;
-    for line in text.lines() {
-        if line.contains(&pos_pattern) {
-            in_block = true;
-        } else if in_block {
-            let t = line.trim();
-            if t.starts_with("scale:") {
-                return t["scale:".len()..].trim().parse::<f64>().ok();
-            }
-            if !line.starts_with('\t') && !line.starts_with(' ') && !line.is_empty() {
-                in_block = false;
-            }
-        }
-    }
-    None
-}
-
-fn run_slurp(monitor_x: i32, monitor_y: i32, monitor_w: i32, monitor_h: i32,
-             monitor_logical_sizes: &[(i32, i32, i32)]) -> Option<(u16, u16, u16, u16)> {
+fn run_slurp(monitor_x: i32, monitor_y: i32, logical_w: i32, logical_h: i32) -> Option<(u16, u16, u16, u16)> {
     use std::io::Write;
-
-    let scale = get_monitor_scale(monitor_x, monitor_y, monitor_w, monitor_logical_sizes);
-
-    let logical_w = (monitor_w as f64 / scale).round() as i32;
-    let logical_h = (monitor_h as f64 / scale).round() as i32;
-
     let region = format!("{},{} {}x{}", monitor_x, monitor_y, logical_w, logical_h);
     let mut child = std::process::Command::new("slurp")
         .arg("-f").arg("%x %y %w %h")
@@ -484,16 +391,13 @@ fn run_slurp(monitor_x: i32, monitor_y: i32, monitor_w: i32, monitor_h: i32,
     child.stdin.take()?.write_all(region.as_bytes()).ok()?;
     let out = child.wait_with_output().ok()?;
     if !out.status.success() { return None; }
-
     let s = String::from_utf8_lossy(&out.stdout);
     let nums: Vec<f64> = s.split_whitespace().filter_map(|t| t.parse().ok()).collect();
     if nums.len() != 4 { return None; }
-
-    let cx = ((nums[0] - monitor_x as f64) * scale).round().max(0.0) as u16;
-    let cy = ((nums[1] - monitor_y as f64) * scale).round().max(0.0) as u16;
-    let cw = (nums[2] * scale).round() as u16;
-    let ch = (nums[3] * scale).round() as u16;
-
+    let cx = (nums[0] - monitor_x as f64).round().max(0.0) as u16;
+    let cy = (nums[1] - monitor_y as f64).round().max(0.0) as u16;
+    let cw = nums[2].round().max(1.0) as u16;
+    let ch = nums[3].round().max(1.0) as u16;
     Some((cx, cy, cw, ch))
 }
 
@@ -537,65 +441,49 @@ fn select_pipeline(
     node_id: u32,
     fps: u16,
     filename: &str,
-    stream_width: i32,
-    stream_height: i32,
     crop: Option<(u16, u16, u16, u16)>,
+    logical_w: i32,
+    logical_h: i32,
 ) -> gst::Pipeline {
     let fps_cap = if fps > 0 { fps } else { 30 };
-    let crop_filter = if let Some((cx, cy, cw, ch)) = crop {
-        let sw = stream_width.max(0) as u32;
-        let sh = stream_height.max(0) as u32;
-        let left   = cx as u32;
-        let top    = cy as u32;
-        let right  = sw.saturating_sub(left).saturating_sub(cw as u32);
-        let bottom = sh.saturating_sub(top).saturating_sub(ch as u32);
-        format!("! videocrop left={left} top={top} right={right} bottom={bottom} ")
+    let crop_element = if crop.is_some() {
+        "! videocrop name=vcrop left=0 top=0 right=0 bottom=0 "
     } else {
-        String::new()
+        ""
     };
-
     let src = format!(
         "pipewiresrc path={node_id} do-timestamp=true \
          ! videorate drop-only=true \
          ! video/x-raw,framerate={fps_cap}/1 \
-         {crop_filter}\
+         {crop_element}\
          ! queue leaky=downstream max-size-buffers=2 max-size-time=0 max-size-bytes=0",
-        node_id = node_id,
-        fps_cap = fps_cap,
-        crop_filter = crop_filter,
     );
-
     let vp9_opts = format!(
         "deadline=1 cpu-used=5 lag-in-frames=0 end-usage=cbr \
          target-bitrate=8000000 error-resilient=1 threads=4 keyframe-max-dist={fps}",
-        fps = fps,
     );
-
     let candidates: &[(&str, String)] = &[
         (
             "vaapih264enc",
             format!(
                 "{src} ! videoconvert ! vaapipostproc \
                  ! vaapih264enc rate-control=cbr bitrate=8000 \
-                 ! h264parse ! matroskamux ! filesink location={f}",
-                src = src, f = filename,
+                 ! h264parse ! matroskamux ! filesink location={filename}",
             ),
         ),
         (
             "nvh264enc",
             format!(
                 "{src} ! videoconvert ! nvh264enc \
-                 ! h264parse ! matroskamux ! filesink location={f}",
-                src = src, f = filename,
+                 ! h264parse ! matroskamux ! filesink location={filename}",
             ),
         ),
         (
             "vp9enc",
             format!(
                 "{src} ! videoconvert n-threads=4 \
-                 ! vp9enc {opts} \
-                 ! matroskamux ! filesink location={f}",
-                src = src, opts = vp9_opts, f = filename,
+                 ! vp9enc {vp9_opts} \
+                 ! matroskamux ! filesink location={filename}",
             ),
         ),
     ];
@@ -606,6 +494,53 @@ fn select_pipeline(
         }
         let elem = gst::parse::launch(desc).expect("failed to build recording pipeline");
         let pipeline = elem.dynamic_cast::<gst::Pipeline>().expect("not a pipeline");
+
+        if let Some((lcx, lcy, lcw, lch)) = crop {
+            if logical_w > 0 && logical_h > 0 {
+                if let Some(vcrop) = pipeline.by_name("vcrop") {
+                    if let Some(sink_pad) = vcrop.static_pad("sink") {
+                        let vcrop_clone = vcrop.clone();
+                        let lw = logical_w;
+                        let lh = logical_h;
+                        sink_pad.add_probe(
+                            gst::PadProbeType::EVENT_DOWNSTREAM,
+                            move |_, info| {
+                                let Some(gst::PadProbeData::Event(ref ev)) = info.data else {
+                                    return gst::PadProbeReturn::Ok;
+                                };
+                                if ev.type_() != gst::EventType::Caps {
+                                    return gst::PadProbeReturn::Ok;
+                                }
+                                let gst::EventView::Caps(caps_ev) = ev.view() else {
+                                    return gst::PadProbeReturn::Ok;
+                                };
+                                let caps = caps_ev.caps();
+                                let Some(s) = caps.structure(0) else {
+                                    return gst::PadProbeReturn::Remove;
+                                };
+                                let (Ok(aw), Ok(ah)) = (s.get::<i32>("width"), s.get::<i32>("height")) else {
+                                    return gst::PadProbeReturn::Remove;
+                                };
+                                let sx = aw as f64 / lw as f64;
+                                let sy = ah as f64 / lh as f64;
+                                let left   = (lcx as f64 * sx).round() as u32;
+                                let top    = (lcy as f64 * sy).round() as u32;
+                                let cw_p   = (lcw as f64 * sx).round().max(1.0) as u32;
+                                let ch_p   = (lch as f64 * sy).round().max(1.0) as u32;
+                                let right  = (aw as u32).saturating_sub(left + cw_p);
+                                let bottom = (ah as u32).saturating_sub(top + ch_p);
+                                vcrop_clone.set_property("left",   left   as i32);
+                                vcrop_clone.set_property("top",    top    as i32);
+                                vcrop_clone.set_property("right",  right  as i32);
+                                vcrop_clone.set_property("bottom", bottom as i32);
+                                gst::PadProbeReturn::Remove
+                            },
+                        );
+                    }
+                }
+            }
+        }
+
         return pipeline;
     }
 

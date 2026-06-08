@@ -997,6 +997,11 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                         _window_title.title.clone(),
                     );
                     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+                    {
+                        _ffmpeg_record_interface.borrow_mut().wayland_recorder
+                            .set_monitor_logical_sizes(area_capture::get_monitor_logical_sizes());
+                    }
+                    #[cfg(any(target_os = "freebsd", target_os = "linux"))]
                     let start_video = _ffmpeg_record_interface.borrow_mut().start_video(
                         _area_capture.x,
                         _area_capture.y,
