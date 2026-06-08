@@ -98,6 +98,7 @@ impl WaylandRecorder {
         cursor_mode_type: CursorModeTypes,
         framerate: u16,
         select_area: bool,
+        area_selector: Option<&dyn Fn(i32, i32, i32, i32) -> Option<(u16, u16, u16, u16)>>,
     ) -> (i32, i32) {
         self.filename = filename;
 
@@ -187,13 +188,13 @@ impl WaylandRecorder {
             if response.contains_key("streams") {
                 let monitor = parse_monitor_geometry(&response);
                 // Look up the GDK logical dimensions for this monitor.
-                // These match slurp's coordinate space (from zxdg_output_v1.logical_size).
+                // These match the GDK logical coordinate space the area selector works in.
                 let (gdk_lw, gdk_lh) = self.monitor_logical_sizes.iter()
                     .find(|&&(lx, ly, _, _)| lx == monitor.0 && ly == monitor.1)
                     .map(|&(_, _, lw, lh)| (lw, lh))
                     .unwrap_or((monitor.2, monitor.3));
                 let crop = if select_area {
-                    run_slurp(monitor.0, monitor.1, gdk_lw, gdk_lh)
+                    area_selector.and_then(|f| f(monitor.0, monitor.1, gdk_lw, gdk_lh))
                 } else {
                     None
                 };
@@ -378,27 +379,6 @@ fn parse_monitor_geometry(response: &HashMap<&str, Value<'_>>) -> (i32, i32, i32
         if dims.len() >= 2 { x = dims[0]; y = dims[1]; }
     }
     (x, y, w, h)
-}
-
-fn run_slurp(monitor_x: i32, monitor_y: i32, logical_w: i32, logical_h: i32) -> Option<(u16, u16, u16, u16)> {
-    use std::io::Write;
-    let region = format!("{},{} {}x{}", monitor_x, monitor_y, logical_w, logical_h);
-    let mut child = std::process::Command::new("slurp")
-        .arg("-f").arg("%x %y %w %h")
-        .stdin(std::process::Stdio::piped())
-        .stdout(std::process::Stdio::piped())
-        .spawn().ok()?;
-    child.stdin.take()?.write_all(region.as_bytes()).ok()?;
-    let out = child.wait_with_output().ok()?;
-    if !out.status.success() { return None; }
-    let s = String::from_utf8_lossy(&out.stdout);
-    let nums: Vec<f64> = s.split_whitespace().filter_map(|t| t.parse().ok()).collect();
-    if nums.len() != 4 { return None; }
-    let cx = (nums[0] - monitor_x as f64).round().max(0.0) as u16;
-    let cy = (nums[1] - monitor_y as f64).round().max(0.0) as u16;
-    let cw = nums[2].round().max(1.0) as u16;
-    let ch = nums[3].round().max(1.0) as u16;
-    Some((cx, cy, cw, ch))
 }
 
 fn probe_encoder(element_name: &str) -> bool {

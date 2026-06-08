@@ -18,6 +18,8 @@ use std::ops::Add;
 use std::path::Path;
 use std::rc::Rc;
 
+#[cfg(any(target_os = "freebsd", target_os = "linux"))]
+use crate::area_selector_overlay;
 use crate::{area_capture, config_management, fluent::get_bundle};
 use crate::timer::{RecordClick, recording_delay, start_timer, stop_timer};
 use crate::utils::{audio_output_source, build_filename, disable_input_widgets,
@@ -928,8 +930,13 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 #[cfg(target_os = "windows")]
                 let _window_title = window_title.borrow_mut();
                 disable_input_widgets(_input_widgets.clone());
-                start_timer(_record_time_label.clone());
                 _record_time_label.set_visible(true);
+                // For video recordings, the timer is started once start_video()
+                // returns — area selection blocks inside that call, and the
+                // timer shouldn't run while the user is still picking the area.
+                if !_video_switch.is_active() {
+                    start_timer(_record_time_label.clone());
+                }
                 if hide_switch.is_active() {
                     _main_window.minimize();
                 }
@@ -1011,11 +1018,12 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                         _area_capture.y,
                         _area_capture.width,
                         _area_capture.height,
-                        mode
+                        mode,
+                        Some(&area_selector_overlay::select_area),
                     );
                     match start_video {
                         Ok(_) => {
-                            // Do nothing
+                            start_timer(_record_time_label.clone());
                         },
                         Err(error) => {
                             if _area_grab_button.is_active() {

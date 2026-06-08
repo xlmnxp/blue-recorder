@@ -133,6 +133,9 @@ record-video = سجل الصورة
 # Run command label
 run-command = أمرٌ ينفذ عند الانتهاء
 
+# Area selector overlay
+area-selector-overlay-hint = اسحب لتحديد منطقة التسجيل
+
 # Selection buttons
 select-area = اختَر رُّقعة
 select-screen = اختَر الشاشة

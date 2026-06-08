@@ -133,6 +133,9 @@ record-video = Record Video
 # Run command label
 run-command = Run Command After Recording
 
+# Area selector overlay
+area-selector-overlay-hint = Drag to select the capture area
+
 # Selection buttons
 select-area = Select an Area
 select-screen = Select a Screen

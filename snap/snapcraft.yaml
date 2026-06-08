@@ -30,7 +30,6 @@ parts:
     stage-snaps:
       - ffmpeg
     stage-packages:
-      - slurp
       - x11-utils
       - libadwaita-1-0
       - libgstreamer-plugins-base1.0-0

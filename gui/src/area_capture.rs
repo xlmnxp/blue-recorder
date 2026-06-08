@@ -95,36 +95,6 @@ impl AreaCapture {
         Ok(*self)
     }
 
-    /// Use `slurp` to let the user draw a selection rectangle on Wayland.
-    /// Returns the selected area or an error (e.g. slurp not installed or cancelled).
-    #[cfg(any(target_os = "freebsd", target_os = "linux"))]
-    pub fn select_wayland_area(&mut self) -> Result<Self> {
-        let out = Command::new("slurp")
-            .arg("-f")
-            .arg("%x %y %w %h")
-            .output()
-            .map_err(|_| anyhow!(
-                "Could not run 'slurp'. Please install slurp for Wayland area selection."
-            ))?;
-
-        if !out.status.success() {
-            return Err(anyhow!("Area selection was cancelled."));
-        }
-
-        let s = String::from_utf8_lossy(&out.stdout);
-        let nums: Vec<u16> = s.split_whitespace()
-            .filter_map(|t| t.parse().ok())
-            .collect();
-        if nums.len() != 4 {
-            return Err(anyhow!("Failed to parse slurp output: '{}'", s.trim()));
-        }
-        self.x      = nums[0];
-        self.y      = nums[1];
-        self.width  = nums[2];
-        self.height = nums[3];
-        Ok(*self)
-    }
-
     pub fn reset(&mut self) -> Result<Self> {
         #[cfg(target_os = "windows")]
         {

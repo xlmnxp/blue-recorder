@@ -24,13 +24,12 @@ gstreamer
 libadwaita
 pipewire
 pipewire-pulse
-slurp        (Wayland only – area selection)
 xwininfo     (X11 only – area selection)
 ```
 
 Install dependencies for Ubuntu and Debian-based distros:
 ```
-sudo apt install build-essential cargo clang ffmpeg libadwaita-1-dev libgstreamer1.0-dev libpipewire-0.3-dev pipewire-pulse pulseaudio-utils x11-utils slurp
+sudo apt install build-essential cargo clang ffmpeg libadwaita-1-dev libgstreamer1.0-dev libpipewire-0.3-dev pipewire-pulse pulseaudio-utils x11-utils
 ```
 Then use `Cargo` to build it:
 ```

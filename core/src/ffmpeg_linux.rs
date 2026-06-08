@@ -168,7 +168,16 @@ pub struct Ffmpeg {
 }
 
 impl Ffmpeg {
-    pub fn start_video(&mut self, x: u16, y: u16, width: u16, height: u16, mode: RecordMode) -> Result<()> {
+    pub fn start_video(
+        &mut self,
+        x: u16,
+        y: u16,
+        width: u16,
+        height: u16,
+        mode: RecordMode,
+        #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+        area_selector: Option<&dyn Fn(i32, i32, i32, i32) -> Option<(u16, u16, u16, u16)>>,
+    ) -> Result<()> {
         self.saved_filename = self.filename.clone();
         self.output = Path::new(&self.filename)
             .extension()
@@ -194,6 +203,7 @@ impl Ffmpeg {
                 if self.record_mouse { CursorModeTypes::Show } else { CursorModeTypes::Hidden },
                 self.record_frames,
                 matches!(mode, RecordMode::Area),
+                area_selector,
             ));
 
             if !self.wayland_recorder.is_active() {

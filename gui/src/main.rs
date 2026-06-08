@@ -1,4 +1,6 @@
 pub mod area_capture;
+#[cfg(any(target_os = "freebsd", target_os = "linux"))]
+pub mod area_selector_overlay;
 pub mod config_management;
 pub mod fluent;
 pub mod timer;
