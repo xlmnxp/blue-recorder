@@ -759,6 +759,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         temp_video_filename: String::new(),
         temp_input_audio_filename: String::new(),
         temp_output_audio_filename: String::new(),
+        input_audio_offset: 0.0,
+        output_audio_offset: 0.0,
         width: None,
         height: None,
         input_audio_process: None,
