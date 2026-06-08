@@ -1,6 +1,6 @@
 # Blue Recorder [![Made With Rust](https://img.shields.io/static/v1?label=MADE%20WITH&message=Rust&color=red&style=for-the-badge&logo=Rust)](https://GitHub.com/xlmnxp/blue-recorder) [![GitHub contributors](https://img.shields.io/github/contributors/xlmnxp/blue-recorder.svg?style=for-the-badge)](https://GitHub.com/xlmnxp/blue-recorder/graphs/contributors)
 
-<img src="screenshots/screenshot1.png"/>
+<img src="screenshots/screenshot.png"/>
 
 A simple desktop recorder built using GTK4 and FFmpeg. 
 
@@ -24,13 +24,12 @@ gstreamer
 libadwaita
 pipewire
 pipewire-pulse
-slurp        (Wayland only – area selection)
 xwininfo     (X11 only – area selection)
 ```
 
 Install dependencies for Ubuntu and Debian-based distros:
 ```
-sudo apt install build-essential cargo clang ffmpeg libadwaita-1-dev libgstreamer1.0-dev libpipewire-0.3-dev pipewire-pulse pulseaudio-utils x11-utils slurp
+sudo apt install build-essential cargo clang ffmpeg libadwaita-1-dev libgstreamer1.0-dev libpipewire-0.3-dev pipewire-pulse pulseaudio-utils x11-utils
 ```
 Then use `Cargo` to build it:
 ```

@@ -1,6 +1,9 @@
 # About button
 about = About
 
+# Advanced settings button
+advanced-settings = Advanced Settings
+
 # Credits button
 address-abdullah-al-baroty = Abdullah Al-Baroty <albaroty@gmail.com>
 address-ahmad-gharib = Ahmad Gharib
@@ -22,10 +25,10 @@ address-salem-yaslem = Salem Yaslem <s@sy.sa>
 address-suliman-altassan = Suliman Altassan <suliman@dismail.de>
 address-william-grunow = William Grunow
 # sections
-authors = Created by:
-patreon = Patreon Supporters:
-design = Design by:
-translate = Translated by:
+authors = Created by
+patreon = Patreon Supporters
+design = Design by
+translate = Translated by
 
 # Overwrite warning
 already-exist = File already exist. Do you want to overwrite it?
@@ -37,13 +40,13 @@ apply = Apply
 area-chooser = Area Chooser
 
 # Audio bitrate label
-audio-bitrate = B/Audio:
+audio-bitrate = B/Audio
 
 # Audio source input
 audio-input = Default Input Source
 
 # Audio source label
-audio-source = Audio Input Source:
+audio-source = Audio Input Source
 
 # Auto hide label
 auto-hide = Auto Hide
@@ -74,13 +77,13 @@ copy-right = © 2021 Salem Yaslem
 close-error-dialog = Close
 
 # Run command label
-default-command = Default command:
+default-command = Default command
 
 # Default output folder
-default-folder = Default folder:
+default-folder = Default folder
 
 # Delay label
-delay = Delay:
+delay = Delay
 
 # Delay message
 delay-title = Start Recording in…
@@ -101,13 +104,13 @@ enter-command = Enter your command here..
 error-title = Error
 
 # Frames label
-file-name = Default filename:
+file-name = Default filename
 
 # Follow mouse label
 follow-mouse = Follow Mouse
 
 # Frames label
-frames = Frames:
+frames = Frames
 
 # License
 license-website = http://www.gnu.org/licenses/
@@ -120,7 +123,7 @@ license =
 record = Record
 
 # Record audio label
-record-audio = Record Mic
+record-audio = Record Microphone
 
 # Record speaker label
 record-speaker = Record Speaker
@@ -129,7 +132,10 @@ record-speaker = Record Speaker
 record-video = Record Video
 
 # Run command label
-run-command = Run Command After Recording:
+run-command = Run Command After Recording
+
+# Area selector overlay
+area-selector-overlay-hint = Drag to select the capture area
 
 # Selection buttons
 select-area = Select an Area
@@ -155,7 +161,7 @@ stop-recording = Stop recording
 tray-minimize = Minimize to tray
 
 # Video bitrate label
-video-bitrate = B/Video:
+video-bitrate = B/Video
 
 # Website link
 website = Website

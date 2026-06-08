@@ -14,6 +14,17 @@ use crate::wayland_linux::{CursorModeTypes, RecordTypes, WaylandRecorder};
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
 use gstreamer::{self as gst, prelude::ElementExt};
 
+/// Pushes `-i path` to ffmpeg args, prefixed with `-itsoffset offset` when
+/// `offset` is large enough to matter, shifting the audio stream's
+/// timestamps to line up with the video stream's start.
+#[cfg(any(target_os = "freebsd", target_os = "linux"))]
+fn push_audio_input(args: &mut Vec<String>, path: &str, offset: f64) {
+    if offset > 0.01 {
+        args.extend(["-itsoffset".into(), format!("{:.3}", offset)]);
+    }
+    args.extend(["-i".into(), path.into()]);
+}
+
 /// Standalone merge called from the background thread in stop_video_async().
 /// Takes only Send plain-data parameters so no Rc/RefCell crosses thread boundary.
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
@@ -21,6 +32,7 @@ pub fn merge_standalone(
     temp_video: &str, temp_in_audio: &str, temp_out_audio: &str,
     saved_filename: &str, output: &str,
     record_frames: u16, height: Option<u16>, audio_bitrate: u16,
+    in_audio_offset: f64, out_audio_offset: f64,
 ) -> Result<String> {
     use anyhow::anyhow;
 
@@ -91,8 +103,8 @@ pub fn merge_standalone(
     let out = saved_filename.to_string();
     for codec in &video_codecs {
         let mut args: Vec<String> = vec!["-i".into(), temp_video.into()];
-        if has_in  { args.extend(["-i".into(), temp_in_audio.into()]); }
-        if has_out { args.extend(["-i".into(), temp_out_audio.into()]); }
+        if has_in  { push_audio_input(&mut args, temp_in_audio, in_audio_offset); }
+        if has_out { push_audio_input(&mut args, temp_out_audio, out_audio_offset); }
         args.extend(["-c:v".into(), (*codec).into()]);
         match *codec {
             "libx264" | "libx265" => args.extend([
@@ -157,6 +169,11 @@ pub struct Ffmpeg {
     pub temp_video_filename: String,
     pub temp_input_audio_filename: String,
     pub temp_output_audio_filename: String,
+    /// Wall-clock seconds between video pipeline start and each audio
+    /// process's spawn, applied as `-itsoffset` during muxing to compensate
+    /// for portal-negotiation latency (worst on snap).
+    pub input_audio_offset: f64,
+    pub output_audio_offset: f64,
     pub width: Option<u16>,
     pub height: Option<u16>,
     pub input_audio_process: Option<Rc<RefCell<FfmpegChild>>>,
@@ -168,7 +185,16 @@ pub struct Ffmpeg {
 }
 
 impl Ffmpeg {
-    pub fn start_video(&mut self, x: u16, y: u16, width: u16, height: u16, mode: RecordMode) -> Result<()> {
+    pub fn start_video(
+        &mut self,
+        x: u16,
+        y: u16,
+        width: u16,
+        height: u16,
+        mode: RecordMode,
+        #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+        area_selector: Option<&dyn Fn(i32, i32, i32, i32) -> Option<(u16, u16, u16, u16)>>,
+    ) -> Result<()> {
         self.saved_filename = self.filename.clone();
         self.output = Path::new(&self.filename)
             .extension()
@@ -194,6 +220,7 @@ impl Ffmpeg {
                 if self.record_mouse { CursorModeTypes::Show } else { CursorModeTypes::Hidden },
                 self.record_frames,
                 matches!(mode, RecordMode::Area),
+                area_selector,
             ));
 
             if !self.wayland_recorder.is_active() {
@@ -201,6 +228,9 @@ impl Ffmpeg {
                 return Err(Error::msg("__cancelled__"));
             }
 
+            let video_start = std::time::Instant::now();
+            self.input_audio_offset = 0.0;
+            self.output_audio_offset = 0.0;
             if self.audio_input_enabled {
                 let tf = tempfile::Builder::new()
                     .prefix(".blue-recorder-audio-in-").suffix(".ogg")
@@ -214,6 +244,7 @@ impl Ffmpeg {
                     cmd.args(["-b:a", &format!("{}K", self.audio_record_bitrate)]);
                 }
                 self.input_audio_process = Some(Rc::new(RefCell::new(cmd.spawn()?)));
+                self.input_audio_offset = video_start.elapsed().as_secs_f64();
             }
 
             if self.audio_output_enabled {
@@ -229,6 +260,7 @@ impl Ffmpeg {
                     cmd.args(["-b:a", &format!("{}K", self.audio_record_bitrate)]);
                 }
                 self.output_audio_process = Some(Rc::new(RefCell::new(cmd.spawn()?)));
+                self.output_audio_offset = video_start.elapsed().as_secs_f64();
             }
 
             self.width  = Some(width);
@@ -379,6 +411,8 @@ impl Ffmpeg {
         let frames        = self.record_frames;
         let height        = self.height;
         let audio_br      = self.audio_record_bitrate;
+        let in_offset     = self.input_audio_offset;
+        let out_offset    = self.output_audio_offset;
 
         let (tx, rx) = std::sync::mpsc::channel::<Result<String>>();
         std::thread::spawn(move || {
@@ -406,6 +440,7 @@ impl Ffmpeg {
             let result = merge_standalone(
                 &temp_video, &temp_in_audio, &temp_out_audio,
                 &saved, &output, frames, height, audio_br,
+                in_offset, out_offset,
             );
             // Clean up temp files.
             for f in [&temp_video, &temp_in_audio, &temp_out_audio] {
@@ -554,8 +589,12 @@ impl Ffmpeg {
 
         for codec in &video_codecs {
             let mut args: Vec<String> = vec!["-i".into(), self.temp_video_filename.clone()];
-            if has_input_audio  { args.extend(["-i".into(), self.temp_input_audio_filename.clone()]); }
-            if has_output_audio { args.extend(["-i".into(), self.temp_output_audio_filename.clone()]); }
+            if has_input_audio {
+                push_audio_input(&mut args, &self.temp_input_audio_filename, self.input_audio_offset);
+            }
+            if has_output_audio {
+                push_audio_input(&mut args, &self.temp_output_audio_filename, self.output_audio_offset);
+            }
             args.extend(["-c:v".into(), (*codec).into()]);
             match *codec {
                 "libx264" | "libx265" => {

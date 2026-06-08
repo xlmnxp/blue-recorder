@@ -18,6 +18,8 @@ use std::ops::Add;
 use std::path::Path;
 use std::rc::Rc;
 
+#[cfg(any(target_os = "freebsd", target_os = "linux"))]
+use crate::area_selector_overlay;
 use crate::{area_capture, config_management, fluent::get_bundle};
 use crate::timer::{RecordClick, recording_delay, start_timer, stop_timer};
 use crate::utils::{audio_output_source, build_filename, disable_input_widgets,
@@ -139,6 +141,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let window_grab_button: ToggleButton = builder.object("window_grab_button").unwrap();
     let window_grab_icon: Image = builder.object("window_grab_icon").unwrap();
     let window_grab_label: Label = builder.object("window_grab_label").unwrap();
+    let advanced_expander: Expander = builder.object("advanced_settings_expander").unwrap();
 
     // --- default properties
     // Windows
@@ -526,6 +529,9 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         });
     }
 
+    // Advanced settings expander
+    advanced_expander.set_label(Some(&get_bundle("advanced-settings", None)));
+
     // --- connections
     // Show dialog window when about button clicked then hide it after close
     about_button.set_tooltip_text(Some(&get_bundle("about-tooltip", None)));
@@ -753,12 +759,19 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         temp_video_filename: String::new(),
         temp_input_audio_filename: String::new(),
         temp_output_audio_filename: String::new(),
+        input_audio_offset: 0.0,
+        output_audio_offset: 0.0,
         width: None,
         height: None,
         input_audio_process: None,
         output_audio_process: None,
         video_process: None,
-        wayland_recorder: async_std::task::block_on(WaylandRecorder::new()),
+        wayland_recorder: {
+            let mut rec = async_std::task::block_on(WaylandRecorder::new());
+            #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+            rec.set_monitor_logical_sizes(area_capture::get_monitor_logical_sizes());
+            rec
+        },
     }));
 
     #[cfg(target_os = "windows")]
@@ -919,8 +932,13 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                 #[cfg(target_os = "windows")]
                 let _window_title = window_title.borrow_mut();
                 disable_input_widgets(_input_widgets.clone());
-                start_timer(_record_time_label.clone());
                 _record_time_label.set_visible(true);
+                // For video recordings, the timer is started once start_video()
+                // returns — area selection blocks inside that call, and the
+                // timer shouldn't run while the user is still picking the area.
+                if !_video_switch.is_active() {
+                    start_timer(_record_time_label.clone());
+                }
                 if hide_switch.is_active() {
                     _main_window.minimize();
                 }
@@ -947,6 +965,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             _record_button.show();
                             _record_time_label.set_visible(false);
                             _stop_button.hide();
+                            _main_window.set_deletable(true);
                             stop_timer(_record_time_label.clone());
                             let text_buffer = TextBuffer::new(None);
                             text_buffer.set_text(&format!("{}", error));
@@ -973,6 +992,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             _record_button.show();
                             _record_time_label.set_visible(false);
                             _stop_button.hide();
+                            _main_window.set_deletable(true);
                             stop_timer(_record_time_label.clone());
                             let text_buffer = TextBuffer::new(None);
                             text_buffer.set_text(&format!("{}", error));
@@ -992,16 +1012,22 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                         _window_title.title.clone(),
                     );
                     #[cfg(any(target_os = "freebsd", target_os = "linux"))]
+                    {
+                        _ffmpeg_record_interface.borrow_mut().wayland_recorder
+                            .set_monitor_logical_sizes(area_capture::get_monitor_logical_sizes());
+                    }
+                    #[cfg(any(target_os = "freebsd", target_os = "linux"))]
                     let start_video = _ffmpeg_record_interface.borrow_mut().start_video(
                         _area_capture.x,
                         _area_capture.y,
                         _area_capture.width,
                         _area_capture.height,
-                        mode
+                        mode,
+                        Some(&area_selector_overlay::select_area),
                     );
                     match start_video {
                         Ok(_) => {
-                            // Do nothing
+                            start_timer(_record_time_label.clone());
                         },
                         Err(error) => {
                             if _area_grab_button.is_active() {
@@ -1016,6 +1042,7 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
                             _record_button.show();
                             _record_time_label.set_visible(false);
                             _stop_button.hide();
+                            _main_window.set_deletable(true);
                             stop_timer(_record_time_label.clone());
                             // "__cancelled__" means the user dismissed the portal
                             // picker — not an error, so don't show the error dialog.
