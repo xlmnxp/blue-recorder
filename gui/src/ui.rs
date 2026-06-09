@@ -1083,6 +1083,8 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let mut _ffmpeg_record_interface = ffmpeg_record_interface.clone();
     stop_button.connect_clicked(move |button| {
         button.set_sensitive(false);
+        _main_window_stop.unminimize();
+        _main_window_stop.present();
         _app_title.hide();
         _processing_spinner.start(); // ensure animation runs even after widget was hidden
         _processing_box.show();
