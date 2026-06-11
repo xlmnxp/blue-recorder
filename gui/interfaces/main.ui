@@ -1,764 +1,724 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-	<requires lib="gtk" version="4.0"/>
-	<requires lib="libadwaita" version="1.0"/>
-	<object class="GtkAdjustment" id="adjustment_delay">
-		<property name="upper">10</property>
-		<property name="step-increment">1</property>
-		<property name="page-increment">2</property>
-	</object>
-	<object class="GtkAdjustment" id="adjustment_frames">
-		<property name="lower">0</property>
-		<property name="upper">1000</property>
-		<property name="step-increment">1</property>
-		<property name="page-increment">10</property>
-	</object>
-	<object class="GtkAdjustment" id="adjustment_bitrate_video">
-		<property name="lower">0</property>
-		<property name="upper">50000</property>
-		<property name="step-increment">1</property>
-		<property name="page-increment">10</property>
-	</object>
-	<object class="GtkAdjustment" id="adjustment_bitrate_audio">
-		<property name="lower">0</property>
-		<property name="upper">50000</property>
-		<property name="step-increment">1</property>
-		<property name="page-increment">10</property>
-	</object>
-	<object class="GtkImage" id="image3">
-		<property name="visible">True</property>
-		<property name="can-focus">True</property>
-		<property name="icon-name">media-playback-start</property>
-	</object>
-	<object class="GtkImage" id="image5">
-		<property name="visible">True</property>
-		<property name="can-focus">True</property>
-		<property name="icon-name">gtk-media-stop</property>
-	</object>
-	<object class="AdwWindow" id="main_window">
-		<property name="visible">True</property>
-		<property name="can-focus">True</property>
-		<property name="resizable">False</property>
-		<child>
-			<object class="GtkBox">
-				<property name="visible">True</property>
-				<property name="can-focus">True</property>
-				<property name="orientation">vertical</property>
-				<!-- ── Header bar ── -->
-				<child>
-					<object class="GtkBox">
-						<property name="visible">True</property>
-						<property name="can-focus">True</property>
-						<child>
-							<object class="AdwHeaderBar">
-								<property name="visible">True</property>
-								<property name="can-focus">True</property>
-								<property name="hexpand">True</property>
-								<child>
-									<object class="GtkButton" id="recordbutton">
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="receives-default">True</property>
-										<property name="has-tooltip">True</property>
-										<child>
-											<object class="GtkGrid">
-												<property name="visible">True</property>
-												<property name="can-focus">True</property>
-												<property name="column-spacing">2</property>
-												<property name="row-homogeneous">True</property>
-												<child>
-													<object class="GtkImage">
-														<property name="name">record_image</property>
-														<property name="visible">True</property>
-														<property name="can-focus">True</property>
-														<property name="icon-name">media-record</property>
-													</object>
-												</child>
-												<child>
-													<object class="GtkLabel" id="record_label">
-														<property name="name">record_label</property>
-														<property name="visible">True</property>
-														<property name="can-focus">True</property>
-														<property name="label" translatable="yes">label</property>
-													</object>
-												</child>
-											</object>
-										</child>
-									</object>
-								</child>
-								<child>
-									<object class="GtkButton" id="stopbutton">
-										<property name="name">stop_button</property>
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="receives-default">True</property>
-										<property name="has-tooltip">True</property>
-										<child>
-											<object class="GtkGrid">
-												<property name="visible">True</property>
-												<property name="can-focus">True</property>
-												<property name="column-spacing">2</property>
-												<property name="row-homogeneous">True</property>
-												<child>
-													<object class="GtkImage">
-														<property name="visible">True</property>
-														<property name="can-focus">True</property>
-														<property name="icon-name">media-playback-stop</property>
-													</object>
-												</child>
-												<child>
-													<object class="GtkLabel" id="stop_label">
-														<property name="visible">True</property>
-														<property name="can-focus">True</property>
-														<property name="label" translatable="yes">label</property>
-													</object>
-												</child>
-											</object>
-										</child>
-									</object>
-								</child>
-								<child>
-									<object class="GtkSeparator" id="record_button_separator">
-										<property name="visible">True</property>
-										<property name="opacity">0.0</property>
-									</object>
-								</child>
-								<child>
-									<object class="GtkLabel" id="record_time_label">
-										<property name="name">record_time_label</property>
-										<property name="visible">False</property>
-										<property name="can-focus">True</property>
-									</object>
-								</child>
-								<child type="title">
-									<object class="GtkBox" id="title_area">
-										<property name="visible">True</property>
-										<property name="orientation">vertical</property>
-										<property name="valign">center</property>
-										<property name="spacing">1</property>
-										<child>
-											<object class="GtkLabel" id="app_title">
-												<property name="visible">True</property>
-												<property name="label">Blue Recorder</property>
-												<property name="halign">center</property>
-												<style>
-													<class name="title"/>
-												</style>
-											</object>
-										</child>
-										<child>
-											<object class="GtkBox" id="processing_box">
-												<property name="visible">False</property>
-												<property name="orientation">horizontal</property>
-												<property name="valign">center</property>
-												<property name="spacing">6</property>
-												<child>
-													<object class="GtkSpinner" id="processing_spinner">
-														<property name="visible">True</property>
-														<property name="spinning">True</property>
-														<property name="valign">center</property>
-														<property name="width-request">16</property>
-														<property name="height-request">16</property>
-													</object>
-												</child>
-												<child>
-													<object class="GtkLabel" id="processing_label">
-														<property name="visible">True</property>
-														<property name="valign">center</property>
-													</object>
-												</child>
-											</object>
-										</child>
-									</object>
-								</child>
-								<child>
-									<object class="GtkButton" id="playbutton">
-										<property name="icon_name">media-playback-start</property>
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="receives-default">True</property>
-										<property name="has-tooltip">True</property>
-									</object>
-								</child>
-								<child type="end">
-									<object class="GtkButton" id="aboutbutton">
-										<property name="label" translatable="yes">button</property>
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="receives-default">True</property>
-										<property name="has-tooltip">True</property>
-									</object>
-								</child>
-							</object>
-						</child>
-					</object>
-				</child>
-				<!-- ── Filename + folder chooser ── -->
-				<child>
-					<object class="GtkBox">
-						<property name="visible">True</property>
-						<property name="can-focus">True</property>
-						<property name="margin-start">5</property>
-						<property name="margin-end">5</property>
-						<property name="margin-top">5</property>
-						<child>
-							<object class="GtkEntry" id="filename">
-								<property name="visible">True</property>
-								<property name="can-focus">True</property>
-								<property name="receives-default">True</property>
-								<property name="sensitive">True</property>
-								<property name="editable">True</property>
-								<property name="enable-undo">True</property>
-								<property name="hexpand">True</property>
-								<property name="margin-start">5</property>
-								<property name="margin-end">5</property>
-								<property name="margin-top">5</property>
-								<property name="margin-bottom">5</property>
-							</object>
-						</child>
-						<child>
-							<object class="GtkButton" id="folder_chooser">
-								<property name="visible">True</property>
-								<property name="can-focus">True</property>
-								<property name="receives-default">True</property>
-								<property name="hexpand">True</property>
-								<property name="margin-start">5</property>
-								<property name="margin-end">5</property>
-								<property name="margin-top">5</property>
-								<property name="margin-bottom">5</property>
-								<property name="has-tooltip">True</property>
-								<child>
-									<object class="GtkBox">
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="orientation">horizontal</property>
-										<property name="spacing">5</property>
-										<child>
-											<object class="GtkImage" id="folder_chooser_image">
-												<property name="halign">start</property>
-											</object>
-										</child>
-										<child>
-											<object class="GtkLabel" id="folder_chooser_label">
-												<property name="halign">start</property>
-											</object>
-										</child>
-									</object>
-								</child>
-							</object>
-						</child>
-					</object>
-				</child>
-				<!-- ── Format combobox ── -->
-				<child>
-					<object class="GtkComboBoxText" id="comboboxtext1">
-						<property name="visible">True</property>
-						<property name="can-focus">True</property>
-						<property name="margin-start">10</property>
-						<property name="margin-end">10</property>
-						<property name="margin-top">5</property>
-						<property name="margin-bottom">5</property>
-						<property name="has-tooltip">True</property>
-					</object>
-				</child>
-				<!-- ── Capture mode buttons ── -->
-				<child>
-					<object class="GtkBox">
-						<property name="visible">True</property>
-						<property name="can-focus">True</property>
-						<property name="margin-start">5</property>
-						<property name="margin-end">5</property>
-						<property name="margin-bottom">5</property>
-						<property name="homogeneous">True</property>
-						<child>
-							<object class="GtkToggleButton" id="area_grab_button">
-								<property name="name">area_grab_button</property>
-								<property name="visible">True</property>
-								<property name="can-focus">True</property>
-								<property name="receives-default">True</property>
-								<property name="margin-start">3</property>
-								<property name="margin-end">3</property>
-								<property name="margin-top">3</property>
-								<property name="margin-bottom">3</property>
-								<property name="has-tooltip">True</property>
-								<child>
-									<object class="GtkBox">
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="orientation">horizontal</property>
-										<property name="spacing">6</property>
-										<child>
-											<object class="GtkImage" id="area_grab_icon">
-												<property name="visible">True</property>
-												<property name="can-focus">True</property>
-											</object>
-										</child>
-										<child>
-											<object class="GtkLabel" id="area_grab_label">
-												<property name="label" translatable="yes">label</property>
-												<property name="visible">True</property>
-												<property name="can-focus">True</property>
-											</object>
-										</child>
-									</object>
-								</child>
-							</object>
-						</child>
-						<child>
-							<object class="GtkToggleButton" id="screen_grab_button">
-								<property name="name">screen_grab_button</property>
-								<property name="group">area_grab_button</property>
-								<property name="visible">True</property>
-								<property name="can-focus">True</property>
-								<property name="receives-default">True</property>
-								<property name="margin-start">3</property>
-								<property name="margin-end">3</property>
-								<property name="margin-top">3</property>
-								<property name="margin-bottom">3</property>
-								<property name="has-tooltip">True</property>
-								<child>
-									<object class="GtkGrid">
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="column-spacing">6</property>
-										<property name="row-homogeneous">True</property>
-										<child>
-											<object class="GtkImage" id="screen_grab_icon">
-												<property name="visible">True</property>
-												<property name="can-focus">True</property>
-											</object>
-										</child>
-										<child>
-											<object class="GtkLabel" id="screen_grab_label">
-												<property name="label" translatable="yes">label</property>
-												<property name="visible">True</property>
-												<property name="can-focus">True</property>
-											</object>
-										</child>
-									</object>
-								</child>
-							</object>
-						</child>
-						<child>
-							<object class="GtkToggleButton" id="window_grab_button">
-								<property name="name">window_grab_button</property>
-								<property name="group">area_grab_button</property>
-								<property name="visible">True</property>
-								<property name="can-focus">True</property>
-								<property name="receives-default">True</property>
-								<property name="margin-start">3</property>
-								<property name="margin-end">3</property>
-								<property name="margin-top">3</property>
-								<property name="margin-bottom">3</property>
-								<property name="has-tooltip">True</property>
-								<child>
-									<object class="GtkGrid">
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="column-spacing">6</property>
-										<property name="row-homogeneous">True</property>
-										<child>
-											<object class="GtkImage" id="window_grab_icon">
-												<property name="visible">True</property>
-												<property name="can-focus">True</property>
-											</object>
-										</child>
-										<child>
-											<object class="GtkLabel" id="window_grab_label">
-												<property name="label" translatable="yes">label</property>
-												<property name="visible">True</property>
-												<property name="can-focus">True</property>
-											</object>
-										</child>
-									</object>
-								</child>
-							</object>
-						</child>
-					</object>
-				</child>
-				<!-- ── Main options grid: checkboxes + frames ── -->
-				<child>
-					<object class="GtkGrid" id="grid1">
-						<property name="visible">True</property>
-						<property name="can-focus">True</property>
-						<property name="margin-start">10</property>
-						<property name="margin-end">10</property>
-						<property name="margin-top">5</property>
-						<property name="margin-bottom">5</property>
-						<property name="row-spacing">6</property>
-						<!-- Row 0: core checkboxes -->
-						<child>
-							<object class="GtkGrid">
-								<property name="visible">True</property>
-								<property name="can-focus">True</property>
-								<property name="hexpand">True</property>
-								<property name="row-spacing">6</property>
-								<property name="column-homogeneous">True</property>
-								<layout>
-									<property name="column">0</property>
-									<property name="row">0</property>
-								</layout>
-								<child>
-									<object class="GtkCheckButton" id="videoswitch">
-										<property name="label" translatable="yes">checkbutton</property>
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="receives-default">False</property>
-										<property name="active">True</property>
-										<property name="has-tooltip">True</property>
-										<layout>
-											<property name="column">0</property>
-											<property name="row">0</property>
-										</layout>
-									</object>
-								</child>
-								<child>
-									<object class="GtkCheckButton" id="audio_input_switch">
-										<property name="label" translatable="yes">checkbutton</property>
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="receives-default">False</property>
-										<property name="active">True</property>
-										<property name="has-tooltip">True</property>
-										<layout>
-											<property name="column">1</property>
-											<property name="row">0</property>
-										</layout>
-									</object>
-								</child>
-								<child>
-									<object class="GtkCheckButton" id="mouseswitch">
-										<property name="label" translatable="yes">checkbutton</property>
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="receives-default">False</property>
-										<property name="active">True</property>
-										<property name="has-tooltip">True</property>
-										<layout>
-											<property name="column">2</property>
-											<property name="row">0</property>
-										</layout>
-									</object>
-								</child>
-								<child>
-									<object class="GtkCheckButton" id="followmouseswitch">
-										<property name="label" translatable="yes">checkbutton</property>
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="receives-default">False</property>
-										<property name="active">True</property>
-										<property name="has-tooltip">True</property>
-										<layout>
-											<property name="column">0</property>
-											<property name="row">1</property>
-										</layout>
-									</object>
-								</child>
-								<child>
-									<object class="GtkCheckButton" id="trayswitch">
-										<property name="label" translatable="yes">checkbutton</property>
-										<property name="visible">False</property>
-										<property name="can-focus">True</property>
-										<property name="receives-default">False</property>
-										<property name="active">True</property>
-										<property name="has-tooltip">True</property>
-										<layout>
-											<property name="column">1</property>
-											<property name="row">1</property>
-										</layout>
-									</object>
-								</child>
-							</object>
-						</child>
-						<!-- Row 1: frames -->
-						<child>
-							<object class="GtkGrid">
-								<property name="visible">True</property>
-								<property name="can-focus">True</property>
-								<property name="hexpand">True</property>
-								<property name="column-spacing">10</property>
-								<layout>
-									<property name="column">0</property>
-									<property name="row">1</property>
-								</layout>
-								<child>
-									<object class="GtkLabel" id="frames_label">
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="hexpand">True</property>
-										<property name="halign">start</property>
-										<property name="label" translatable="yes">label</property>
-									</object>
-								</child>
-								<child>
-									<object class="GtkSpinButton" id="frames">
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="hexpand">False</property>
-										<property name="max-width-chars">4</property>
-										<property name="width-chars">4</property>
-										<property name="text">number</property>
-										<property name="adjustment">adjustment_frames</property>
-										<property name="has-tooltip">True</property>
-									</object>
-								</child>
-							</object>
-						</child>
-					</object>
-				</child>
-				<!-- ── Audio source ── -->
-				<child>
-					<object class="GtkGrid">
-						<property name="visible">True</property>
-						<property name="can-focus">True</property>
-						<property name="margin-start">10</property>
-						<property name="margin-end">10</property>
-						<property name="margin-top">5</property>
-						<property name="margin-bottom">5</property>
-						<property name="row-spacing">2</property>
-						<property name="column-spacing">5</property>
-						<child>
-							<object class="GtkLabel" id="audio_source_label">
-								<property name="visible">True</property>
-								<property name="can-focus">True</property>
-								<property name="halign">start</property>
-								<property name="margin-top">5</property>
-								<property name="margin-bottom">5</property>
-								<property name="label" translatable="yes">label</property>
-								<layout>
-									<property name="column">0</property>
-									<property name="row">0</property>
-								</layout>
-							</object>
-						</child>
-						<child>
-							<object class="GtkComboBoxText" id="audiosource">
-								<property name="visible">True</property>
-								<property name="can-focus">True</property>
-								<property name="margin-top">5</property>
-								<property name="margin-bottom">5</property>
-								<property name="hexpand">True</property>
-								<property name="vexpand">True</property>
-								<property name="has-tooltip">True</property>
-								<layout>
-									<property name="column">1</property>
-									<property name="row">0</property>
-								</layout>
-							</object>
-						</child>
-					</object>
-				</child>
-				<!-- ── Advanced Settings expander (native disclosure triangle) ── -->
-				<child>
-					<object class="GtkExpander" id="advanced_settings_expander">
-						<property name="visible">True</property>
-						<property name="can-focus">True</property>
-						<property name="margin-start">10</property>
-						<property name="margin-end">10</property>
-						<property name="margin-top">2</property>
-						<property name="margin-bottom">8</property>
-						<child>
-							<object class="GtkBox">
-								<property name="visible">True</property>
-								<property name="orientation">vertical</property>
-								<property name="margin-top">5</property>
-								<!-- Checkboxes: show area, record speaker, auto-hide -->
-								<child>
-									<object class="GtkGrid">
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="hexpand">True</property>
-										<property name="row-spacing">6</property>
-										<property name="column-homogeneous">True</property>
-										<child>
-											<object class="GtkCheckButton" id="areaswitch">
-												<property name="label" translatable="yes">checkbutton</property>
-												<property name="visible">True</property>
-												<property name="can-focus">True</property>
-												<property name="receives-default">False</property>
-												<property name="active">False</property>
-												<property name="has-tooltip">True</property>
-												<layout>
-													<property name="column">0</property>
-													<property name="row">0</property>
-												</layout>
-											</object>
-										</child>
-										<child>
-											<object class="GtkCheckButton" id="speakerswitch">
-												<property name="label" translatable="yes">checkbutton</property>
-												<property name="visible">True</property>
-												<property name="can-focus">True</property>
-												<property name="receives-default">False</property>
-												<property name="active">False</property>
-												<property name="has-tooltip">True</property>
-												<layout>
-													<property name="column">1</property>
-													<property name="row">0</property>
-												</layout>
-											</object>
-										</child>
-										<child>
-											<object class="GtkCheckButton" id="hideswitch">
-												<property name="label" translatable="yes">checkbutton</property>
-												<property name="visible">True</property>
-												<property name="can-focus">True</property>
-												<property name="receives-default">False</property>
-												<property name="active">False</property>
-												<property name="has-tooltip">True</property>
-												<layout>
-													<property name="column">2</property>
-													<property name="row">0</property>
-												</layout>
-											</object>
-										</child>
-									</object>
-								</child>
-								<!-- Spin buttons: delay, video bitrate, audio bitrate -->
-								<child>
-									<object class="GtkGrid">
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="hexpand">True</property>
-										<property name="margin-top">3</property>
-										<property name="row-spacing">6</property>
-										<property name="column-spacing">10</property>
-										<child>
-											<object class="GtkLabel" id="delay_label">
-												<property name="visible">True</property>
-												<property name="can-focus">True</property>
-												<property name="hexpand">True</property>
-												<property name="halign">start</property>
-												<property name="label" translatable="yes">label</property>
-												<layout>
-													<property name="column">0</property>
-													<property name="row">0</property>
-												</layout>
-											</object>
-										</child>
-										<child>
-											<object class="GtkSpinButton" id="delay">
-												<property name="visible">True</property>
-												<property name="can-focus">True</property>
-												<property name="hexpand">False</property>
-												<property name="max-width-chars">4</property>
-												<property name="width-chars">4</property>
-												<property name="text">number</property>
-												<property name="adjustment">adjustment_delay</property>
-												<property name="climb-rate">1</property>
-												<property name="has-tooltip">True</property>
-												<layout>
-													<property name="column">1</property>
-													<property name="row">0</property>
-												</layout>
-											</object>
-										</child>
-										<child>
-											<object class="GtkLabel" id="video_bitrate_label">
-												<property name="visible">True</property>
-												<property name="can-focus">True</property>
-												<property name="hexpand">True</property>
-												<property name="halign">start</property>
-												<property name="label" translatable="yes">label</property>
-												<layout>
-													<property name="column">0</property>
-													<property name="row">1</property>
-												</layout>
-											</object>
-										</child>
-										<child>
-											<object class="GtkSpinButton" id="video_bitrate">
-												<property name="visible">True</property>
-												<property name="can-focus">True</property>
-												<property name="hexpand">False</property>
-												<property name="max-width-chars">4</property>
-												<property name="width-chars">4</property>
-												<property name="text">number</property>
-												<property name="adjustment">adjustment_bitrate_video</property>
-												<property name="climb-rate">1</property>
-												<property name="has-tooltip">True</property>
-												<layout>
-													<property name="column">1</property>
-													<property name="row">1</property>
-												</layout>
-											</object>
-										</child>
-										<child>
-											<object class="GtkLabel" id="audio_bitrate_label">
-												<property name="visible">True</property>
-												<property name="can-focus">True</property>
-												<property name="hexpand">True</property>
-												<property name="halign">start</property>
-												<property name="label" translatable="yes">label</property>
-												<layout>
-													<property name="column">0</property>
-													<property name="row">2</property>
-												</layout>
-											</object>
-										</child>
-										<child>
-											<object class="GtkSpinButton" id="audio_bitrate">
-												<property name="visible">True</property>
-												<property name="can-focus">True</property>
-												<property name="hexpand">False</property>
-												<property name="max-width-chars">4</property>
-												<property name="width-chars">4</property>
-												<property name="text">number</property>
-												<property name="adjustment">adjustment_bitrate_audio</property>
-												<property name="climb-rate">1</property>
-												<property name="has-tooltip">True</property>
-												<layout>
-													<property name="column">1</property>
-													<property name="row">2</property>
-												</layout>
-											</object>
-										</child>
-									</object>
-								</child>
-								<!-- Command row -->
-								<child>
-									<object class="GtkGrid">
-										<property name="visible">True</property>
-										<property name="can-focus">True</property>
-										<property name="hexpand">True</property>
-										<property name="margin-top">3</property>
-										<property name="column-spacing">10</property>
-										<child>
-											<object class="GtkLabel" id="command_label">
-												<property name="visible">True</property>
-												<property name="can-focus">True</property>
-												<property name="hexpand">True</property>
-												<property name="halign">start</property>
-												<property name="margin-top">5</property>
-												<property name="margin-bottom">5</property>
-												<property name="label" translatable="yes">label</property>
-												<layout>
-													<property name="column">0</property>
-													<property name="row">0</property>
-												</layout>
-											</object>
-										</child>
-										<child>
-											<object class="GtkEntry" id="command">
-												<property name="visible">True</property>
-												<property name="can-focus">True</property>
-												<property name="margin-top">5</property>
-												<property name="margin-bottom">5</property>
-												<property name="hexpand">True</property>
-												<property name="vexpand">True</property>
-												<layout>
-													<property name="column">1</property>
-													<property name="row">0</property>
-												</layout>
-											</object>
-										</child>
-									</object>
-								</child>
-							</object>
-						</child>
-					</object>
-				</child>
-			</object>
-		</child>
-	</object>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="GtkAdjustment" id="adjustment_delay">
+    <property name="upper">10</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">2</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment_frames">
+    <property name="lower">0</property>
+    <property name="upper">1000</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment_bitrate_video">
+    <property name="lower">0</property>
+    <property name="upper">50000</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment_bitrate_audio">
+    <property name="lower">0</property>
+    <property name="upper">50000</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
+  </object>
+  <object class="GtkImage" id="image3">
+    <property name="visible">True</property>
+    <property name="can-focus">True</property>
+    <property name="icon-name">media-playback-start</property>
+  </object>
+  <object class="GtkImage" id="image5">
+    <property name="visible">True</property>
+    <property name="can-focus">True</property>
+    <property name="icon-name">gtk-media-stop</property>
+  </object>
+  <object class="AdwWindow" id="main_window">
+    <property name="visible">True</property>
+    <property name="can-focus">True</property>
+    <property name="resizable">False</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <child>
+              <object class="AdwHeaderBar">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="hexpand">True</property>
+                <child>
+                  <object class="GtkButton" id="recordbutton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="has-tooltip">True</property>
+                    <child>
+                      <object class="GtkGrid">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="column-spacing">2</property>
+                        <property name="row-homogeneous">True</property>
+                        <child>
+                          <object class="GtkImage">
+                            <property name="name">record_image</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="icon-name">media-record</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="record_label">
+                            <property name="name">record_label</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="label" translatable="yes">label</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="stopbutton">
+                    <property name="name">stop_button</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="has-tooltip">True</property>
+                    <child>
+                      <object class="GtkGrid">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="column-spacing">2</property>
+                        <property name="row-homogeneous">True</property>
+                        <child>
+                          <object class="GtkImage">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="icon-name">media-playback-stop</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="stop_label">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="label" translatable="yes">label</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSeparator" id="record_button_separator">
+                    <property name="visible">True</property>
+                    <property name="opacity">0.0</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="record_time_label">
+                    <property name="name">record_time_label</property>
+                    <property name="visible">False</property>
+                    <property name="can-focus">True</property>
+                  </object>
+                </child>
+                <child type="title">
+                  <object class="GtkBox" id="title_area">
+                    <property name="visible">True</property>
+                    <property name="orientation">vertical</property>
+                    <property name="valign">center</property>
+                    <property name="spacing">1</property>
+                    <child>
+                      <object class="GtkLabel" id="app_title">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">title</property>
+                        <property name="halign">center</property>
+                        <style>
+                          <class name="title"/>
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="processing_box">
+                        <property name="visible">False</property>
+                        <property name="orientation">horizontal</property>
+                        <property name="valign">center</property>
+                        <property name="spacing">6</property>
+                        <child>
+                          <object class="GtkSpinner" id="processing_spinner">
+                            <property name="visible">True</property>
+                            <property name="spinning">True</property>
+                            <property name="valign">center</property>
+                            <property name="width-request">16</property>
+                            <property name="height-request">16</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="processing_label">
+                            <property name="visible">True</property>
+                            <property name="valign">center</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="playbutton">
+                    <property name="icon_name">media-playback-start</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="has-tooltip">True</property>
+                  </object>
+                </child>
+                <child type="end">
+                  <object class="GtkButton" id="aboutbutton">
+                    <property name="label" translatable="yes">button</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="has-tooltip">True</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="margin-start">5</property>
+            <property name="margin-end">5</property>
+            <property name="margin-top">5</property>
+            <child>
+              <object class="GtkEntry" id="filename">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="sensitive">True</property>
+                <property name="editable">True</property>
+                <property name="enable-undo">True</property>
+                <property name="hexpand">True</property>
+                <property name="margin-start">5</property>
+                <property name="margin-end">5</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="folder_chooser">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="hexpand">True</property>
+                <property name="margin-start">5</property>
+                <property name="margin-end">5</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+                <property name="has-tooltip">True</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="orientation">horizontal</property>
+                    <property name="spacing">5</property>
+                    <child>
+                      <object class="GtkImage" id="folder_chooser_image">
+                        <property name="halign">start</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="folder_chooser_label">
+                        <property name="halign">start</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkComboBoxText" id="comboboxtext1">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="margin-start">10</property>
+            <property name="margin-end">10</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">5</property>
+            <property name="has-tooltip">True</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="margin-start">5</property>
+            <property name="margin-end">5</property>
+            <property name="margin-bottom">5</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkToggleButton" id="area_grab_button">
+                <property name="name">area_grab_button</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="margin-start">3</property>
+                <property name="margin-end">3</property>
+                <property name="margin-top">3</property>
+                <property name="margin-bottom">3</property>
+                <property name="has-tooltip">True</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="orientation">horizontal</property>
+                    <property name="spacing">5</property>
+                    <child>
+                      <object class="GtkImage" id="area_grab_icon">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="area_grab_label">
+                        <property name="label" translatable="yes">label</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkToggleButton" id="screen_grab_button">
+                <property name="name">screen_grab_button</property>
+                <property name="group">area_grab_button</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="margin-start">3</property>
+                <property name="margin-end">3</property>
+                <property name="margin-top">3</property>
+                <property name="margin-bottom">3</property>
+                <property name="has-tooltip">True</property>
+                <child>
+                  <object class="GtkGrid">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="column-spacing">3</property>
+                    <property name="row-homogeneous">True</property>
+                    <child>
+                      <object class="GtkImage" id="screen_grab_icon">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="screen_grab_label">
+                        <property name="label" translatable="yes">label</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkToggleButton" id="window_grab_button">
+                <property name="name">window_grab_button</property>
+                <property name="group">area_grab_button</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="margin-start">3</property>
+                <property name="margin-end">3</property>
+                <property name="margin-top">3</property>
+                <property name="margin-bottom">3</property>
+                <property name="has-tooltip">True</property>
+                <child>
+                  <object class="GtkGrid">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="column-spacing">3</property>
+                    <property name="row-homogeneous">True</property>
+                    <child>
+                      <object class="GtkImage" id="window_grab_icon">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="window_grab_label">
+                        <property name="label" translatable="yes">label</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkGrid" id="grid1">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="margin-start">10</property>
+            <property name="margin-end">10</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">5</property>
+            <property name="row-spacing">2</property>
+            <child>
+              <object class="GtkGrid">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="row-spacing">2</property>
+                <property name="hexpand">True</property>
+                <property name="column-spacing">10</property>
+                <property name="row-homogeneous">True</property>
+                <child>
+                  <object class="GtkCheckButton" id="videoswitch">
+                    <property name="label" translatable="yes">checkbutton</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="has-tooltip">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="audio_input_switch">
+                    <property name="label" translatable="yes">checkbutton</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="has-tooltip">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="mouseswitch">
+                    <property name="label" translatable="yes">checkbutton</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="has-tooltip">True</property>
+                    <layout>
+                      <property name="column">0</property>
+                      <property name="row">1</property>
+                    </layout>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="speakerswitch">
+                    <property name="label" translatable="yes">checkbutton</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="has-tooltip">True</property>
+                    <layout>
+                      <property name="column">1</property>
+                      <property name="row">1</property>
+                    </layout>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkGrid">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="row-spacing">2</property>
+                <property name="hexpand">True</property>
+                <property name="column-spacing">10</property>
+                <child>
+                  <object class="GtkLabel" id="frames_label">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="label" translatable="yes">label</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSpinButton" id="frames">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="max-width-chars">2</property>
+                    <property name="width-chars">2</property>
+                    <property name="text">number</property>
+                    <property name="adjustment">adjustment_frames</property>
+                    <property name="has-tooltip">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="delay_label">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="margin-end">13</property>
+                    <property name="label" translatable="yes">label</property>
+                    <layout>
+                      <property name="column">0</property>
+                      <property name="row">1</property>
+                    </layout>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSpinButton" id="delay">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="max-width-chars">2</property>
+                    <property name="width-chars">2</property>
+                    <property name="text">number</property>
+                    <property name="adjustment">adjustment_delay</property>
+                    <property name="climb-rate">1</property>
+                    <property name="has-tooltip">True</property>
+                    <layout>
+                      <property name="column">1</property>
+                      <property name="row">1</property>
+                    </layout>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="margin-start">10</property>
+            <property name="margin-end">10</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">5</property>
+            <property name="row-spacing">1</property>
+            <property name="column-spacing">5</property>
+            <child>
+              <object class="GtkLabel" id="audio_source_label">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="halign">start</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+                <property name="label" translatable="yes">label</property>
+                <layout>
+                  <property name="column">0</property>
+                  <property name="row">0</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkComboBoxText" id="audiosource">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+                <property name="has-tooltip">True</property>
+                <layout>
+                  <property name="column">1</property>
+                  <property name="row">0</property>
+                </layout>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkExpander" id="advanced_settings_expander">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="margin-start">10</property>
+            <property name="margin-end">10</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">10</property>
+            <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="orientation">vertical</property>
+                <property name="margin-top">5</property>
+                <child>
+                  <object class="GtkGrid">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="margin-start">10</property>
+                    <property name="margin-end">10</property>
+                    <property name="margin-top">5</property>
+                    <property name="margin-bottom">5</property>
+                    <property name="row-spacing">2</property>
+                    <child>
+                      <object class="GtkGrid">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="hexpand">True</property>
+                        <property name="row-spacing">2</property>
+                        <property name="row-homogeneous">True</property>
+                        <child>
+                          <object class="GtkCheckButton" id="hideswitch">
+                            <property name="label" translatable="yes">checkbutton</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">False</property>
+                            <property name="active">False</property>
+                            <property name="has-tooltip">True</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkCheckButton" id="followmouseswitch">
+                            <property name="label" translatable="yes">checkbutton</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">False</property>
+                            <property name="active">False</property>
+                            <property name="has-tooltip">True</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkCheckButton" id="areaswitch">
+                            <property name="label" translatable="yes">checkbutton</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">False</property>
+                            <property name="active">False</property>
+                            <property name="has-tooltip">True</property>
+                            <layout>
+                              <property name="column">0</property>
+                              <property name="row">1</property>
+                            </layout>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkCheckButton" id="trayswitch">
+                            <property name="label" translatable="yes">checkbutton</property>
+                            <property name="visible">False</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">False</property>
+                            <property name="active">True</property>
+                            <property name="has-tooltip">True</property>
+                            <layout>
+                              <property name="column">1</property>
+                              <property name="row">1</property>
+                            </layout>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkGrid">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="hexpand">True</property>
+                        <property name="column-homogeneous">True</property>
+                        <property name="row-spacing">2</property>
+                        <child>
+                          <object class="GtkLabel" id="video_bitrate_label">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="margin-start">2</property>
+                            <property name="label" translatable="yes">label</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="video_bitrate">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="max-width-chars">2</property>
+                            <property name="width-chars">2</property>
+                            <property name="text">number</property>
+                            <property name="adjustment">adjustment_bitrate_video</property>
+                            <property name="climb-rate">1</property>
+                            <property name="has-tooltip">True</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="audio_bitrate_label">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="margin-start">2</property>
+                            <property name="label" translatable="yes">label</property>
+                            <layout>
+                              <property name="column">0</property>
+                              <property name="row">1</property>
+                            </layout>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="audio_bitrate">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="max-width-chars">2</property>
+                            <property name="width-chars">2</property>
+                            <property name="text">number</property>
+                            <property name="adjustment">adjustment_bitrate_audio</property>
+                            <property name="climb-rate">1</property>
+                            <property name="has-tooltip">True</property>
+                            <layout>
+                              <property name="column">1</property>
+                              <property name="row">1</property>
+                            </layout>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkGrid">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="margin-start">10</property>
+                    <property name="margin-end">10</property>
+                    <property name="margin-top">5</property>
+                    <property name="margin-bottom">5</property>
+                    <property name="row-spacing">1</property>
+                    <property name="column-spacing">5</property>
+                    <child>
+                      <object class="GtkLabel" id="command_label">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="margin-top">5</property>
+                        <property name="margin-bottom">5</property>
+                        <property name="label" translatable="yes">label</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="row">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="command">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="margin-top">5</property>
+                        <property name="margin-bottom">5</property>
+                        <property name="hexpand">True</property>
+                        <property name="vexpand">True</property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="row">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
 </interface>

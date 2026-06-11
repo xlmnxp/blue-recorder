@@ -82,6 +82,10 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     builder.add_from_string(select_window_ui_src.as_str()).unwrap();
 
     // Get Objects from UI
+    let about_button: Button = builder.object("aboutbutton").unwrap();
+    let about_dialog: AboutDialog = builder.object("about_dialog").unwrap();
+    let advanced_expander: Expander = builder.object("advanced_settings_expander").unwrap();
+    let app_title: Label = builder.object("app_title").unwrap();
     let area_apply_label: Label = builder.object("area_apply").unwrap();
     let area_chooser_window: Window = builder.object("area_chooser_window").unwrap();
     let area_grab_button: ToggleButton = builder.object("area_grab_button").unwrap();
@@ -91,8 +95,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let area_size_bottom_label: Label = builder.object("area_size_bottom").unwrap();
     let area_size_top_label: Label = builder.object("area_size_top").unwrap();
     let area_switch: CheckButton = builder.object("areaswitch").unwrap();
-    let about_button: Button = builder.object("aboutbutton").unwrap();
-    let about_dialog: AboutDialog = builder.object("about_dialog").unwrap();
     let audio_bitrate_label: Label = builder.object("audio_bitrate_label").unwrap();
     let audio_bitrate_spin: SpinButton = builder.object("audio_bitrate").unwrap();
     let audio_input_switch: CheckButton = builder.object("audio_input_switch").unwrap();
@@ -129,7 +131,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let select_window: Window = builder.object("select_window").unwrap();
     #[cfg(target_os = "windows")]
     let select_window_label: Label = builder.object("select_window_label").unwrap();
-    let app_title: Label = builder.object("app_title").unwrap();
     let processing_box: GtkBox = builder.object("processing_box").unwrap();
     let processing_label: Label = builder.object("processing_label").unwrap();
     let processing_spinner: adw::gtk::Spinner = builder.object("processing_spinner").unwrap();
@@ -141,7 +142,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
     let window_grab_button: ToggleButton = builder.object("window_grab_button").unwrap();
     let window_grab_icon: Image = builder.object("window_grab_icon").unwrap();
     let window_grab_label: Label = builder.object("window_grab_label").unwrap();
-    let advanced_expander: Expander = builder.object("advanced_settings_expander").unwrap();
 
     // --- default properties
     // Windows
