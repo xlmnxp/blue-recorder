@@ -29,7 +29,11 @@ xwininfo     (X11 only – area selection)
 
 Install dependencies for Ubuntu and Debian-based distros:
 ```
-sudo apt install build-essential cargo clang ffmpeg libadwaita-1-dev libgstreamer1.0-dev libpipewire-0.3-dev pipewire-pulse pulseaudio-utils x11-utils
+sudo apt install build-essential cargo clang ffmpeg gstreamer1.0-plugins-good libadwaita-1-dev libgstreamer1.0-dev libpipewire-0.3-dev pipewire-pulse pulseaudio-utils x11-utils
+```
+Install dependencies for FreeBSD:
+```
+sudo pkg install ffmpeg gstreamer1 libadwaita llvm pipewire pulseaudio rust xwininfo
 ```
 Then use `Cargo` to build it:
 ```

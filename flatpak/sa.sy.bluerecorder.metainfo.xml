@@ -20,7 +20,7 @@
   
   <screenshots>
     <screenshot type="default">
-      <image>https://dashboard.snapcraft.io/site_media/appmedia/2026/06/screenshot-1781337658.png</image>
+      <image>https://github.com/xlmnxp/blue-recorder/blob/master/screenshots/screenshot.png</image>
     </screenshot>
   </screenshots>
   
@@ -40,7 +40,7 @@
   <url type="homepage">https://github.com/xlmnxp/blue-recorder</url>
   <url type="bugtracker">https://github.com/xlmnxp/blue-recorder/issues</url>
   <url type="vcs-browser">https://github.com/xlmnxp/blue-recorder</url>
-  <url type="translate">https://github.com/xlmnxp/blue-recorder/tree/master/po</url>
+  <url type="translate">https://github.com/xlmnxp/blue-recorder/tree/master/locales</url>
   
   <releases>
     <release version="0.3.0" date="2026-06-12"/>
