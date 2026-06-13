@@ -31,8 +31,14 @@ async fn main() {
     // Init GTK
     adw::gtk::init().expect("Failed to initialize GTK.");
 
-    // Create new application
-    let application = Application::new(Some("sa.sy.blue-recorder"), Default::default());
+    // workaround for flatpak and snap, which have different app IDs
+    let app_id = if std::env::var_os("FLATPAK_ID").is_some() {
+        "sa.sy.bluerecorder"
+    } else {
+        "sa.sy.blue-recorder"
+    };
+
+    let application = Application::new(Some(app_id), Default::default());
     application.connect_activate(run_ui);
     application.run();
 }
