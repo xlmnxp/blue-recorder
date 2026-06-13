@@ -97,7 +97,6 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="column-spacing">2</property>
-                        <property name="row-homogeneous">True</property>
                         <child>
                           <object class="GtkImage">
                             <property name="visible">True</property>
