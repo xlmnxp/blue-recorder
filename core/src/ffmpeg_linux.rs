@@ -10,9 +10,7 @@ use std::time::Duration;
 use crate::utils::{is_video_record, is_wayland, RecordMode};
 
 #[cfg(any(target_os = "freebsd", target_os = "linux"))]
-use crate::wayland_linux::{CursorModeTypes, RecordTypes, WaylandRecorder};
-#[cfg(any(target_os = "freebsd", target_os = "linux"))]
-use gstreamer::{self as gst, prelude::ElementExt};
+use crate::wayland_linux::{shutdown_pipeline, CursorModeTypes, RecordTypes, WaylandRecorder};
 
 /// Pushes `-i path` to ffmpeg args, prefixed with `-itsoffset offset` when
 /// `offset` is large enough to matter, shifting the audio stream's
@@ -417,7 +415,7 @@ impl Ffmpeg {
         let (tx, rx) = std::sync::mpsc::channel::<Result<String>>();
         std::thread::spawn(move || {
             // 1. Stop GStreamer pipeline.
-            if let Some(p) = pipeline { let _ = p.set_state(gst::State::Null); }
+            if let Some(p) = pipeline { shutdown_pipeline(&p); }
 
             // 2. Close the portal session.
             if !session_path.is_empty() {

@@ -26,6 +26,27 @@ pub enum CursorModeTypes {
     Show,
 }
 
+/// Sends EOS and gives the muxer a bounded window to flush and write its
+/// trailer before tearing the pipeline down with `Null`. An abrupt `Null`
+/// skips matroskamux's finalization and truncates the recording's tail —
+/// a race that's normally too fast to lose natively, but snap's extra
+/// sandboxing/IPC overhead widens it enough to reproduce reliably.
+pub fn shutdown_pipeline(pipeline: &gst::Pipeline) {
+    if let Some(bus) = pipeline.bus() {
+        let _ = pipeline.send_event(gst::event::Eos::new());
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+        while std::time::Instant::now() < deadline {
+            if let Some(msg) = bus.timed_pop(gst::ClockTime::from_mseconds(100)) {
+                match msg.view() {
+                    gst::MessageView::Eos(_) | gst::MessageView::Error(_) => break,
+                    _ => {}
+                }
+            }
+        }
+    }
+    let _ = pipeline.set_state(gst::State::Null);
+}
+
 #[proxy(
     interface = "org.freedesktop.portal.ScreenCast",
     default_service = "org.freedesktop.portal.Desktop",
@@ -220,7 +241,7 @@ impl WaylandRecorder {
             let done  = Arc::new(AtomicBool::new(false));
             let done2 = done.clone();
             std::thread::spawn(move || {
-                let _ = pipeline.set_state(gst::State::Null);
+                shutdown_pipeline(&pipeline);
                 done2.store(true, Ordering::Release);
             });
             // async_std::task::sleep yields to the executor each tick so the
