@@ -52,6 +52,7 @@ audio-source = Audio Input Source
 auto-hide = Auto Hide
 
 # Output formats
+apng-format = APNG (Animated Portable Network Graphics)
 avi-format = AVI (Audio Video Interleaved)
 gif-format = GIF (Graphics Interchange Format)
 mkv-format = MKV (Matroska multimedia container format)
