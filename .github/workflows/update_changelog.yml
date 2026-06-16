@@ -1,37 +1,19 @@
-name: Update Changelog
-
+name: Generate changelog
 on:
   release:
-    types: [released]
+    types: [created, edited]
 
 jobs:
-  update:
+  generate-changelog:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.target_commitish }}
           fetch-depth: 0
-
-      - name: Extract release date
-        id: release_date
-        run: |
-          echo "date=$(git log -1 --date=short --format=%ad '${{ github.event.release.tag_name }}')" >> $GITHUB_OUTPUT
-
-      - name: Update Changelog
-        uses: stefanzweifel/changelog-updater-action@v1
+      - uses: BobAnkh/auto-generate-changelog@v1.3.1
         with:
-          latest-version: ${{ github.event.release.tag_name }}
-          release-notes: ${{ github.event.release.body }}
-          release-date: ${{ steps.release_date.outputs.date }}
-
-      - name: Commit updated CHANGELOG
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          branch: ${{ github.event.release.target_commitish }}
-          commit_message: "docs: update CHANGELOG for ${{ github.event.release.tag_name }}"
-          file_pattern: CHANGELOG.md   
+          REPO_NAME: "https://github.com/ochibani/blue-recorder"
+          ACCESS_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          PATH: "CHANGELOG.md"
+          COMMIT_MESSAGE: "docs(CHANGELOG): update release notes"
+          TYPE: "feat:Feature,fix:Bug Fixes,docs:Documentation,refactor:Refactor,perf:Performance Improvements"
