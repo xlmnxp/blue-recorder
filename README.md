@@ -35,6 +35,14 @@ Install dependencies for FreeBSD:
 ```
 sudo pkg install ffmpeg gstreamer1 libadwaita llvm pipewire pulseaudio rust xwininfo
 ```
+Install dependencies for Windows:
+```
+winget install BrechtSanders.WinLibs.POSIX.MSVCRT Git.Git Gyan.FFmpeg LLVM.LLVM Rustlang.Rustup wingtk.gvsbuild.GTK4
+```
+Switch to the GNU Toolchain(Windows only):
+```
+rustup default stable-x86_64-pc-windows-gnu
+```
 Then use `Cargo` to build it:
 ```
 git clone https://github.com/xlmnxp/blue-recorder
