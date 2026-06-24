@@ -16,36 +16,15 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-
+        
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v4
         id: git-cliff
         with:
           config: cliff.toml
-          args: -vv --latest --strip header
+          args: --verbose
         env:
-          OUTPUT: CHANGES.md
-          GITHUB_REPO: ${{ github.repository }}
+          OUTPUT: CHANGELOG.md
 
-      # use release body in the same job
-      - name: Upload the binary releases
-        uses: svenstaro/upload-release-action@v2
-        with:
-          file: binary_release.zip
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ github.ref }}
-          body: ${{ steps.git-cliff.outputs.content }}
-
-  # use release body in another job
-  upload:
-    name: Upload the release
-    needs: changelog
-    runs-on: ubuntu-latest
-    steps:
-      - name: Upload the binary releases
-        uses: svenstaro/upload-release-action@v2
-        with:
-          file: binary_release.zip
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ github.ref }}
-          body: ${{ needs.changelog.outputs.release_body }}
+      - name: Print the changelog
+        run: cat "${{ steps.git-cliff.outputs.changelog }}"
