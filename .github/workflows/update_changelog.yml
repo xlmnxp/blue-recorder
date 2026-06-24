@@ -1,19 +1,75 @@
-name: Generate changelog
+name: "Update Changelog"
+
 on:
   release:
-    types: [created, edited]
+    types: [published]  # Trigger on release publication
+  workflow_dispatch:    # Allows manual trigger
+
+permissions:
+  contents: write      # Required for file changes and auto-merge
+  pull-requests: write # Required for creating PRs and auto-merge
 
 jobs:
-  generate-changelog:
+  update-changelog:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-      - uses: BobAnkh/auto-generate-changelog@v1.3.1
+          fetch-depth: 0  # Fetch full history for changelog generation
+          ref: main       # Start from main branch
+
+      - name: Setup git-chglog
+        run: |
+          CHGLOG_VERSION="0.9.1"
+          curl -o git-chglog -L "https://github.com/git-chglog/git-chglog/releases/download/${CHGLOG_VERSION}/git-chglog_linux_amd64"
+          chmod +x git-chglog
+
+      - name: Generate CHANGELOG.md
+        id: generate
+        run: |
+          rm -f CHANGELOG.md  # Remove existing changelog
+          ./git-chglog -o CHANGELOG.md
+
+          # Check for changes and set output
+          if git diff --quiet CHANGELOG.md; then
+            echo "changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "changes=true" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cleanup
+        run: rm git-chglog
+        if: always()  # Ensure cleanup happens even if previous steps fail
+
+      - name: Create Pull Request
+        if: steps.generate.outputs.changes == 'true'
+        uses: peter-evans/create-pull-request@v7
+        id: create-pr
         with:
-          REPO_NAME: "https://github.com/ochibani/blue-recorder.git"
-          ACCESS_TOKEN: ${{secrets.GITHUB_TOKEN}}
-          PATH: "CHANGELOG.md"
-          COMMIT_MESSAGE: "docs(CHANGELOG): update release notes"
-          TYPE: "feat:Feature,fix:Bug Fixes,docs:Documentation,refactor:Refactor,perf:Performance Improvements"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update CHANGELOG.md"
+          title: "📝 Update Changelog"
+          body: |
+            This PR updates the CHANGELOG.md to include all releases.
+
+            - Generated using git-chglog
+            - Triggered by: ${{ github.event_name }}
+            - Auto-merge enabled
+          branch: update-changelog-${{ github.run_id }}
+          base: main
+          delete-branch: true  # This will delete the branch after merge
+          labels: |
+            documentation
+            automated-pr
+
+      - name: Enable Auto-merge
+        if: steps.generate.outputs.changes == 'true'
+        run: |
+          gh pr merge --auto --merge "${{ steps.create-pr.outputs.pull-request-number }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
