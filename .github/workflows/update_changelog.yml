@@ -1,7 +1,14 @@
+name: "Update Changelog"
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+  
 jobs:
   changelog:
     name: Generate changelog
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       release_body: ${{ steps.git-cliff.outputs.content }}
     steps:
