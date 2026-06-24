@@ -43,7 +43,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Cleanup
-        run: rm git-chglog
+        #run: rm git-chglog
         if: always()  # Ensure cleanup happens even if previous steps fail
 
       - name: Create Pull Request
