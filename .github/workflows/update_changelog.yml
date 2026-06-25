@@ -1,19 +1,30 @@
-name: Generate changelog
+name: "Update Changelog"
+
 on:
   release:
-    types: [created, edited]
-
+    types: [published]
+  workflow_dispatch:
+  
 jobs:
-  generate-changelog:
-    runs-on: ubuntu-latest
+  changelog:
+    name: Generate changelog
+    runs-on: ubuntu-24.04
+    outputs:
+      release_body: ${{ steps.git-cliff.outputs.content }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: BobAnkh/auto-generate-changelog@v1.3.1
+        
+      - name: Generate a changelog
+        uses: orhun/git-cliff-action@v4
+        id: git-cliff
         with:
-          REPO_NAME: "https://github.com/ochibani/blue-recorder.git"
-          ACCESS_TOKEN: ${{secrets.GITHUB_TOKEN}}
-          PATH: "CHANGELOG.md"
-          COMMIT_MESSAGE: "docs(CHANGELOG): update release notes"
-          TYPE: "feat:Feature,fix:Bug Fixes,docs:Documentation,refactor:Refactor,perf:Performance Improvements"
+          config: cliff.toml
+          args: --verbose
+        env:
+          OUTPUT: CHANGELOG.md
+
+      - name: Print the changelog
+        run: cat "${{ steps.git-cliff.outputs.changelog }}"
