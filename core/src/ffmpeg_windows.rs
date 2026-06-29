@@ -43,6 +43,7 @@ impl Ffmpeg {
         };
         let mut ffmpeg_command = FfmpegCommand::new();
         let format = "gdigrab";
+        self.saved_filename = self.filename.clone();
         self.output = Path::new(&self.filename)
             .extension()
             .unwrap_or_default()
