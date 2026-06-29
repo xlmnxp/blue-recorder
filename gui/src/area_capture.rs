@@ -62,7 +62,7 @@ impl AreaCapture {
 
     #[cfg(target_os = "windows")]
     pub fn get_active_window(&mut self) -> Result<Self> {
-        let coordinate = get_active_window()?.position;
+        let coordinate = get_active_window().expect("Unable to get window position").position;
 
         self.x = coordinate.x as u16;
         self.y = coordinate.y as u16;
@@ -130,7 +130,7 @@ impl Title {
     }
 
     pub fn get_title(&mut self) -> Result<Self> {
-        self.title = get_active_window()?.title;
+        self.title = get_active_window().expect("Unable to get window title").title;
         Ok(self.clone())
     }
 }

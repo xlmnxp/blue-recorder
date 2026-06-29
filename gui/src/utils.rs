@@ -74,7 +74,7 @@ pub fn build_filename(
 ) -> String {
     use chrono::Utc;
     let stem = if name.trim().is_empty() {
-        Utc::now().to_string().replace(" UTC", "").replace(' ', "-")
+        Utc::now().format("%d-%m-%Y_%H.%M.%S.%6f").to_string()
     } else {
         name.trim().to_string()
     };

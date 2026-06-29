@@ -22,8 +22,10 @@ use std::rc::Rc;
 use crate::area_selector_overlay;
 use crate::{area_capture, config_management, fluent::get_bundle};
 use crate::timer::{RecordClick, recording_delay, start_timer, stop_timer};
-use crate::utils::{audio_output_source, build_filename, disable_input_widgets,
-                   enable_input_widgets, is_overwrite, sources_descriptions_list};
+#[cfg(any(target_os = "freebsd", target_os = "linux"))]
+use crate::utils::{audio_output_source, sources_descriptions_list};
+use crate::utils::{build_filename, disable_input_widgets,
+                   enable_input_widgets, is_overwrite};
 
 pub fn run_ui(application: &Application) {
     // Error dialog
@@ -780,6 +782,12 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         audio_output_id: audio_output_source,
         filename: String::new(),
         output: String::new(),
+        temp_video_filename: String::new(),
+        saved_filename: String::new(),
+        height: None,
+        input_audio_process: None,
+        output_audio_process: None,
+        video_process: None,
         audio_record_bitrate: 0,
         record_delay: 0,
         record_frames: 0,
@@ -790,15 +798,6 @@ fn build_ui(application: &Application, error_dialog: MessageDialog, error_messag
         record_mouse: false,
         show_area: false,
         video_enabled: false,
-        saved_filename: String::new(),
-        temp_video_filename: String::new(),
-        temp_input_audio_filename: String::new(),
-        temp_output_audio_filename: String::new(),
-        width: None,
-        height: None,
-        input_audio_process: None,
-        output_audio_process: None,
-        video_process: None,
     }));
 
     // Record button
