@@ -527,7 +527,7 @@
                 <property name="margin-top">5</property>
                 <property name="margin-bottom">5</property>
                 <property name="hexpand">True</property>
-                <property name="vexpand">True</property>
+                <property name="vexpand">False</property>
                 <property name="has-tooltip">True</property>
                 <layout>
                   <property name="column">1</property>
@@ -545,11 +545,11 @@
             <property name="margin-end">10</property>
             <property name="margin-top">5</property>
             <property name="margin-bottom">10</property>
+            <property name="resize-toplevel">True</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="orientation">vertical</property>
-                <property name="margin-top">5</property>
                 <child>
                   <object class="GtkGrid">
                     <property name="visible">True</property>
@@ -705,7 +705,7 @@
                         <property name="margin-top">5</property>
                         <property name="margin-bottom">5</property>
                         <property name="hexpand">True</property>
-                        <property name="vexpand">True</property>
+                        <property name="vexpand">False</property>
                         <layout>
                           <property name="column">1</property>
                           <property name="row">1</property>
